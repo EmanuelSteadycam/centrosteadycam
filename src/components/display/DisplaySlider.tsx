@@ -1,15 +1,12 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import IntroSlide from "./slides/IntroSlide";
-import PortfolioSlide from "./slides/PortfolioSlide";
-import RoomSlide from "./slides/RoomSlide";
-import BookingSlide from "./slides/BookingSlide";
-import InfoSlide from "./slides/InfoSlide";
-import PartnersSlide from "./slides/PartnersSlide";
+import Image from "next/image";
 
+// ── Slide types ───────────────────────────────────────────────────────────────
 export type SlideId =
   | "intro"
+  | "apertura"
   | "portfolio"
   | "timeline"
   | "storie"
@@ -19,215 +16,726 @@ export type SlideId =
   | "booking"
   | "il-centro"
   | "il-progetto"
-  | "partner";
+  | "partner"
+  | "contatti";
 
-const SLIDE_ORDER: SlideId[] = [
-  "intro",
-  "portfolio",
-  "timeline",
-  "storie",
-  "gaming",
-  "making",
-  "corpo",
-  "booking",
-  "il-centro",
-  "il-progetto",
-  "partner",
+const WP = "https://centrosteadycam.it/wp-content/uploads";
+
+// ── Hamburger Menu ────────────────────────────────────────────────────────────
+const menuItems: { label: string; slide: SlideId }[] = [
+  { label: "HOME", slide: "intro" },
+  { label: "LE STANZE", slide: "portfolio" },
+  { label: "IL CENTRO", slide: "il-centro" },
+  { label: "PROGETTO", slide: "il-progetto" },
+  { label: "PARTNER", slide: "partner" },
+  { label: "INFO", slide: "contatti" },
+  { label: "PRENOTA", slide: "apertura" },
 ];
 
-interface DisplaySliderProps {
-  initialSlide?: SlideId;
+function HamburgerMenu({
+  open,
+  onToggle,
+  onNavigate,
+}: {
+  open: boolean;
+  onToggle: () => void;
+  onNavigate: (id: SlideId) => void;
+}) {
+  return (
+    <>
+      {/* Circular hamburger button — top right */}
+      <button
+        onClick={onToggle}
+        className="fixed top-3 right-3 z-[200] w-14 h-14 rounded-full flex flex-col items-center justify-center gap-[5px] transition-all duration-300"
+        style={{ background: open ? "rgba(0,0,0,0.65)" : "rgba(0,0,0,0.4)" }}
+        aria-label="Menu"
+      >
+        <span
+          className="block w-5 h-[2px] bg-white transition-all duration-300 origin-center"
+          style={open ? { transform: "rotate(45deg) translate(5px, 5px)" } : {}}
+        />
+        <span
+          className="block w-5 h-[2px] bg-white transition-all duration-300"
+          style={open ? { opacity: 0 } : {}}
+        />
+        <span
+          className="block w-5 h-[2px] bg-white transition-all duration-300 origin-center"
+          style={open ? { transform: "rotate(-45deg) translate(5px, -5px)" } : {}}
+        />
+      </button>
+
+      {/* Slide-in menu items */}
+      <div className="fixed top-0 right-0 z-[190] pt-20 pr-4 flex flex-col items-end gap-2 pointer-events-none">
+        {menuItems.map((item, i) => (
+          <motion.button
+            key={item.label}
+            initial={{ x: "100%" }}
+            animate={open ? { x: 0 } : { x: "100%" }}
+            transition={{ duration: 0.35, delay: open ? i * 0.04 : 0, ease: "easeOut" }}
+            onClick={() => { onNavigate(item.slide); onToggle(); }}
+            className="pointer-events-auto px-4 py-2 text-white text-xs font-light tracking-[0.2em] uppercase transition-colors duration-200"
+            style={{ background: "rgba(0,0,0,0.65)", fontFamily: "var(--font-raleway)" }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "#8ac893")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(0,0,0,0.65)")}
+          >
+            {item.label}
+          </motion.button>
+        ))}
+      </div>
+    </>
+  );
 }
 
-export default function DisplaySlider({ initialSlide = "intro" }: DisplaySliderProps) {
-  const [currentSlide, setCurrentSlide] = useState<SlideId>(initialSlide);
-  const [direction, setDirection] = useState(1); // 1 = forward, -1 = backward
+// ── Pill Button ───────────────────────────────────────────────────────────────
+function PillBtn({
+  children,
+  onClick,
+  dark = false,
+  coral = false,
+  href,
+  target,
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  dark?: boolean;
+  coral?: boolean;
+  href?: string;
+  target?: string;
+}) {
+  const base =
+    "inline-block px-6 py-2 rounded-full text-xs font-medium tracking-[0.15em] uppercase transition-all duration-200 border cursor-pointer";
+  const style = coral
+    ? { background: "#f26c68", color: "#fff", border: "none", fontFamily: "var(--font-raleway)" }
+    : dark
+    ? { background: "transparent", color: "#444", border: "1px solid #444", fontFamily: "var(--font-raleway)" }
+    : { background: "transparent", color: "#fff", border: "1px solid rgba(255,255,255,0.6)", fontFamily: "var(--font-raleway)" };
 
-  const goTo = useCallback(
-    (slideId: SlideId) => {
-      const currentIdx = SLIDE_ORDER.indexOf(currentSlide);
-      const nextIdx = SLIDE_ORDER.indexOf(slideId);
-      setDirection(nextIdx >= currentIdx ? 1 : -1);
-      setCurrentSlide(slideId);
+  if (href) {
+    return (
+      <a href={href} target={target} rel="noopener noreferrer" className={base} style={style}>
+        {children}
+      </a>
+    );
+  }
+  return (
+    <button onClick={onClick} className={base} style={style}>
+      {children}
+    </button>
+  );
+}
+
+// ── Slides ────────────────────────────────────────────────────────────────────
+
+function SlideIntro({ nav }: { nav: (id: SlideId) => void }) {
+  return (
+    <div className="relative w-full h-full flex items-center justify-center">
+      <Image src={`${WP}/2017/09/Logo_Dsplay_home4.jpg`} alt="" fill className="object-cover" priority unoptimized />
+      <div className="absolute inset-0 bg-black/40" />
+
+      <div className="relative z-10 flex flex-col items-center text-center px-8">
+        <div className="mb-10">
+          <img src={`${WP}/2017/09/Icon_Display64x48_2pt.png`} alt="Display" className="w-16 mx-auto mb-6 invert" />
+          <h1 className="text-7xl md:text-8xl font-thin tracking-[0.4em] text-white uppercase" style={{ fontFamily: "var(--font-raleway)" }}>
+            Display
+          </h1>
+        </div>
+        <img src={`${WP}/ASL_CN2_new@2x.png`} alt="ASL CN2" className="w-32 mb-12 invert opacity-80" />
+        <div className="flex gap-4">
+          <PillBtn onClick={() => nav("portfolio")}>Menu</PillBtn>
+          <PillBtn onClick={() => nav("apertura")}>Prenota</PillBtn>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SlideApertura({ nav }: { nav: (id: SlideId) => void }) {
+  return (
+    <div className="relative w-full h-full flex items-center justify-center">
+      <Image src={`${WP}/NooDisplay.jpg.webp`} alt="" fill className="object-cover" priority unoptimized />
+      <div className="absolute inset-0 bg-black/26" />
+      <div className="relative z-10 flex flex-col items-center text-center px-8 max-w-3xl">
+        <h2 className="text-5xl md:text-7xl font-light text-white mb-8" style={{ fontFamily: "var(--font-roboto-slab)" }}>
+          Nooo...!
+        </h2>
+        <p className="text-white text-xl md:text-2xl font-light tracking-[0.1em] mb-6" style={{ fontFamily: "var(--font-raleway)" }}>
+          Tutte le date disponibili per l&apos;anno scolastico 25-26 sono state prenotate.
+        </p>
+        <p className="text-white text-lg font-light mb-4" style={{ fontFamily: "var(--font-raleway)" }}>
+          Alternative?
+        </p>
+        <p className="text-white/80 text-sm font-light mb-10 leading-relaxed" style={{ fontFamily: "var(--font-raleway)" }}>
+          CAPS - Centro Attività Promozione della Salute. Anche quest&apos;anno scolastico sarà possibile
+          vivere un&apos;esperienza simile a Display con il programma Prox Experience Techno.
+        </p>
+        <div className="flex flex-wrap gap-3 justify-center">
+          <PillBtn href={`${WP}/Scheda-catalogo-CAPS-Prox-Experience-Techno-2025.26-1.pdf`} target="_blank">
+            Scheda Progetto
+          </PillBtn>
+          <PillBtn href="https://forms.gle/Y8LETMFMmEQwUQtq5" target="_blank">
+            Iscrizione
+          </PillBtn>
+          <PillBtn onClick={() => nav("contatti")}>Contattaci</PillBtn>
+          <PillBtn onClick={() => nav("intro")}>Back</PillBtn>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SlidePortfolio({ nav }: { nav: (id: SlideId) => void }) {
+  const rooms = [
+    { id: "timeline" as SlideId, title: "Timeline", img: `${WP}/2017/09/Steadycam-Dispaly-Isole_300x200_2.jpg` },
+    { id: "making" as SlideId, title: "Making", img: `${WP}/2017/09/Steadycam-Display-making03-2.jpg` },
+    { id: "gaming" as SlideId, title: "Gaming", img: `${WP}/2017/09/Steadycam-Dispaly-Gaming_300x200_2.jpg` },
+    { id: "storie" as SlideId, title: "Storie", img: `${WP}/2017/09/Steadycam-Dispaly-Storie-04.jpg` },
+    { id: "corpo" as SlideId, title: "Corpo", img: `${WP}/2017/09/Steadycam-Dispaly-Corpo-300x200.jpg` },
+  ];
+
+  return (
+    <div className="relative w-full h-full flex flex-col items-center justify-center bg-white">
+      <div className="w-full max-w-4xl px-8">
+        <p className="text-gray-400 text-xl font-light tracking-[0.2em] uppercase text-center mb-8" style={{ fontFamily: "var(--font-raleway)" }}>
+          Le Stanze
+        </p>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+          {rooms.map((room) => (
+            <button
+              key={room.id}
+              onClick={() => nav(room.id)}
+              className="group relative overflow-hidden"
+              style={{ aspectRatio: "3/2" }}
+            >
+              <img
+                src={room.img}
+                alt={room.title}
+                className="w-full h-full object-cover transition-all duration-300 group-hover:scale-75 group-hover:opacity-50"
+              />
+              <div className="absolute inset-0 flex items-end p-2">
+                <span className="text-white text-xs font-medium tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-opacity" style={{ fontFamily: "var(--font-raleway)", textShadow: "0 1px 3px rgba(0,0,0,0.8)" }}>
+                  {room.title}
+                </span>
+              </div>
+            </button>
+          ))}
+        </div>
+        <div className="text-center mt-8">
+          <PillBtn dark onClick={() => nav("intro")}>Menu</PillBtn>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SlideRoom({
+  title,
+  subtitle,
+  subtitleColor = "#ffcc00",
+  description,
+  bgImage,
+  align = "left",
+  overlay = "rgba(0,0,0,0.25)",
+  titleColor = "#ffffff",
+  textColor = "rgba(255,255,255,1)",
+  bgPosition = "center",
+  nav,
+}: {
+  title: string;
+  subtitle: string;
+  subtitleColor?: string;
+  description: string;
+  bgImage: string;
+  align?: "left" | "right";
+  overlay?: string;
+  titleColor?: string;
+  textColor?: string;
+  bgPosition?: string;
+  nav: (id: SlideId) => void;
+}) {
+  const isRight = align === "right";
+  return (
+    <div className="relative w-full h-full flex items-center overflow-hidden">
+      <Image src={bgImage} alt={title} fill className="object-cover" style={{ objectPosition: bgPosition }} priority unoptimized />
+      <div className="absolute inset-0" style={{ background: overlay }} />
+
+      {/* Right-side panel for right-aligned slides */}
+      {isRight && (
+        <div className="absolute right-0 top-0 bottom-0 w-[50%] hidden md:block" style={{ background: "rgba(0,0,0,0.25)" }} />
+      )}
+
+      <div className={`relative z-10 w-full max-w-5xl mx-auto px-10 md:px-20 ${isRight ? "text-right flex flex-col items-end" : ""}`}>
+        <h1
+          className="text-5xl md:text-7xl font-medium tracking-[0.2em] uppercase mb-3"
+          style={{ color: titleColor, fontFamily: "var(--font-raleway)", letterSpacing: "0.15em" }}
+        >
+          {title}
+        </h1>
+        <p
+          className="text-lg font-medium tracking-[0.2em] uppercase mb-6"
+          style={{ color: subtitleColor, fontFamily: "var(--font-raleway)" }}
+        >
+          {subtitle}
+        </p>
+        <p
+          className="text-sm md:text-base font-light leading-[1.8] mb-8 max-w-[490px] tracking-[0.05em]"
+          style={{ color: textColor, fontFamily: "var(--font-raleway)" }}
+        >
+          {description}
+        </p>
+        <PillBtn
+          onClick={() => nav("portfolio")}
+          dark={titleColor === "rgba(0,0,0,0.75)"}
+        >
+          Tutte le stanze
+        </PillBtn>
+      </div>
+    </div>
+  );
+}
+
+function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
+  const [step, setStep] = useState(0);
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [form, setForm] = useState({
+    giaPart: "", tipoVisita: "", nAlunni: "1", nAdulti: "1", disabilita: "nessuno",
+    denominazione: "", scuola: "", ordine: "Scuola Secondaria di I grado",
+    classe: "", insegnante: "", email: "", telefono: "",
+  });
+
+  const steps = [
+    { label: "La tua classe ha già partecipato?" },
+    { label: "Tipo di visita" },
+    { label: "Partecipanti" },
+    { label: "Dati scuola e insegnante" },
+  ];
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    await new Promise((r) => setTimeout(r, 800));
+    setLoading(false);
+    setSubmitted(true);
+  };
+
+  return (
+    <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+      <Image src={`${WP}/2017/07/Logo_Display4-03.jpg`} alt="" fill className="object-cover object-left" unoptimized />
+      <div className="absolute inset-0 bg-black/70" />
+
+      <div className="relative z-10 w-full max-w-xl mx-auto px-6 py-8 overflow-y-auto max-h-screen">
+        {submitted ? (
+          <div className="text-center py-12">
+            <h2 className="text-2xl font-light text-white tracking-[0.2em] uppercase mb-4" style={{ fontFamily: "var(--font-raleway)" }}>
+              Richiesta inviata. Grazie
+            </h2>
+            <p className="text-white/70 text-sm mb-8" style={{ fontFamily: "var(--font-raleway)" }}>
+              Lo staff del Centro ti contatterà per confermare la visita.
+            </p>
+            <PillBtn onClick={() => nav("intro")}>Home</PillBtn>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit}>
+            <h2 className="text-center text-white text-lg font-light tracking-[0.1em] uppercase mb-2" style={{ fontFamily: "var(--font-raleway)" }}>
+              Prenota la visita al Centro Display
+            </h2>
+            <p className="text-center text-white/60 text-xs mb-8" style={{ fontFamily: "var(--font-raleway)" }}>
+              Completato il modulo, lo staff ti contatterà per confermare
+            </p>
+
+            {/* Step indicator */}
+            <div className="flex gap-2 mb-8 justify-center">
+              {steps.map((s, i) => (
+                <div key={i} className={`h-1 flex-1 rounded-full transition-all ${i <= step ? "bg-white" : "bg-white/20"}`} />
+              ))}
+            </div>
+
+            <div className="space-y-4" style={{ background: "#ffe694", padding: "24px", borderRadius: "4px" }}>
+              {step === 0 && (
+                <div>
+                  <label className="block text-xs font-medium tracking-wider uppercase mb-2 text-gray-700" style={{ fontFamily: "var(--font-raleway)" }}>
+                    La tua classe ha già partecipato ai laboratori del Centro Display?
+                  </label>
+                  <select value={form.giaPart} onChange={(e) => setForm({ ...form, giaPart: e.target.value })}
+                    className="w-full border border-gray-300 px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none" required>
+                    <option value="">Seleziona</option>
+                    <option value="si">Sì</option>
+                    <option value="no">No</option>
+                  </select>
+                </div>
+              )}
+              {step === 1 && (
+                <div>
+                  <label className="block text-xs font-medium tracking-wider uppercase mb-2 text-gray-700" style={{ fontFamily: "var(--font-raleway)" }}>Tipo di visita</label>
+                  <select value={form.tipoVisita} onChange={(e) => setForm({ ...form, tipoVisita: e.target.value })}
+                    className="w-full border border-gray-300 px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none" required>
+                    <option value="">Seleziona</option>
+                    <option value="mattina">Solo mattina (h.8.00–13.00)</option>
+                    <option value="intera">Giornata intera (h.8.30–16.30)</option>
+                  </select>
+                </div>
+              )}
+              {step === 2 && (
+                <div className="space-y-3">
+                  {[
+                    { label: "N° alunni (max 30)", field: "nAlunni", max: 30 },
+                    { label: "N° adulti (max 4)", field: "nAdulti", max: 4 },
+                  ].map(({ label, field, max }) => (
+                    <div key={field}>
+                      <label className="block text-xs font-medium tracking-wider uppercase mb-1 text-gray-700" style={{ fontFamily: "var(--font-raleway)" }}>{label}</label>
+                      <select value={form[field as keyof typeof form]}
+                        onChange={(e) => setForm({ ...form, [field]: e.target.value })}
+                        className="w-full border border-gray-300 px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none">
+                        {Array.from({ length: max }, (_, i) => i + 1).map((n) => (
+                          <option key={n} value={n}>{n}</option>
+                        ))}
+                      </select>
+                    </div>
+                  ))}
+                  <div>
+                    <label className="block text-xs font-medium tracking-wider uppercase mb-1 text-gray-700" style={{ fontFamily: "var(--font-raleway)" }}>Alunni con disabilità motorie</label>
+                    <select value={form.disabilita} onChange={(e) => setForm({ ...form, disabilita: e.target.value })}
+                      className="w-full border border-gray-300 px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none">
+                      <option value="nessuno">Nessuno</option>
+                      <option value="1">1</option>
+                      <option value="2">2</option>
+                      <option value="piu">Più di due</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+              {step === 3 && (
+                <div className="space-y-3">
+                  {[
+                    { label: "Denominazione", field: "denominazione", placeholder: "Istituto Comprensivo" },
+                    { label: "Nome scuola", field: "scuola", placeholder: "" },
+                    { label: "Classe", field: "classe", placeholder: "es. 2A" },
+                    { label: "Nome insegnante", field: "insegnante", placeholder: "" },
+                    { label: "Email", field: "email", placeholder: "", type: "email" },
+                    { label: "Telefono", field: "telefono", placeholder: "", type: "tel" },
+                  ].map(({ label, field, placeholder, type = "text" }) => (
+                    <div key={field}>
+                      <label className="block text-xs font-medium tracking-wider uppercase mb-1 text-gray-700" style={{ fontFamily: "var(--font-raleway)" }}>{label}</label>
+                      <input type={type} value={form[field as keyof typeof form]}
+                        onChange={(e) => setForm({ ...form, [field]: e.target.value })}
+                        placeholder={placeholder}
+                        className="w-full border border-gray-300 px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none" required />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-3 mt-6 justify-between">
+              {step > 0 ? (
+                <button type="button" onClick={() => setStep(step - 1)}
+                  className="px-5 py-2 text-white/60 text-xs tracking-wider uppercase border border-white/30 rounded-full hover:text-white hover:border-white transition-all"
+                  style={{ fontFamily: "var(--font-raleway)" }}>
+                  ← Indietro
+                </button>
+              ) : (
+                <button type="button" onClick={() => nav("intro")}
+                  className="px-5 py-2 text-white/60 text-xs tracking-wider uppercase border border-white/30 rounded-full hover:text-white hover:border-white transition-all"
+                  style={{ fontFamily: "var(--font-raleway)" }}>
+                  Annulla
+                </button>
+              )}
+              {step < 3 ? (
+                <button type="button" onClick={() => setStep(step + 1)}
+                  className="px-6 py-2 text-white text-xs tracking-wider uppercase rounded-full transition-all"
+                  style={{ background: "#f26c68", fontFamily: "var(--font-raleway)" }}>
+                  Avanti →
+                </button>
+              ) : (
+                <button type="submit" disabled={loading}
+                  className="px-6 py-2 text-white text-xs tracking-wider uppercase rounded-full disabled:opacity-50 transition-all"
+                  style={{ background: "#f26c68", fontFamily: "var(--font-raleway)" }}>
+                  {loading ? "Invio..." : "Confermo"}
+                </button>
+              )}
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SlideCentro({ nav }: { nav: (id: SlideId) => void }) {
+  return (
+    <div className="relative w-full h-full flex overflow-hidden">
+      <div className="hidden md:block w-1/2 relative">
+        <Image src={`${WP}/Il_centro1.jpg`} alt="Il Centro" fill className="object-cover" unoptimized />
+      </div>
+      <div className="w-full md:w-1/2 flex flex-col justify-center px-10 md:px-14 py-20 bg-white md:bg-transparent overflow-y-auto">
+        <div className="relative z-10 max-w-md">
+          <h1 className="text-4xl font-light tracking-[0.2em] uppercase text-[#444] mb-8" style={{ fontFamily: "var(--font-raleway)" }}>
+            Il Centro
+          </h1>
+          <p className="text-[#444] text-sm font-light leading-[1.9] tracking-[0.05em] mb-4" style={{ fontFamily: "var(--font-raleway)" }}>
+            Il Centro Display è un Laboratorio multimediale permanente: un luogo fisico, fatto di stanze,
+            oggetti, tecnologie e persone, che può essere visitato e diventare meta di un viaggio di
+            istruzione per Scuole e Centri Estivi.
+          </p>
+          <p className="text-[#444] text-sm font-light leading-[1.9] tracking-[0.05em] mb-4" style={{ fontFamily: "var(--font-raleway)" }}>
+            All&apos;interno di Display i ragazzi partecipano ad un percorso didattico-esperienziale attraverso
+            le sue stanze tematiche, prendendo parte a giochi, sfide e laboratori, interagendo continuamente
+            con se stessi, i compagni, gli educatori del Centro e le tecnologie digitali.
+          </p>
+          <p className="text-[#444] text-sm font-light leading-[1.9] tracking-[0.05em] mb-8" style={{ fontFamily: "var(--font-raleway)" }}>
+            Il Centro è parte del Progetto Display, promosso dalla Città di Bra, dall&apos;ASL CN2 e
+            realizzato con il contributo della Fondazione CRC, nell&apos;ambito del bando Prevenzione e
+            Promozione della Salute.
+          </p>
+          <PillBtn dark onClick={() => nav("intro")}>Menu</PillBtn>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SlideProgetto({ nav }: { nav: (id: SlideId) => void }) {
+  const [tab, setTab] = useState(0);
+  const tabs = [
+    {
+      label: "PREMESSA",
+      color: "rgba(139,199,157,0.5)",
+      text: "La dipendenza da nuove tecnologie, tra le 'dipendenze senza sostanze', è una modalità disadattiva nell'utilizzo delle stesse che va ben oltre le necessità lavorative e/o di svago. L'uomo, per sua naturale caratteristica evolutiva, ha la capacità di adeguarsi ai più radicali cambiamenti socio-ambientali, ma la rivoluzione tecnologica che lo ha investito è avvenuta con una velocità tale da superare ogni capacità di adattamento.",
     },
-    [currentSlide]
+    {
+      label: "OBIETTIVI",
+      color: "rgba(255,92,94,0.4)",
+      text: "Dal 2000 il Centro Steadycam dell'ASL CN2, ha avviato in ambito sanitario, educativo e didattico, a livello locale, regionale e nazionale, riflessioni ed interventi su promozione della salute e media education. Il Progetto Display nasce dall'esigenza di creare uno spazio fisico dedicato all'educazione ai media.",
+    },
+    {
+      label: "ATTIVITÀ PREVISTE",
+      color: "rgba(221,174,74,0.4)",
+      text: "Percorsi didattico-esperienziali attraverso 5 stanze tematiche: Timeline, Storie, Gaming, Making, Corpo. Ogni stanza prevede attività hands-on, momenti di gioco e sfida, e una fase di riflessione guidata dagli educatori del Centro.",
+    },
+    {
+      label: "DESTINATARI",
+      color: "rgba(67,185,220,0.4)",
+      text: "Il Centro Display è rivolto principalmente a scuole secondarie di primo grado del territorio dell'ASL CN2, ai loro insegnanti e alle famiglie. Le visite sono possibili per una classe alla volta (max 28-30 ragazzi).",
+    },
+  ];
+
+  return (
+    <div className="relative w-full h-full flex items-start overflow-hidden">
+      <Image src={`${WP}/Il_centro2-1.jpg`} alt="Il Progetto" fill className="object-cover" unoptimized />
+      <div className="absolute inset-0 bg-white/60" />
+      <div className="relative z-10 w-full max-w-4xl mx-auto px-10 pt-16 md:pt-24">
+        {/* Tabs */}
+        <div className="flex flex-wrap gap-x-8 gap-y-2 mb-8">
+          {tabs.map((t, i) => (
+            <button
+              key={t.label}
+              onClick={() => setTab(i)}
+              className="relative text-sm font-semibold tracking-[0.1em] uppercase pb-2 transition-colors"
+              style={{ color: "#444", fontFamily: "var(--font-raleway)" }}
+            >
+              {t.label}
+              <div
+                className="absolute bottom-0 left-0 right-0 h-1 rounded-full transition-all duration-300"
+                style={{ background: tab === i ? t.color : "transparent" }}
+              />
+            </button>
+          ))}
+        </div>
+        {/* Content */}
+        <div className="max-w-3xl">
+          <p className="text-[#444] text-sm md:text-base font-light leading-[1.9] tracking-[0.04em]" style={{ fontFamily: "var(--font-raleway)" }}>
+            {tabs[tab].text}
+          </p>
+        </div>
+        <div className="mt-10">
+          <PillBtn dark onClick={() => nav("intro")}>Menu</PillBtn>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SlidePartner({ nav }: { nav: (id: SlideId) => void }) {
+  const logos = [
+    { src: `${WP}/Logo-FCRC-orizzontale-nuovoprevenzione-e-promozione-salute.png`, alt: "Fondazione CRC" },
+    { src: `${WP}/Bra.png`, alt: "Città di Bra" },
+    { src: `${WP}/AslCn2.jpg`, alt: "ASL CN2" },
+    { src: `${WP}/Consorzio-ALBA.jpg`, alt: "Consorzio Alba" },
+    { src: `${WP}/logo.png`, alt: "Logo" },
+    { src: `${WP}/Stemma_Alba_size-L_02.jpg`, alt: "Stemma Alba" },
+    { src: `${WP}/Logo-RoRo.jpg`, alt: "Ro e Ro" },
+    { src: `${WP}/associazione-don-verri-roberto.jpg`, alt: "Don Verri Roberto" },
+    { src: `${WP}/logoDorsregioneasl.png`, alt: "Regione ASL" },
+    { src: `${WP}/istituti-comprensivi.jpg`, alt: "Istituti Comprensivi" },
+  ];
+
+  return (
+    <div className="relative w-full h-full flex flex-col items-center justify-center bg-white">
+      <div className="w-full max-w-4xl px-8">
+        <p className="text-gray-400 text-xl font-light tracking-[0.2em] uppercase text-center mb-10" style={{ fontFamily: "var(--font-raleway)" }}>
+          Partner
+        </p>
+        <div className="grid grid-cols-3 md:grid-cols-5 gap-6">
+          {logos.map((logo) => (
+            <div key={logo.alt} className="flex items-center justify-center p-3">
+              <img src={logo.src} alt={logo.alt} className="max-h-14 max-w-full object-contain grayscale hover:grayscale-0 transition-all opacity-70 hover:opacity-100" />
+            </div>
+          ))}
+        </div>
+        <div className="text-center mt-10">
+          <PillBtn dark onClick={() => nav("intro")}>Menu</PillBtn>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SlideContatti({ nav }: { nav: (id: SlideId) => void }) {
+  return (
+    <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+      <Image src={`${WP}/revslider/photography/photography_contact.jpg`} alt="" fill className="object-cover" unoptimized />
+      <div className="absolute inset-0 bg-black/40" />
+      <div className="relative z-10 flex flex-col items-center text-center px-8 max-w-2xl">
+        <div className="bg-white/50 backdrop-blur-sm rounded-sm p-8 md:p-12 w-full">
+          <p className="text-[#444] font-light mb-6 leading-relaxed" style={{ fontFamily: "var(--font-raleway)", fontSize: "17px" }}>
+            📍 C.so Michele Coppino 46/A, ALBA (CN)<br />
+            📞 0173/316210<br />
+            ✉️ info@progettosteadycam.it<br />
+            👤 Valentino Merlo – Emanuel Pellegrini
+          </p>
+          <p className="text-[#444] text-sm font-light leading-relaxed mb-6" style={{ fontFamily: "var(--font-raleway)" }}>
+            Le visite al Centro Display sono rivolte a tutte le classi della Scuola Secondaria
+            di Primo Grado del territorio dell&apos;ASL CN2. È possibile prenotare la visita per
+            una sola classe alla volta (28-30 ragazzi). La visita durerà mezza giornata (h 8.30–13.00).
+          </p>
+          <PillBtn dark onClick={() => nav("intro")}>Menu</PillBtn>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Main Slider ───────────────────────────────────────────────────────────────
+
+export default function DisplaySlider() {
+  const [current, setCurrent] = useState<SlideId>("intro");
+  const [dir, setDir] = useState(1);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const ORDER: SlideId[] = ["intro", "apertura", "portfolio", "timeline", "storie", "gaming", "making", "corpo", "booking", "il-centro", "il-progetto", "partner", "contatti"];
+
+  const nav = useCallback(
+    (id: SlideId) => {
+      const ci = ORDER.indexOf(current);
+      const ni = ORDER.indexOf(id);
+      setDir(ni >= ci ? 1 : -1);
+      setCurrent(id);
+      setMenuOpen(false);
+    },
+    [current]
   );
 
-  // Keyboard navigation
   useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      const idx = SLIDE_ORDER.indexOf(currentSlide);
-      if (e.key === "ArrowRight" || e.key === "ArrowDown") {
-        if (idx < SLIDE_ORDER.length - 1) goTo(SLIDE_ORDER[idx + 1]);
-      } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
-        if (idx > 0) goTo(SLIDE_ORDER[idx - 1]);
-      } else if (e.key === "Escape") {
-        goTo("intro");
-      }
+    const onKey = (e: KeyboardEvent) => {
+      const i = ORDER.indexOf(current);
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") { if (i < ORDER.length - 1) nav(ORDER[i + 1]); }
+      else if (e.key === "ArrowLeft" || e.key === "ArrowUp") { if (i > 0) nav(ORDER[i - 1]); }
+      else if (e.key === "Escape") { setMenuOpen(false); }
     };
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [currentSlide, goTo]);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [current, nav]);
 
   const variants = {
-    enter: (dir: number) => ({
-      x: dir > 0 ? "100%" : "-100%",
-      opacity: 0,
-    }),
+    enter: (d: number) => ({ x: d > 0 ? "100%" : "-100%", opacity: 0 }),
     center: { x: 0, opacity: 1 },
-    exit: (dir: number) => ({
-      x: dir > 0 ? "-100%" : "100%",
-      opacity: 0,
-    }),
+    exit: (d: number) => ({ x: d > 0 ? "-100%" : "100%", opacity: 0 }),
   };
 
   const renderSlide = () => {
-    switch (currentSlide) {
-      case "intro":
-        return <IntroSlide key="intro" onNavigate={goTo} />;
-      case "portfolio":
-        return <PortfolioSlide key="portfolio" onNavigate={goTo} />;
-      case "timeline":
-        return (
-          <RoomSlide
-            key="timeline"
-            id="timeline"
-            title="TIMELINE"
-            subtitle="TUTTE LE STANZE"
-            description="Un gioco a squadre per sfidarsi sulle date chiave del mondo dei media."
-            bgImage="https://centrosteadycam.it/wp-content/uploads/2017/09/Steadycam-Dispaly-Isole_02.jpg"
-            color="#1A5276"
-            onNavigate={goTo}
-          />
-        );
-      case "storie":
-        return (
-          <RoomSlide
-            key="storie"
-            id="storie"
-            title="STORIE"
-            subtitle="IN GALLERIA"
-            description="Ogni immagine racconta molte storie: la nostra, quella di chi vi è ritratto, quella di chi la guarda. Quante storie si possono raccontare mettendo insieme più immagini?"
-            bgImage="https://centrosteadycam.it/wp-content/uploads/2017/09/Steadycam-Dispaly-Storie-03.jpg"
-            color="#1A3A4A"
-            onNavigate={goTo}
-          />
-        );
-      case "gaming":
-        return (
-          <RoomSlide
-            key="gaming"
-            id="gaming"
-            title="GAMING"
-            subtitle="EMOZIONALE"
-            description="I videogiochi sono un mondo, in cui a volte perdersi... per poi interrogarsi sulle emozioni. Per i ragazzi di terza media il gioco entra nella realtà virtuale, con l'utilizzo dei caschi VR."
-            bgImage="https://centrosteadycam.it/wp-content/uploads/2017/09/Steadycam-Dispaly-Gaming_Big_Right.jpg"
-            color="#1B2631"
-            onNavigate={goTo}
-          />
-        );
-      case "making":
-        return (
-          <RoomSlide
-            key="making"
-            id="making"
-            title="MAKING"
-            subtitle="CHI È SIRI?"
-            description="La stanza giusta per mettere le mani dentro alla tecnologia: aprire un dispositivo, smontarne e rimontarne i componenti, capire cosa c'è davvero dentro il nostro smartphone."
-            bgImage="https://centrosteadycam.it/wp-content/uploads/2017/09/Steadycam-Display-making03.jpg"
-            color="#1C2833"
-            onNavigate={goTo}
-          />
-        );
-      case "corpo":
-        return (
-          <RoomSlide
-            key="corpo"
-            id="corpo"
-            title="CORPO"
-            subtitle="IL NOSTRO"
-            description="Una stanza dove dimenticare i dispositivi digitali e riscoprire la tecnologia più evoluta che abbiamo: il nostro corpo. Attività fisiche e sensoriali per riconnettersi con se stessi."
-            bgImage="https://centrosteadycam.it/wp-content/uploads/2017/09/Steadycam-Dispaly-Corpo-Big.jpg"
-            color="#1A2744"
-            onNavigate={goTo}
-          />
-        );
-      case "booking":
-        return <BookingSlide key="booking" onNavigate={goTo} />;
-      case "il-centro":
-        return (
-          <InfoSlide
-            key="il-centro"
-            title="IL CENTRO"
-            bgImage="https://centrosteadycam.it/wp-content/uploads/Il_centro1.jpg"
-            content={`Il Centro Display è un Laboratorio multimediale permanente: un luogo fisico, fatto di stanze, oggetti, tecnologie e persone, che può essere visitato e diventare meta di un viaggio di istruzione per Scuole e Centri Estivi.
-
-All'interno di Display i ragazzi partecipano ad un percorso didattico-esperienziale attraverso le sue stanze tematiche, prendendo parte a giochi, sfide e laboratori, interagendo continuamente con se stessi, i compagni, gli educatori del Centro e le tecnologie digitali.
-
-Un tempo importante viene dedicato, al termine di ogni attività, alla riflessione e al confronto sulle esperienze vissute, condividendo emozioni, idee e domande, con l'obiettivo di attivare uno 'sguardo critico' sui comportamenti e sulle relazioni mediate dalle nuove tecnologie.
-
-Il Centro è parte del Progetto Display, promosso dalla Città di Bra, dall'ASL CN2 e realizzato con il contributo della Fondazione CRC, nell'ambito del bando Prevenzione e Promozione della Salute.`}
-            onNavigate={goTo}
-          />
-        );
-      case "il-progetto":
-        return (
-          <InfoSlide
-            key="il-progetto"
-            title="IL PROGETTO"
-            bgImage="https://centrosteadycam.it/wp-content/uploads/Il_centro2-1.jpg"
-            content={`PREMESSA
-
-La dipendenza da nuove tecnologie, tra le 'dipendenze senza sostanze', è una modalità disadattiva nell'utilizzo delle stesse che va ben oltre le necessità lavorative e/o di svago.
-
-L'uomo, per sua naturale caratteristica evolutiva, ha la capacità di adeguarsi ai più radicali cambiamenti socio-ambientali, ma la rivoluzione tecnologica che lo ha investito è avvenuta con una velocità tale da superare ogni capacità di adattamento.
-
-OBIETTIVI
-
-Dal 2000 il Centro Steadycam dell'ASL CN2, ha avviato in ambito sanitario, educativo e didattico, a livello locale, regionale e nazionale, riflessioni ed interventi su promozione della salute e media education.
-
-DESTINATARI
-
-Il Centro Display è rivolto principalmente a scuole primarie e secondarie di primo grado del territorio albese, ai loro insegnanti, e alle famiglie.`}
-            onNavigate={goTo}
-          />
-        );
-      case "partner":
-        return <PartnersSlide key="partner" onNavigate={goTo} />;
-      default:
-        return <IntroSlide key="intro" onNavigate={goTo} />;
+    switch (current) {
+      case "intro": return <SlideIntro key="intro" nav={nav} />;
+      case "apertura": return <SlideApertura key="apertura" nav={nav} />;
+      case "portfolio": return <SlidePortfolio key="portfolio" nav={nav} />;
+      case "timeline": return (
+        <SlideRoom key="timeline" nav={nav} title="Timeline" subtitle="Tutte le stanze"
+          subtitleColor="rgba(0,0,0,0.75)" titleColor="rgba(0,0,0,0.75)" textColor="rgba(0,0,0,0.75)"
+          overlay="rgba(255,255,255,0.1)"
+          bgImage={`${WP}/2017/09/Steadycam-Dispaly-Isole_02.jpg`}
+          description="Quando sono stati inventati il telegrafo, la televisione o il primo cellulare? Come si è evoluto il mercato della tecnologia? Un gioco a squadre per sfidarsi sulle date chiave del mondo dei media." />
+      );
+      case "storie": return (
+        <SlideRoom key="storie" nav={nav} title="Storie" subtitle="In Galleria"
+          bgImage={`${WP}/2017/09/Steadycam-Dispaly-Storie-03.jpg`}
+          description="Ogni immagine racconta molte storie: la nostra, quella di chi vi è ritratto, quella di chi la guarda. Quante storie si possono raccontare mettendo insieme più immagini? Ciò che solo pochi anni fa era lungo e macchinoso, ora con le app si può fare in un'ora: montare insieme più immagini, registrare una storia, costruire un video collettivo." />
+      );
+      case "gaming": return (
+        <SlideRoom key="gaming" nav={nav} title="Gaming" subtitle="Emozionale"
+          bgImage={`${WP}/2017/09/Steadycam-Dispaly-Gaming_Big_Right.jpg`} bgPosition="right center"
+          description="I videogiochi sono un mondo, in cui a volte perdersi, a volte entrare e uscire velocemente. In questa stanza si gioca davvero: su console e tablet, provando generi diversi e mettendoli a confronto, per poi interrogarsi sulle emozioni che suscitano, sul piacere che provocano e sui rischi a cui possono portare." />
+      );
+      case "making": return (
+        <SlideRoom key="making" nav={nav} title="Making" subtitle="Chi è Siri?" align="right"
+          bgImage={`${WP}/2017/09/Steadycam-Display-making03.jpg`}
+          description="La stanza giusta per mettere le mani dentro alla tecnologia: aprire un dispositivo, smontarne e rimontarne i componenti, sentirne il peso, l'odore, la dimensione. Per scoprire che il digitale non è immateriale, ma è fatto di viti e fili, plastica e metallo, economia e industria." />
+      );
+      case "corpo": return (
+        <SlideRoom key="corpo" nav={nav} title="Corpo" subtitle="Il Nostro" align="right"
+          bgImage={`${WP}/2017/09/Steadycam-Dispaly-Corpo-Big.jpg`}
+          description="Una stanza dove dimenticare i dispositivi digitali e riscoprire la tecnologia più evoluta che abbiamo: il nostro corpo. Un viaggio guidato da esercizi, musiche e giochi per esplorare i propri movimenti, il respiro, lo spazio che occupiamo." />
+      );
+      case "booking": return <SlideBooking key="booking" nav={nav} />;
+      case "il-centro": return <SlideCentro key="il-centro" nav={nav} />;
+      case "il-progetto": return <SlideProgetto key="il-progetto" nav={nav} />;
+      case "partner": return <SlidePartner key="partner" nav={nav} />;
+      case "contatti": return <SlideContatti key="contatti" nav={nav} />;
+      default: return <SlideIntro key="intro" nav={nav} />;
     }
   };
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-black">
-      <AnimatePresence initial={false} custom={direction} mode="wait">
+    <div className="relative w-full h-screen overflow-hidden bg-black" style={{ fontFamily: "var(--font-raleway)" }}>
+      {/* Top-left logo */}
+      <button
+        onClick={() => nav("intro")}
+        className="fixed top-4 left-4 z-[200] opacity-80 hover:opacity-100 transition-opacity"
+      >
+        <img src={`${WP}/2017/09/Icon_Display64x48_2pt.png`} alt="Display" className="w-10 invert" />
+      </button>
+
+      {/* Hamburger */}
+      <HamburgerMenu open={menuOpen} onToggle={() => setMenuOpen(!menuOpen)} onNavigate={nav} />
+
+      {/* Slides */}
+      <AnimatePresence initial={false} custom={dir} mode="wait">
         <motion.div
-          key={currentSlide}
-          custom={direction}
+          key={current}
+          custom={dir}
           variants={variants}
           initial="enter"
           animate="center"
           exit="exit"
-          transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+          transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
           className="absolute inset-0"
         >
           {renderSlide()}
         </motion.div>
       </AnimatePresence>
 
-      {/* Slide indicators */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-50">
-        {SLIDE_ORDER.map((id) => (
+      {/* Dot indicators */}
+      <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex gap-1.5 z-50">
+        {ORDER.map((id) => (
           <button
             key={id}
-            onClick={() => goTo(id)}
-            className={`w-2 h-2 rounded-full transition-all duration-300 ${
-              currentSlide === id ? "bg-white w-6" : "bg-white/40 hover:bg-white/60"
-            }`}
-            aria-label={`Vai a ${id}`}
+            onClick={() => nav(id)}
+            className={`h-1.5 rounded-full transition-all duration-300 ${current === id ? "w-6 bg-white" : "w-1.5 bg-white/40 hover:bg-white/60"}`}
           />
         ))}
+      </div>
+
+      {/* Keyboard hint */}
+      <div className="absolute bottom-12 right-6 text-white/25 text-[10px] tracking-widest hidden md:block" style={{ fontFamily: "var(--font-raleway)" }}>
+        ← →  navigare
       </div>
     </div>
   );
