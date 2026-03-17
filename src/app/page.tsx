@@ -19,7 +19,7 @@ export default async function HomePage() {
       {/* ── Hero ── */}
       <section className="relative w-full overflow-hidden" style={{ height: "100vh", minHeight: 500 }}>
         <Image
-          src={`${WP}/2017/09/Steadycam-Dispaly-Storie-03.jpg`}
+          src={`${WP}/signalhome2.jpg`}
           alt="Centro Steadycam"
           fill
           className="object-cover"
