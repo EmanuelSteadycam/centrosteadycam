@@ -1,168 +1,131 @@
 import type { Metadata } from "next";
-import Image from "next/image";
-import Link from "next/link";
+import NavGrid from "@/components/NavGrid";
 
 export const metadata: Metadata = {
   title: "Restart — Sensibilizzazione al gioco d'azzardo",
-  description: "RESTART è un progetto del Centro Steadycam dell'ASL CN2 su iniziativa della Regione Piemonte che si propone di sensibilizzare al Gioco d'azzardo.",
+  description: "RESTART è un progetto del Centro Steadycam dell'ASL CN2 su iniziativa della Regione Piemonte che si propone di sensibilizzare al gioco d'azzardo.",
 };
 
-const WP_UPLOADS = "https://centrosteadycam.it/wp-content/uploads";
+const WP = "https://centrosteadycam.it/wp-content/uploads";
 
 const steps = [
   {
-    number: "01",
+    n: "01",
     title: "Digital Live Talk #1",
-    subtitle: "La prima puntata",
-    description:
-      'Una performance digitale dal vivo realizzata dalla Società Taxi 1729 dedicata alla matematica e alla psicologia del gioco d\'azzardo. Rivolta alle classi delle scuole superiori del Piemonte.',
-    icon: `${WP_UPLOADS}/AC01_traspbottone2.svg`,
-    mobileIcon: `${WP_UPLOADS}/RESTART_MOBILE_DLT1_4.svg`,
-    cta: { label: "Scarica la presentazione", href: `${WP_UPLOADS}/Presentazione_Contest_Restart.pdf` },
-    color: "from-emerald-600 to-teal-700",
+    subtitle: "Iscrivi la tua classe",
+    desc: "Una performance live, più pop di una conferenza, realizzata dalla Società Taxi 1729 dedicata alla matematica e alla psicologia del gioco d'azzardo. Rivolta alle classi delle scuole superiori del Piemonte.",
+    note: "Partecipazione gratuita",
+    jotformId: "70393978018365",
+    img: `${WP}/RESTART_MOBILE_DLT1_4.svg`,
   },
   {
-    number: "02",
+    n: "02",
     title: "Contest",
-    subtitle: "Crea il tuo video",
-    description:
-      "Produci e invia un video di prevenzione (max 3 min, formato .mp4). Un'occasione per i ragazzi di esprimersi creativamente su temi legati al gioco d'azzardo e alle dipendenze.",
-    icon: `${WP_UPLOADS}/AC02_traspbottone2.svg`,
-    mobileIcon: `${WP_UPLOADS}/RESTART_MOBILE_CONTEST_2.svg`,
-    cta: null,
-    color: "from-blue-600 to-indigo-700",
+    subtitle: "Realizza e invia il tuo video",
+    desc: "Produci e invia un video di prevenzione: max 3 minuti, 500MB, formato .mp4, realizzato dopo il 2019, produzione propria. Deadline: 30 aprile.",
+    note: "Aperto a classi iscritte al DLT",
+    jotformId: "70393925467365",
+    img: `${WP}/RESTART_MOBILE_CONTEST_2.svg`,
   },
   {
-    number: "03",
+    n: "03",
     title: "Digital Live Talk #2",
-    subtitle: "Il gran finale",
-    description:
-      "Proiezione dei migliori video del contest, interviste e confronto finale. Un momento di condivisione e riflessione comune tra classi, educatori ed esperti.",
-    icon: `${WP_UPLOADS}/AC03_traspbottone2.svg`,
-    mobileIcon: `${WP_UPLOADS}/RESTART_MOBILE_DLT2_1.svg`,
-    cta: null,
-    color: "from-purple-600 to-violet-700",
+    subtitle: "Il finale",
+    desc: "Proiezione dei migliori video del contest, interviste e confronto finale. Accessibile alle classi che hanno inviato il video entro la scadenza.",
+    note: "17 maggio 2022",
+    jotformId: null,
+    img: `${WP}/RESTART_MOBILE_DLT2_1.svg`,
   },
 ];
 
 export default function RestartPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pt-14">
       {/* Hero */}
-      <section className="relative min-h-[70vh] flex items-center bg-gradient-to-br from-gray-900 via-emerald-950 to-teal-900 overflow-hidden">
+      <section className="relative overflow-hidden flex items-center justify-center" style={{ minHeight: 500, background: "#1a1a2e" }}>
         <div className="absolute inset-0 opacity-20"
-          style={{
-            backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.3) 1px, transparent 0)`,
-            backgroundSize: "30px 30px",
-          }}
+          style={{ backgroundImage: "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.2) 1px, transparent 0)", backgroundSize: "30px 30px" }}
         />
-
-        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-32 flex flex-col md:flex-row items-center gap-12">
-          <div className="flex-1 text-center md:text-left">
-            <span className="inline-block px-4 py-1.5 bg-white/10 text-white/80 text-xs font-semibold tracking-widest uppercase rounded-full mb-6 border border-white/20">
-              Centro Steadycam × Regione Piemonte
-            </span>
-            <div className="mb-6">
-              <Image
-                src={`${WP_UPLOADS}/BENVENUTI_02.svg`}
-                alt="Restart"
-                width={300}
-                height={80}
-                className="mx-auto md:mx-0"
-                unoptimized
-              />
-            </div>
-            <p className="text-white/70 text-lg leading-relaxed max-w-xl mb-8">
-              Un progetto di sensibilizzazione al gioco d&apos;azzardo per le scuole superiori del Piemonte.
-              Tre fasi interattive per riflettere, creare e condividere.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-              <a
-                href={`${WP_UPLOADS}/Presentazione_Contest_Restart.pdf`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-outline-white"
-              >
-                Scarica la presentazione
-              </a>
-              <Link href="/contatti" className="btn-primary">
-                + Info e iscrizione
-              </Link>
-            </div>
+        <div className="relative z-10 max-w-4xl mx-auto px-4 py-24 text-center">
+          <img
+            src={`${WP}/BENVENUTI_02.svg`}
+            alt="Restart"
+            className="h-16 md:h-20 mx-auto mb-6 object-contain"
+          />
+          <p className="text-white/70 text-base md:text-lg font-light max-w-2xl mx-auto mb-3 leading-relaxed">
+            RESTART è un progetto del Centro Steadycam dell&apos;ASL CN2 su iniziativa della Regione Piemonte
+            che si propone di sensibilizzare al Gioco d&apos;azzardo.
+          </p>
+          <p className="text-white/50 text-sm mb-10">Partecipazione gratuita per le classi del Piemonte</p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a
+              href={`${WP}/Presentazione_Contest_Restart.pdf`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-ghost-white"
+            >
+              Scarica la presentazione
+            </a>
+            <a
+              href={`https://www.fateilnostrogioco.it/wp-content/uploads/2021/01/Scheda_DLT-Fing.pdf`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-orange"
+            >
+              Scheda tecnica DLT
+            </a>
           </div>
-
-          {/* Logo loghi */}
-          <div className="flex-shrink-0">
-            <Image
-              src={`${WP_UPLOADS}/LOGHI_4.svg`}
+          <div className="mt-10">
+            <img
+              src={`${WP}/LOGHI_4.svg`}
               alt="Partner Restart"
-              width={200}
-              height={160}
-              className="opacity-70"
-              unoptimized
+              className="h-12 mx-auto object-contain opacity-50"
             />
           </div>
         </div>
       </section>
 
       {/* 3 steps */}
-      <section className="py-20 bg-brand-lightGray">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="section-title">Come funziona</h2>
-            <p className="section-subtitle mx-auto">
-              Tre fasi per un percorso completo di educazione e prevenzione
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <section className="py-16" style={{ background: "#f5f5f5" }}>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="font-title font-light text-cs-charcoal text-2xl uppercase tracking-[0.06em] text-center mb-12">
+            Come funziona
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {steps.map((step) => (
-              <div key={step.number} className="card overflow-hidden">
-                {/* Colored top */}
-                <div className={`bg-gradient-to-r ${step.color} p-8 flex items-center justify-between`}>
+              <div key={step.n} className="bg-white shadow-sm overflow-hidden">
+                {/* Step header */}
+                <div className="p-6 flex items-start gap-4" style={{ background: "#3f424a" }}>
+                  <span className="text-5xl font-title font-light text-white/20 leading-none">{step.n}</span>
                   <div>
-                    <p className="text-white/60 text-xs font-semibold tracking-widest uppercase mb-1">
-                      Fase {step.number}
-                    </p>
-                    <h3 className="text-white text-2xl font-bold">{step.title}</h3>
-                    <p className="text-white/80 text-sm mt-1">{step.subtitle}</p>
-                  </div>
-                  <div className="opacity-30 flex-shrink-0">
-                    <span className="text-6xl font-black text-white">{step.number}</span>
+                    <p className="text-white/50 text-xs font-title uppercase tracking-widest mb-1">Fase {step.n}</p>
+                    <h3 className="text-white font-title font-semibold text-lg">{step.title}</h3>
+                    <p className="text-white/60 text-xs mt-0.5">{step.subtitle}</p>
                   </div>
                 </div>
 
-                {/* Mobile icon */}
-                <div className="p-6 border-b border-gray-100 hidden sm:flex justify-center bg-white">
-                  <Image
-                    src={step.mobileIcon}
-                    alt={step.title}
-                    width={200}
-                    height={120}
-                    className="h-28 w-auto object-contain"
-                    unoptimized
-                  />
+                {/* SVG icon */}
+                <div className="p-6 border-b border-gray-100 flex justify-center" style={{ background: "#fafafa" }}>
+                  <img src={step.img} alt={step.title} className="h-24 object-contain" />
                 </div>
 
-                {/* Description */}
-                <div className="p-8">
-                  <p className="text-gray-600 text-sm leading-relaxed mb-6">{step.description}</p>
-                  {step.cta ? (
+                {/* Content */}
+                <div className="p-6">
+                  <p className="text-cs-text text-sm leading-relaxed mb-4">{step.desc}</p>
+                  <p className="text-xs font-title uppercase tracking-wider mb-5" style={{ color: "#a3d39c" }}>
+                    {step.note}
+                  </p>
+                  {step.jotformId ? (
                     <a
-                      href={step.cta.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn-primary text-sm"
+                      href={`#form-${step.n}`}
+                      className="btn-orange text-xs"
                     >
-                      {step.cta.label}
+                      + Info e iscrizione
                     </a>
                   ) : (
-                    <div className="flex items-center gap-2 text-gray-400 text-xs">
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                      </svg>
-                      Disponibile dopo iscrizione
-                    </div>
+                    <span className="text-xs font-title uppercase tracking-wider px-4 py-2 border border-gray-200 text-gray-400 cursor-not-allowed">
+                      🔒 Sblocca dopo il contest
+                    </span>
                   )}
                 </div>
               </div>
@@ -171,24 +134,28 @@ export default function RestartPage() {
         </div>
       </section>
 
-      {/* Info + contact */}
-      <section className="py-20 bg-brand-navy text-white">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-4">Partecipa gratuitamente</h2>
-          <p className="text-white/70 text-lg mb-8">
-            Il progetto Restart è gratuito per le classi delle scuole superiori del Piemonte.
-            Per iscrizioni e informazioni contattaci.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="mailto:info@progettosteadycam.it" className="btn-outline-white">
-              info@progettosteadycam.it
-            </a>
-            <a href="tel:+390173316210" className="btn-primary">
-              0173 316210
-            </a>
-          </div>
+      {/* JotForm embeds */}
+      <section className="py-16 bg-white">
+        <div className="max-w-3xl mx-auto px-4 space-y-16">
+          {steps.filter((s) => s.jotformId).map((step) => (
+            <div key={step.n} id={`form-${step.n}`}>
+              <h3 className="font-title font-light text-cs-charcoal text-xl uppercase tracking-[0.06em] mb-6 text-center">
+                {step.title} — Iscrizione
+              </h3>
+              <iframe
+                src={`https://form.jotform.com/${step.jotformId}`}
+                title={`Iscrizione ${step.title}`}
+                width="100%"
+                height="600"
+                style={{ border: "none" }}
+                scrolling="yes"
+              />
+            </div>
+          ))}
         </div>
       </section>
+
+      <NavGrid />
     </div>
   );
 }

@@ -3,129 +3,79 @@
 @tailwind utilities;
 
 :root {
-  --color-navy: #0B1F3A;
-  --color-teal: #1A7A6E;
-  --color-teal-light: #2BA89A;
-  --color-gold: #D4A853;
-  --color-light-gray: #F5F6F8;
-  --color-dark-gray: #374151;
+  --cs-orange:   #ff7302;
+  --cs-orange-h: #ffa902;
+  --cs-charcoal: #3f424a;
+  --cs-sage:     #a3d39c;
+  --cs-text:     #444444;
 }
 
 @layer base {
-  html {
-    scroll-behavior: smooth;
-  }
-
-  body {
-    @apply bg-white text-gray-900 antialiased;
-  }
-
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold leading-tight;
-  }
+  html { scroll-behavior: smooth; }
+  body { @apply font-sans text-cs-text antialiased; }
+  h1,h2,h3,h4,h5,h6 { @apply font-title; }
 }
 
 @layer components {
-  .btn-primary {
-    @apply inline-flex items-center gap-2 px-6 py-3 bg-brand-teal text-white font-medium rounded-lg
-           hover:bg-brand-tealLight transition-colors duration-200 focus:outline-none focus:ring-2
-           focus:ring-brand-teal focus:ring-offset-2;
+  /* Orange CTA button — site-wide style */
+  .btn-orange {
+    @apply inline-block px-6 py-2.5 bg-cs-orange text-white text-sm font-semibold
+           uppercase tracking-widest font-title transition-colors duration-200
+           hover:bg-cs-orangeHov;
+  }
+  /* Sage/green button */
+  .btn-sage {
+    @apply inline-block px-6 py-2.5 bg-cs-sage text-white text-sm font-semibold
+           uppercase tracking-widest font-title transition-colors duration-200;
+  }
+  /* Ghost button */
+  .btn-ghost-white {
+    @apply inline-block px-6 py-2.5 border border-white text-white text-sm font-semibold
+           uppercase tracking-widest font-title transition-colors duration-200
+           hover:bg-white hover:text-cs-charcoal;
   }
 
-  .btn-secondary {
-    @apply inline-flex items-center gap-2 px-6 py-3 border-2 border-brand-navy text-brand-navy font-medium
-           rounded-lg hover:bg-brand-navy hover:text-white transition-colors duration-200;
+  /* Section hero (slider placeholder) */
+  .page-hero {
+    @apply relative w-full flex items-center justify-center overflow-hidden;
+    height: 500px;
+  }
+  .page-hero-title {
+    @apply text-4xl md:text-5xl font-title font-light text-white uppercase tracking-[0.1em]
+           relative z-10;
   }
 
-  .btn-outline-white {
-    @apply inline-flex items-center gap-2 px-6 py-3 border-2 border-white text-white font-medium
-           rounded-lg hover:bg-white hover:text-brand-navy transition-colors duration-200;
+  /* Shared nav-grid card */
+  .nav-card {
+    @apply relative overflow-hidden cursor-pointer;
+    aspect-ratio: 4/3;
+  }
+  .nav-card img {
+    @apply w-full h-full object-cover transition-transform duration-500;
+  }
+  .nav-card:hover img { @apply scale-105; }
+  .nav-card-overlay {
+    @apply absolute inset-0 flex items-end p-4
+           bg-gradient-to-t from-black/60 to-transparent;
+  }
+  .nav-card-label {
+    @apply text-white text-sm font-semibold uppercase tracking-[0.15em] font-title;
   }
 
-  .section-title {
-    @apply text-3xl md:text-4xl font-bold text-brand-navy;
+  /* Blog masonry card */
+  .blog-card {
+    @apply relative overflow-hidden bg-white cursor-pointer;
   }
-
-  .section-subtitle {
-    @apply text-lg text-gray-600 mt-4 max-w-2xl;
+  .blog-card img {
+    @apply w-full object-cover transition-all duration-300;
   }
+  .blog-card:hover img { @apply grayscale; }
 
-  .card {
-    @apply bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden
-           hover:shadow-md transition-shadow duration-300;
-  }
-
-  .prose-content {
-    @apply prose prose-lg max-w-none prose-headings:text-brand-navy
-           prose-a:text-brand-teal prose-a:no-underline hover:prose-a:underline
-           prose-img:rounded-xl prose-img:shadow-md;
-  }
-
-  .tag {
-    @apply inline-block px-3 py-1 bg-brand-teal/10 text-brand-teal text-xs font-semibold
-           rounded-full uppercase tracking-wide;
-  }
-}
-
-/* Display page specific */
-.display-slide {
-  position: absolute;
-  inset: 0;
-  transition: opacity 0.8s ease-in-out;
-}
-
-.display-slide.active {
-  opacity: 1;
-  pointer-events: all;
-}
-
-.display-slide.inactive {
-  opacity: 0;
-  pointer-events: none;
-}
-
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  @apply bg-gray-100;
-}
-
-::-webkit-scrollbar-thumb {
-  @apply bg-brand-teal rounded-full;
-}
-
-/* WP content styles */
-.wp-content img {
-  @apply rounded-xl shadow-md my-6 max-w-full h-auto;
-}
-
-.wp-content p {
-  @apply mb-4 leading-relaxed;
-}
-
-.wp-content h2 {
-  @apply text-2xl font-bold text-brand-navy mt-8 mb-4;
-}
-
-.wp-content h3 {
-  @apply text-xl font-semibold text-brand-navy mt-6 mb-3;
-}
-
-.wp-content ul {
-  @apply list-disc pl-6 mb-4 space-y-1;
-}
-
-.wp-content ol {
-  @apply list-decimal pl-6 mb-4 space-y-1;
-}
-
-.wp-content a {
-  @apply text-brand-teal hover:underline;
-}
-
-.wp-content blockquote {
-  @apply border-l-4 border-brand-teal pl-4 italic text-gray-600 my-6;
+  /* WP content */
+  .wp-content p   { @apply mb-4 leading-relaxed; }
+  .wp-content h2  { @apply text-2xl font-title font-semibold mt-8 mb-4; }
+  .wp-content h3  { @apply text-xl font-title font-semibold mt-6 mb-3; }
+  .wp-content ul  { @apply list-disc pl-6 mb-4 space-y-1; }
+  .wp-content a   { @apply text-cs-orange hover:underline; }
+  .wp-content img { @apply rounded my-6 max-w-full; }
 }

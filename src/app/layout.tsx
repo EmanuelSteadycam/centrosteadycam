@@ -1,7 +1,22 @@
 import type { Metadata } from "next";
+import { Montserrat, Open_Sans } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/navigation/Navbar";
 import Footer from "@/components/navigation/Footer";
+
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-montserrat",
+  display: "swap",
+});
+
+const openSans = Open_Sans({
+  subsets: ["latin"],
+  weight: ["300", "400", "600"],
+  variable: "--font-open-sans",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -11,23 +26,13 @@ export const metadata: Metadata = {
   description:
     "Centro Steadycam dell'ASL CN2 — educazione alla salute, media education, laboratori per scuole e famiglie. Alba (CN).",
   keywords: ["media education", "salute digitale", "centro steadycam", "alba cn", "display", "adam"],
-  openGraph: {
-    type: "website",
-    locale: "it_IT",
-    url: "https://centrosteadycam.it",
-    siteName: "Centro Steadycam",
-  },
-  robots: { index: true, follow: true },
+  openGraph: { type: "website", locale: "it_IT", siteName: "Centro Steadycam" },
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="it">
-      <body>
+      <body className={`${montserrat.variable} ${openSans.variable}`}>
         <Navbar />
         <main>{children}</main>
         <Footer />

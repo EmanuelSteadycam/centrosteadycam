@@ -19,6 +19,7 @@ async function wpFetch<T>(
   const res = await fetch(url.toString(), {
     next: { revalidate: 3600 }, // 1h cache
     headers: { "User-Agent": "CentroSteadycam-React/1.0" },
+    signal: AbortSignal.timeout(10000), // 10s timeout
   });
 
   if (!res.ok) throw new Error(`WP API error: ${res.status} ${url.toString()}`);

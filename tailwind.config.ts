@@ -9,24 +9,19 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Centro Steadycam brand colors
-        brand: {
-          navy: "#0B1F3A",
-          teal: "#1A7A6E",
-          tealLight: "#2BA89A",
-          gold: "#D4A853",
-          lightGray: "#F5F6F8",
-          darkGray: "#374151",
-        },
-        display: {
-          dark: "#0D1117",
-          accent: "#00C8B4",
-          text: "#E8EDF2",
+        cs: {
+          orange:    "#ff7302",
+          orangeHov: "#ffa902",
+          charcoal:  "#3f424a",
+          sage:      "#a3d39c",
+          sageOv:    "rgba(136,191,129,0.49)",
+          text:      "#444444",
+          textLight: "#999999",
         },
       },
       fontFamily: {
-        sans: ["var(--font-geist-sans)", "system-ui", "sans-serif"],
-        mono: ["var(--font-geist-mono)", "monospace"],
+        sans:  ["var(--font-open-sans)", "system-ui", "sans-serif"],
+        title: ["var(--font-montserrat)", "system-ui", "sans-serif"],
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
