@@ -54,7 +54,7 @@ const menuItems: { label: string; slide: SlideId }[] = [
   { label: "HOME", slide: "intro" },
   { label: "IL CENTRO", slide: "il-centro" },
   { label: "LE STANZE", slide: "portfolio" },
-  { label: "PRENOTA", slide: "apertura" },
+  { label: "PRENOTA", slide: "booking" },
   { label: "PROGETTO", slide: "il-progetto" },
   { label: "PARTNER", slide: "partner" },
   { label: "INFO", slide: "contatti" },
@@ -236,7 +236,7 @@ function SlideIntro({ nav, onMenu }: { nav: (id: SlideId) => void; onMenu: () =>
         className="flex gap-6 mt-5"
       >
         <PillBtn large onClick={onMenu}>Menu</PillBtn>
-        <PillBtn large onClick={() => nav("apertura")}>Prenota</PillBtn>
+        <PillBtn large onClick={() => nav("booking")}>Prenota</PillBtn>
       </motion.div>
 
       {/* ASL CN2 logo */}
