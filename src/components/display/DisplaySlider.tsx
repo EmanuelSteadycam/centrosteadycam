@@ -789,7 +789,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
               <select
                 value={form.giaPart}
                 onChange={(e) => setForm({ ...form, giaPart: e.target.value })}
-                className="w-full border border-white/20 px-3 py-2 text-sm bg-white/10 text-white focus:outline-none focus:border-[#8ac893]"
+                className="w-full border border-white/40 px-3 py-2 text-sm bg-white/25 text-white focus:outline-none focus:border-[#8ac893]"
               >
                 <option value="">Seleziona</option>
                 <option value="si">Sì</option>
@@ -806,7 +806,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
                   N° alunni (max 30)
                 </label>
                 <select value={form.nAlunni} onChange={(e) => setForm({ ...form, nAlunni: e.target.value })}
-                  className="w-full border border-white/20 px-3 py-2 text-sm bg-white/10 text-white focus:outline-none focus:border-[#8ac893]">
+                  className="w-full border border-white/40 px-3 py-2 text-sm bg-white/25 text-white focus:outline-none focus:border-[#8ac893]">
                   {Array.from({ length: 30 }, (_, i) => i + 1).map((n) => (
                     <option key={n} value={n}>{n}</option>
                   ))}
@@ -818,7 +818,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
                   N° adulti (max 4)
                 </label>
                 <select value={form.nAdulti} onChange={(e) => setForm({ ...form, nAdulti: e.target.value })}
-                  className="w-full border border-white/20 px-3 py-2 text-sm bg-white/10 text-white focus:outline-none focus:border-[#8ac893]">
+                  className="w-full border border-white/40 px-3 py-2 text-sm bg-white/25 text-white focus:outline-none focus:border-[#8ac893]">
                   {Array.from({ length: 4 }, (_, i) => i + 1).map((n) => (
                     <option key={n} value={n}>{n}</option>
                   ))}
@@ -830,7 +830,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
                   Alunni con disabilità motorie
                 </label>
                 <select value={form.disabilita} onChange={(e) => setForm({ ...form, disabilita: e.target.value })}
-                  className="w-full border border-white/20 px-3 py-2 text-sm bg-white/10 text-white focus:outline-none focus:border-[#8ac893]">
+                  className="w-full border border-white/40 px-3 py-2 text-sm bg-white/25 text-white focus:outline-none focus:border-[#8ac893]">
                   <option value="nessuno">Nessuno</option>
                   <option value="1">1</option>
                   <option value="2">2</option>
@@ -858,7 +858,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
                     value={form[field as keyof typeof form]}
                     onChange={(e) => setForm({ ...form, [field]: e.target.value })}
                     placeholder={placeholder}
-                    className="w-full border border-white/20 px-3 py-2 text-sm bg-white/10 text-white focus:outline-none focus:border-[#8ac893]"
+                    className="w-full border border-white/40 px-3 py-2 text-sm bg-white/25 text-white focus:outline-none focus:border-[#8ac893]"
                     required={field !== "cellulare"}
                   />
                 </div>
@@ -869,7 +869,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
                   Ordine di scuola
                 </label>
                 <select value={form.ordine} onChange={(e) => setForm({ ...form, ordine: e.target.value })}
-                  className="w-full border border-white/20 px-3 py-2 text-sm bg-white/10 text-white focus:outline-none focus:border-[#8ac893]">
+                  className="w-full border border-white/40 px-3 py-2 text-sm bg-white/25 text-white focus:outline-none focus:border-[#8ac893]">
                   <option>Scuola Primaria</option>
                   <option>Scuola Secondaria di I grado</option>
                   <option>Scuola Secondaria di II grado</option>
