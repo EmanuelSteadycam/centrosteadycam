@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
+import { createBrowserClient } from "@supabase/ssr";
 
 // ── Slide types ───────────────────────────────────────────────────────────────
 export type SlideId =
@@ -452,217 +453,364 @@ function SlideRoom({
   );
 }
 
-function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
-  const [step, setStep] = useState(0);
-  const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({
-    giaPart: "", tipoVisita: "", nAlunni: "1", nAdulti: "1", disabilita: "nessuno",
-    denominazione: "", scuola: "", ordine: "Scuola Secondaria di I grado",
-    classe: "", insegnante: "", email: "", telefono: "",
-  });
+type AvailableSlot = {
+  id: string; date: string; time_slot: string;
+  bookings_count: number; max_capacity: number;
+};
 
-  const steps = [
-    { label: "La tua classe ha già partecipato?" },
-    { label: "Tipo di visita" },
+function useSupabase() {
+  return createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+}
+
+function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
+  const [screen, setScreen] = useState<"date" | "form" | "success">("date");
+  const [slots, setSlots] = useState<AvailableSlot[]>([]);
+  const [sloading, setSloading] = useState(true);
+  const [selectedSlot, setSelectedSlot] = useState<AvailableSlot | null>(null);
+  const [formStep, setFormStep] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({
+    giaPart: "", nAlunni: "15", nAdulti: "2", disabilita: "nessuno",
+    istituto: "", ordine: "Scuola Secondaria di I grado",
+    classe: "", nome: "", cognome: "", email: "", cellulare: "",
+  });
+  const supabase = useSupabase();
+
+  const DUMMY_STEPS = [
+    { label: "Partecipazione precedente" },
     { label: "Partecipanti" },
     { label: "Dati scuola e insegnante" },
   ];
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    await new Promise((r) => setTimeout(r, 800));
-    setLoading(false);
-    setSubmitted(true);
+  useEffect(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    supabase
+      .from("display_slots")
+      .select("id, date, time_slot, bookings_count, max_capacity")
+      .eq("is_open", true)
+      .gte("date", today)
+      .order("date", { ascending: true })
+      .then(({ data }) => {
+        setSlots((data ?? []).filter((s) => s.bookings_count < s.max_capacity));
+        setSloading(false);
+      });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleSubmit = async () => {
+    if (!selectedSlot) return;
+    setSubmitting(true);
+    const { error } = await supabase.from("display_bookings").insert({
+      slot_id: selectedSlot.id,
+      tipo_scuola: "pubblica",
+      tipo_visita: selectedSlot.time_slot,
+      n_alunni: parseInt(form.nAlunni),
+      n_adulti: parseInt(form.nAdulti),
+      disabilita: form.disabilita !== "nessuno",
+      istituto: form.istituto,
+      ordine_scuola: form.ordine,
+      nome: form.nome,
+      cognome: form.cognome,
+      classe: form.classe,
+      email: form.email,
+      cellulare: form.cellulare || null,
+      note: form.giaPart === "si" ? "Classe già partecipante" : null,
+    });
+    if (!error) {
+      await supabase.rpc("increment_slot_bookings", { p_slot_id: selectedSlot.id });
+      setScreen("success");
+    }
+    setSubmitting(false);
   };
+
+  // ── Grouped slots by month ────────────────────────────────────────────────
+  const grouped: Record<string, AvailableSlot[]> = {};
+  slots.forEach((s) => {
+    const month = s.date.slice(0, 7);
+    if (!grouped[month]) grouped[month] = [];
+    grouped[month].push(s);
+  });
+
+  const BG = (
+    <>
+      <Image src={`${WP}/Display_over_booking2-scaled.jpg`} alt="" fill className="object-cover object-center" unoptimized />
+      <div className="absolute inset-0 bg-black/75" />
+    </>
+  );
+
+  // ── Success ───────────────────────────────────────────────────────────────
+  if (screen === "success") {
+    return (
+      <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+        {BG}
+        <motion.div {...fadeUp(0)} className="relative z-10 text-center px-8 max-w-md">
+          <h2 className="text-2xl font-light text-white tracking-[0.2em] uppercase mb-4"
+            style={{ fontFamily: "var(--font-raleway)" }}>
+            Richiesta inviata
+          </h2>
+          <p className="text-white/60 text-sm mb-2" style={{ fontFamily: "var(--font-raleway)" }}>
+            Grazie, {form.nome} {form.cognome}.
+          </p>
+          <p className="text-white/40 text-xs mb-10 leading-relaxed" style={{ fontFamily: "var(--font-raleway)" }}>
+            Lo staff del Centro ti contatterà a breve per confermare la visita.
+          </p>
+          <PillBtn onClick={() => nav("intro")}>← Home</PillBtn>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // ── Date selection ────────────────────────────────────────────────────────
+  if (screen === "date") {
+    return (
+      <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+        {BG}
+        <motion.div
+          {...fadeUp(0)}
+          className="relative z-10 w-full max-w-lg mx-auto px-6 py-8 flex flex-col max-h-screen"
+        >
+          <h2 className="text-center text-white text-lg font-light tracking-[0.1em] uppercase mb-1"
+            style={{ fontFamily: "var(--font-raleway)" }}>
+            Prenota la visita al Display
+          </h2>
+          <p className="text-center text-white/40 text-xs mb-7" style={{ fontFamily: "var(--font-raleway)" }}>
+            Scegli una data disponibile
+          </p>
+
+          <div className="flex-1 overflow-y-auto space-y-6 pb-4">
+            {sloading && (
+              <p className="text-center text-white/30 text-sm py-10" style={{ fontFamily: "var(--font-raleway)" }}>
+                Caricamento...
+              </p>
+            )}
+            {!sloading && slots.length === 0 && (
+              <p className="text-center text-white/50 text-sm py-10 leading-relaxed" style={{ fontFamily: "var(--font-raleway)" }}>
+                Nessuna data disponibile al momento.<br />
+                <span className="text-white/30 text-xs">Controlla più avanti o contattaci.</span>
+              </p>
+            )}
+            {Object.entries(grouped).map(([month, monthSlots]) => (
+              <div key={month}>
+                <p className="text-white/25 text-xs uppercase tracking-widest mb-3" style={{ fontFamily: "var(--font-raleway)" }}>
+                  {new Date(month + "-01").toLocaleDateString("it-IT", { month: "long", year: "numeric" })}
+                </p>
+                <div className="space-y-2">
+                  {monthSlots.map((slot) => {
+                    const isSelected = selectedSlot?.id === slot.id;
+                    const dateLabel = new Date(slot.date + "T00:00:00").toLocaleDateString("it-IT", {
+                      weekday: "long", day: "numeric", month: "long",
+                    });
+                    return (
+                      <button
+                        key={slot.id}
+                        onClick={() => setSelectedSlot(slot)}
+                        className={`w-full text-left px-4 py-3 rounded transition-all border ${
+                          isSelected
+                            ? "border-[#8ac893] bg-[#8ac893]/15 text-white"
+                            : "border-white/15 bg-white/5 text-white/65 hover:border-white/30 hover:bg-white/10"
+                        }`}
+                      >
+                        <p className="text-sm capitalize" style={{ fontFamily: "var(--font-raleway)" }}>{dateLabel}</p>
+                        <p className="text-xs text-white/35 mt-0.5" style={{ fontFamily: "var(--font-raleway)" }}>
+                          {slot.time_slot === "intera" ? "Giornata intera" : "Solo mattina"}
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex gap-3 mt-6 justify-between">
+            <button
+              onClick={() => nav("intro")}
+              className="px-5 py-2 text-white/50 text-xs tracking-wider uppercase border border-white/20 rounded-full hover:text-white hover:border-white transition-all"
+              style={{ fontFamily: "var(--font-raleway)" }}
+            >
+              Annulla
+            </button>
+            <button
+              disabled={!selectedSlot}
+              onClick={() => setScreen("form")}
+              className="px-6 py-2 text-white text-xs tracking-wider uppercase rounded-full disabled:opacity-30 transition-all"
+              style={{ background: "#f26c68", fontFamily: "var(--font-raleway)" }}
+            >
+              Continua →
+            </button>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // ── Multi-step form ───────────────────────────────────────────────────────
+  const selectedDateLabel = selectedSlot
+    ? new Date(selectedSlot.date + "T00:00:00").toLocaleDateString("it-IT", {
+        weekday: "long", day: "numeric", month: "long",
+      })
+    : "";
 
   return (
     <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
-      <Image src={`${WP}/Display_over_booking2-scaled.jpg`} alt="" fill className="object-cover object-center" unoptimized />
-      <div className="absolute inset-0 bg-black/72" />
-
+      {BG}
       <motion.div
-        {...fadeUp(0.2)}
+        key="form"
+        {...fadeUp(0)}
         className="relative z-10 w-full max-w-xl mx-auto px-6 py-8 overflow-y-auto max-h-screen"
       >
-        {submitted ? (
-          <div className="text-center py-12">
-            <h2
-              className="text-2xl font-light text-white tracking-[0.2em] uppercase mb-4"
-              style={{ fontFamily: "var(--font-raleway)" }}
-            >
-              Richiesta inviata. Grazie
-            </h2>
-            <p className="text-white/70 text-sm mb-8" style={{ fontFamily: "var(--font-raleway)" }}>
-              Lo staff del Centro ti contatterà per confermare la visita.
-            </p>
-            <PillBtn onClick={() => nav("intro")}>Home</PillBtn>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit}>
-            <h2
-              className="text-center text-white text-lg font-light tracking-[0.1em] uppercase mb-2"
-              style={{ fontFamily: "var(--font-raleway)" }}
-            >
-              Prenota la visita al Centro Display
-            </h2>
-            <p
-              className="text-center text-white/60 text-xs mb-8"
-              style={{ fontFamily: "var(--font-raleway)" }}
-            >
-              Completato il modulo, lo staff ti contatterà per confermare
-            </p>
+        <h2 className="text-center text-white text-lg font-light tracking-[0.1em] uppercase mb-1"
+          style={{ fontFamily: "var(--font-raleway)" }}>
+          Prenota la visita
+        </h2>
+        <p className="text-center text-white/40 text-xs mb-1 capitalize" style={{ fontFamily: "var(--font-raleway)" }}>
+          {selectedDateLabel}
+        </p>
+        <p className="text-center text-white/25 text-xs mb-6" style={{ fontFamily: "var(--font-raleway)" }}>
+          {selectedSlot?.time_slot === "intera" ? "Giornata intera" : "Solo mattina"}
+        </p>
 
-            {/* Step indicator */}
-            <div className="flex gap-2 mb-8 justify-center">
-              {steps.map((_s, i) => (
-                <div
-                  key={i}
-                  className={`h-1 flex-1 rounded-full transition-all ${i <= step ? "bg-white" : "bg-white/20"}`}
-                />
+        <div className="flex gap-2 mb-8 justify-center">
+          {DUMMY_STEPS.map((_s, i) => (
+            <div key={i} className={`h-1 flex-1 rounded-full transition-all ${i <= formStep ? "bg-white" : "bg-white/20"}`} />
+          ))}
+        </div>
+
+        <div style={{ background: "#ffe694", padding: "24px", borderRadius: "4px" }}>
+          {formStep === 0 && (
+            <div>
+              <label className="block text-xs font-medium tracking-wider uppercase mb-2 text-gray-700"
+                style={{ fontFamily: "var(--font-raleway)" }}>
+                La tua classe ha già partecipato ai laboratori del Centro Display?
+              </label>
+              <select
+                value={form.giaPart}
+                onChange={(e) => setForm({ ...form, giaPart: e.target.value })}
+                className="w-full border border-gray-300 px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none"
+              >
+                <option value="">Seleziona</option>
+                <option value="si">Sì</option>
+                <option value="no">No, è la prima volta</option>
+              </select>
+            </div>
+          )}
+
+          {formStep === 1 && (
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium tracking-wider uppercase mb-1 text-gray-700"
+                  style={{ fontFamily: "var(--font-raleway)" }}>
+                  N° alunni (max 30)
+                </label>
+                <select value={form.nAlunni} onChange={(e) => setForm({ ...form, nAlunni: e.target.value })}
+                  className="w-full border border-gray-300 px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none">
+                  {Array.from({ length: 30 }, (_, i) => i + 1).map((n) => (
+                    <option key={n} value={n}>{n}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium tracking-wider uppercase mb-1 text-gray-700"
+                  style={{ fontFamily: "var(--font-raleway)" }}>
+                  N° adulti (max 4)
+                </label>
+                <select value={form.nAdulti} onChange={(e) => setForm({ ...form, nAdulti: e.target.value })}
+                  className="w-full border border-gray-300 px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none">
+                  {Array.from({ length: 4 }, (_, i) => i + 1).map((n) => (
+                    <option key={n} value={n}>{n}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium tracking-wider uppercase mb-1 text-gray-700"
+                  style={{ fontFamily: "var(--font-raleway)" }}>
+                  Alunni con disabilità motorie
+                </label>
+                <select value={form.disabilita} onChange={(e) => setForm({ ...form, disabilita: e.target.value })}
+                  className="w-full border border-gray-300 px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none">
+                  <option value="nessuno">Nessuno</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="piu">Più di due</option>
+                </select>
+              </div>
+            </div>
+          )}
+
+          {formStep === 2 && (
+            <div className="space-y-3">
+              {[
+                { label: "Istituto", field: "istituto", placeholder: "Istituto Comprensivo...", type: "text" },
+                { label: "Classe", field: "classe", placeholder: "es. 2A", type: "text" },
+                { label: "Nome insegnante", field: "nome", placeholder: "", type: "text" },
+                { label: "Cognome insegnante", field: "cognome", placeholder: "", type: "text" },
+                { label: "Email", field: "email", placeholder: "", type: "email" },
+                { label: "Cellulare (opzionale)", field: "cellulare", placeholder: "", type: "tel" },
+              ].map(({ label, field, placeholder, type }) => (
+                <div key={field}>
+                  <label className="block text-xs font-medium tracking-wider uppercase mb-1 text-gray-700"
+                    style={{ fontFamily: "var(--font-raleway)" }}>{label}</label>
+                  <input
+                    type={type}
+                    value={form[field as keyof typeof form]}
+                    onChange={(e) => setForm({ ...form, [field]: e.target.value })}
+                    placeholder={placeholder}
+                    className="w-full border border-gray-300 px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none"
+                    required={field !== "cellulare"}
+                  />
+                </div>
               ))}
+              <div>
+                <label className="block text-xs font-medium tracking-wider uppercase mb-1 text-gray-700"
+                  style={{ fontFamily: "var(--font-raleway)" }}>
+                  Ordine di scuola
+                </label>
+                <select value={form.ordine} onChange={(e) => setForm({ ...form, ordine: e.target.value })}
+                  className="w-full border border-gray-300 px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none">
+                  <option>Scuola Primaria</option>
+                  <option>Scuola Secondaria di I grado</option>
+                  <option>Scuola Secondaria di II grado</option>
+                </select>
+              </div>
             </div>
+          )}
+        </div>
 
-            <div className="space-y-4" style={{ background: "#ffe694", padding: "24px", borderRadius: "4px" }}>
-              {step === 0 && (
-                <div>
-                  <label className="block text-xs font-medium tracking-wider uppercase mb-2 text-gray-700" style={{ fontFamily: "var(--font-raleway)" }}>
-                    La tua classe ha già partecipato ai laboratori del Centro Display?
-                  </label>
-                  <select
-                    value={form.giaPart}
-                    onChange={(e) => setForm({ ...form, giaPart: e.target.value })}
-                    className="w-full border border-gray-300 px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none"
-                    required
-                  >
-                    <option value="">Seleziona</option>
-                    <option value="si">Sì</option>
-                    <option value="no">No</option>
-                  </select>
-                </div>
-              )}
-              {step === 1 && (
-                <div>
-                  <label className="block text-xs font-medium tracking-wider uppercase mb-2 text-gray-700" style={{ fontFamily: "var(--font-raleway)" }}>Tipo di visita</label>
-                  <select
-                    value={form.tipoVisita}
-                    onChange={(e) => setForm({ ...form, tipoVisita: e.target.value })}
-                    className="w-full border border-gray-300 px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none"
-                    required
-                  >
-                    <option value="">Seleziona</option>
-                    <option value="mattina">Solo mattina (h.8.00–13.00)</option>
-                    <option value="intera">Giornata intera (h.8.30–16.30)</option>
-                  </select>
-                </div>
-              )}
-              {step === 2 && (
-                <div className="space-y-3">
-                  {[
-                    { label: "N° alunni (max 30)", field: "nAlunni", max: 30 },
-                    { label: "N° adulti (max 4)", field: "nAdulti", max: 4 },
-                  ].map(({ label, field, max }) => (
-                    <div key={field}>
-                      <label className="block text-xs font-medium tracking-wider uppercase mb-1 text-gray-700" style={{ fontFamily: "var(--font-raleway)" }}>{label}</label>
-                      <select
-                        value={form[field as keyof typeof form]}
-                        onChange={(e) => setForm({ ...form, [field]: e.target.value })}
-                        className="w-full border border-gray-300 px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none"
-                      >
-                        {Array.from({ length: max }, (_, i) => i + 1).map((n) => (
-                          <option key={n} value={n}>{n}</option>
-                        ))}
-                      </select>
-                    </div>
-                  ))}
-                  <div>
-                    <label className="block text-xs font-medium tracking-wider uppercase mb-1 text-gray-700" style={{ fontFamily: "var(--font-raleway)" }}>Alunni con disabilità motorie</label>
-                    <select
-                      value={form.disabilita}
-                      onChange={(e) => setForm({ ...form, disabilita: e.target.value })}
-                      className="w-full border border-gray-300 px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none"
-                    >
-                      <option value="nessuno">Nessuno</option>
-                      <option value="1">1</option>
-                      <option value="2">2</option>
-                      <option value="piu">Più di due</option>
-                    </select>
-                  </div>
-                </div>
-              )}
-              {step === 3 && (
-                <div className="space-y-3">
-                  {[
-                    { label: "Denominazione", field: "denominazione", placeholder: "Istituto Comprensivo" },
-                    { label: "Nome scuola", field: "scuola", placeholder: "" },
-                    { label: "Classe", field: "classe", placeholder: "es. 2A" },
-                    { label: "Nome insegnante", field: "insegnante", placeholder: "" },
-                    { label: "Email", field: "email", placeholder: "", type: "email" },
-                    { label: "Telefono", field: "telefono", placeholder: "", type: "tel" },
-                  ].map(({ label, field, placeholder, type = "text" }) => (
-                    <div key={field}>
-                      <label className="block text-xs font-medium tracking-wider uppercase mb-1 text-gray-700" style={{ fontFamily: "var(--font-raleway)" }}>{label}</label>
-                      <input
-                        type={type}
-                        value={form[field as keyof typeof form]}
-                        onChange={(e) => setForm({ ...form, [field]: e.target.value })}
-                        placeholder={placeholder}
-                        className="w-full border border-gray-300 px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none"
-                        required
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="flex gap-3 mt-6 justify-between">
-              {step > 0 ? (
-                <button
-                  type="button"
-                  onClick={() => setStep(step - 1)}
-                  className="px-5 py-2 text-white/60 text-xs tracking-wider uppercase border border-white/30 rounded-full hover:text-white hover:border-white transition-all"
-                  style={{ fontFamily: "var(--font-raleway)" }}
-                >
-                  ← Indietro
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => nav("intro")}
-                  className="px-5 py-2 text-white/60 text-xs tracking-wider uppercase border border-white/30 rounded-full hover:text-white hover:border-white transition-all"
-                  style={{ fontFamily: "var(--font-raleway)" }}
-                >
-                  Annulla
-                </button>
-              )}
-              {step < 3 ? (
-                <button
-                  type="button"
-                  onClick={() => setStep(step + 1)}
-                  className="px-6 py-2 text-white text-xs tracking-wider uppercase rounded-full transition-all"
-                  style={{ background: "#f26c68", fontFamily: "var(--font-raleway)" }}
-                >
-                  Avanti →
-                </button>
-              ) : (
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="px-6 py-2 text-white text-xs tracking-wider uppercase rounded-full disabled:opacity-50 transition-all"
-                  style={{ background: "#f26c68", fontFamily: "var(--font-raleway)" }}
-                >
-                  {loading ? "Invio..." : "Confermo"}
-                </button>
-              )}
-            </div>
-          </form>
-        )}
+        <div className="flex gap-3 mt-6 justify-between">
+          <button
+            onClick={() => formStep > 0 ? setFormStep(formStep - 1) : setScreen("date")}
+            className="px-5 py-2 text-white/60 text-xs tracking-wider uppercase border border-white/30 rounded-full hover:text-white hover:border-white transition-all"
+            style={{ fontFamily: "var(--font-raleway)" }}
+          >
+            ← Indietro
+          </button>
+          {formStep < DUMMY_STEPS.length - 1 ? (
+            <button
+              onClick={() => setFormStep(formStep + 1)}
+              className="px-6 py-2 text-white text-xs tracking-wider uppercase rounded-full transition-all"
+              style={{ background: "#f26c68", fontFamily: "var(--font-raleway)" }}
+            >
+              Avanti →
+            </button>
+          ) : (
+            <button
+              disabled={submitting || !form.nome || !form.email || !form.istituto}
+              onClick={handleSubmit}
+              className="px-6 py-2 text-white text-xs tracking-wider uppercase rounded-full disabled:opacity-50 transition-all"
+              style={{ background: "#f26c68", fontFamily: "var(--font-raleway)" }}
+            >
+              {submitting ? "Invio..." : "Conferma"}
+            </button>
+          )}
+        </div>
       </motion.div>
     </div>
   );
 }
+
 
 function SlideCentro() {
   const rects = [
