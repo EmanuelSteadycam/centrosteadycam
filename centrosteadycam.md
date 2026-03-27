@@ -140,7 +140,51 @@ Il sito funziona in due modalità:
 
 La pagina `/display` è completamente standalone (nessun header/footer WP).
 Replica il RevSlider con:
-- 11 slide navigabili (tasti freccia, click sui dot, pulsanti interni)
-- Animazioni Framer Motion con slide-in/out
+- Slide navigabili (tasti freccia, click sui dot, pulsanti interni)
+- Animazioni Framer Motion con slide-in/out staggerati (BASE_DELAY = 0.6)
+- Bottone `← Torna` su tutte le slide tranne la home (history stack)
 - Form di prenotazione integrato → salva in `display_bookings` Supabase
 - Immagini originali da `centrosteadycam.it/wp-content/uploads/`
+- SlidePortfolio (Le Stanze): griglia 3×2, 5 stanze + gatto nero (link alla home)
+- Overlay menu hamburger: si apre/chiude con il bottone Menu
+
+---
+
+## Area Admin (`/admin`)
+
+Accesso protetto via Supabase Auth (email/password).
+
+### File chiave
+| File | Descrizione |
+|------|-------------|
+| `src/middleware.ts` | Protegge tutte le route `/admin/*` |
+| `src/app/admin/login/page.tsx` | Pagina di login |
+| `src/app/admin/(dashboard)/layout.tsx` | Layout con sidebar |
+| `src/app/admin/(dashboard)/page.tsx` | Dashboard panoramica |
+| `src/app/admin/(dashboard)/prenotazioni/page.tsx` | Gestione slot + iscrizioni |
+| `src/app/admin/(dashboard)/prenotazioni/actions.ts` | Server Actions (add/toggle/delete slot) |
+| `src/components/admin/AdminSidebar.tsx` | Sidebar navigazione |
+| `src/components/admin/SlotManager.tsx` | Componente client gestione slot |
+| `src/components/admin/BookingsList.tsx` | Lista iscrizioni con filtro + export CSV |
+| `src/lib/supabase-server.ts` | Client Supabase SSR (anon + service role) |
+| `src/components/navigation/SiteShell.tsx` | Nasconde Navbar/Footer su /admin e /display |
+| `supabase/schema_admin.sql` | Tabelle display_slots + display_bookings + RLS |
+
+### Setup admin (prima volta)
+1. Esegui `supabase/schema_admin.sql` nel SQL Editor di Supabase
+2. Crea utente in Supabase Auth → Authentication → Users
+3. Se email non verificata, esegui:
+   ```sql
+   UPDATE auth.users SET email_confirmed_at = NOW() WHERE email = 'tua@email.com';
+   ```
+4. Aggiungi a `.env.local`:
+   ```
+   SUPABASE_SERVICE_ROLE_KEY=eyJ...
+   ```
+
+### Sezioni admin disponibili
+- **Prenotazioni** ✅ — slot + iscrizioni
+- **Blog** 🚧 — in costruzione
+- **Pagine** 🚧 — in costruzione
+- **Staff** 🚧 — in costruzione
+- **Home Grid** 🚧 — in costruzione
