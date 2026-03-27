@@ -760,16 +760,18 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
         {...fadeUp(0)}
         className="relative z-10 w-full max-w-xl mx-auto px-6 py-8 overflow-y-auto max-h-screen"
       >
-        <h2 className="text-center text-white text-2xl font-light tracking-[0.1em] uppercase mb-2"
+        <h2 className="text-center text-white text-2xl font-light tracking-[0.1em] uppercase mb-4"
           style={{ fontFamily: "var(--font-raleway)" }}>
           Prenota la visita
         </h2>
-        <p className="text-center text-white/50 text-base mb-1 capitalize" style={{ fontFamily: "var(--font-raleway)" }}>
-          {selectedDateLabel}
-        </p>
-        <p className="text-center text-white/30 text-sm mb-6" style={{ fontFamily: "var(--font-raleway)" }}>
-          h. 8.00–13.00
-        </p>
+        <div className="text-center mb-6 px-4 py-3 rounded-lg" style={{ background: "rgba(138,200,147,0.15)", border: "1px solid #8ac893" }}>
+          <p className="text-xl font-semibold capitalize" style={{ fontFamily: "var(--font-raleway)", color: "#8ac893" }}>
+            {selectedDateLabel}
+          </p>
+          <p className="text-base mt-0.5" style={{ fontFamily: "var(--font-raleway)", color: "#8ac893" }}>
+            h. 8.00–13.00
+          </p>
+        </div>
 
         <div className="flex gap-2 mb-8 justify-center">
           {DUMMY_STEPS.map((_s, i) => (
@@ -777,17 +779,17 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
           ))}
         </div>
 
-        <div style={{ background: "#ffe694", padding: "24px", borderRadius: "4px" }}>
+        <div style={{ background: "rgba(138,200,147,0.12)", border: "1px solid rgba(138,200,147,0.3)", padding: "24px", borderRadius: "8px" }}>
           {formStep === 0 && (
             <div>
-              <label className="block text-xs font-medium tracking-wider uppercase mb-2 text-gray-700"
+              <label className="block text-xs font-medium tracking-wider uppercase mb-2 text-white/70"
                 style={{ fontFamily: "var(--font-raleway)" }}>
                 La tua classe ha già partecipato ai laboratori del Centro Display?
               </label>
               <select
                 value={form.giaPart}
                 onChange={(e) => setForm({ ...form, giaPart: e.target.value })}
-                className="w-full border border-gray-300 px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none"
+                className="w-full border border-white/20 px-3 py-2 text-sm bg-white/10 text-white focus:outline-none focus:border-[#8ac893]"
               >
                 <option value="">Seleziona</option>
                 <option value="si">Sì</option>
@@ -799,36 +801,36 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
           {formStep === 1 && (
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-medium tracking-wider uppercase mb-1 text-gray-700"
+                <label className="block text-xs font-medium tracking-wider uppercase mb-1 text-white/70"
                   style={{ fontFamily: "var(--font-raleway)" }}>
                   N° alunni (max 30)
                 </label>
                 <select value={form.nAlunni} onChange={(e) => setForm({ ...form, nAlunni: e.target.value })}
-                  className="w-full border border-gray-300 px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none">
+                  className="w-full border border-white/20 px-3 py-2 text-sm bg-white/10 text-white focus:outline-none focus:border-[#8ac893]">
                   {Array.from({ length: 30 }, (_, i) => i + 1).map((n) => (
                     <option key={n} value={n}>{n}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium tracking-wider uppercase mb-1 text-gray-700"
+                <label className="block text-xs font-medium tracking-wider uppercase mb-1 text-white/70"
                   style={{ fontFamily: "var(--font-raleway)" }}>
                   N° adulti (max 4)
                 </label>
                 <select value={form.nAdulti} onChange={(e) => setForm({ ...form, nAdulti: e.target.value })}
-                  className="w-full border border-gray-300 px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none">
+                  className="w-full border border-white/20 px-3 py-2 text-sm bg-white/10 text-white focus:outline-none focus:border-[#8ac893]">
                   {Array.from({ length: 4 }, (_, i) => i + 1).map((n) => (
                     <option key={n} value={n}>{n}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium tracking-wider uppercase mb-1 text-gray-700"
+                <label className="block text-xs font-medium tracking-wider uppercase mb-1 text-white/70"
                   style={{ fontFamily: "var(--font-raleway)" }}>
                   Alunni con disabilità motorie
                 </label>
                 <select value={form.disabilita} onChange={(e) => setForm({ ...form, disabilita: e.target.value })}
-                  className="w-full border border-gray-300 px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none">
+                  className="w-full border border-white/20 px-3 py-2 text-sm bg-white/10 text-white focus:outline-none focus:border-[#8ac893]">
                   <option value="nessuno">Nessuno</option>
                   <option value="1">1</option>
                   <option value="2">2</option>
@@ -849,25 +851,25 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
                 { label: "Cellulare (opzionale)", field: "cellulare", placeholder: "", type: "tel" },
               ].map(({ label, field, placeholder, type }) => (
                 <div key={field}>
-                  <label className="block text-xs font-medium tracking-wider uppercase mb-1 text-gray-700"
+                  <label className="block text-xs font-medium tracking-wider uppercase mb-1 text-white/70"
                     style={{ fontFamily: "var(--font-raleway)" }}>{label}</label>
                   <input
                     type={type}
                     value={form[field as keyof typeof form]}
                     onChange={(e) => setForm({ ...form, [field]: e.target.value })}
                     placeholder={placeholder}
-                    className="w-full border border-gray-300 px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none"
+                    className="w-full border border-white/20 px-3 py-2 text-sm bg-white/10 text-white focus:outline-none focus:border-[#8ac893]"
                     required={field !== "cellulare"}
                   />
                 </div>
               ))}
               <div>
-                <label className="block text-xs font-medium tracking-wider uppercase mb-1 text-gray-700"
+                <label className="block text-xs font-medium tracking-wider uppercase mb-1 text-white/70"
                   style={{ fontFamily: "var(--font-raleway)" }}>
                   Ordine di scuola
                 </label>
                 <select value={form.ordine} onChange={(e) => setForm({ ...form, ordine: e.target.value })}
-                  className="w-full border border-gray-300 px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none">
+                  className="w-full border border-white/20 px-3 py-2 text-sm bg-white/10 text-white focus:outline-none focus:border-[#8ac893]">
                   <option>Scuola Primaria</option>
                   <option>Scuola Secondaria di I grado</option>
                   <option>Scuola Secondaria di II grado</option>
