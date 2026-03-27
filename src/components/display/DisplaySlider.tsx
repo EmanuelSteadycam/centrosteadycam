@@ -466,7 +466,7 @@ function useSupabase() {
 }
 
 function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
-  const [screen, setScreen] = useState<"date" | "form" | "success">("date");
+  const [screen, setScreen] = useState<"intro" | "date" | "form" | "success">("intro");
   const [slots, setSlots] = useState<AvailableSlot[]>([]);
   const [sloading, setSloading] = useState(true);
   const [selectedSlot, setSelectedSlot] = useState<AvailableSlot | null>(null);
@@ -540,6 +540,91 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
       <div className="absolute inset-0 bg-black/75" />
     </>
   );
+
+  // ── Intro / istruzioni ───────────────────────────────────────────────────
+  if (screen === "intro") {
+    const steps = [
+      "Scegli una data disponibile",
+      "Scegli il tipo di visita (mattina o giornata intera)",
+      "Compila tutti i campi richiesti",
+      "Invia la prenotazione",
+      "Attendi l'email di conferma dello staff",
+    ];
+    return (
+      <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+        <Image src={`${WP}/Display_over_booking2-scaled.jpg`} alt="" fill className="object-cover object-center" unoptimized />
+        <div className="absolute inset-0 bg-black/78" />
+        <motion.div {...fadeUp(0)} className="relative z-10 w-full max-w-lg mx-auto px-8 py-10">
+          <motion.p
+            {...fadeUp(0.05)}
+            className="text-[#8ac893] text-xs uppercase tracking-[0.2em] mb-3"
+            style={{ fontFamily: "var(--font-raleway)" }}
+          >
+            Display Techno
+          </motion.p>
+          <motion.h2
+            {...fadeUp(0.1)}
+            className="text-white text-2xl font-light tracking-[0.05em] mb-2"
+            style={{ fontFamily: "var(--font-raleway)" }}
+          >
+            Prenota la tua visita
+          </motion.h2>
+          <motion.p
+            {...fadeUp(0.15)}
+            className="text-white/40 text-xs mb-8"
+            style={{ fontFamily: "var(--font-raleway)" }}
+          >
+            Segui i passi per completare la prenotazione
+          </motion.p>
+
+          <motion.ol {...fadeUp(0.2)} className="space-y-3 mb-10">
+            {steps.map((s, i) => (
+              <li key={i} className="flex items-start gap-3">
+                <span
+                  className="shrink-0 w-6 h-6 rounded-full border border-[#8ac893] text-[#8ac893] text-xs flex items-center justify-center mt-0.5"
+                  style={{ fontFamily: "var(--font-raleway)" }}
+                >
+                  {i + 1}
+                </span>
+                <span className="text-white/70 text-sm leading-relaxed" style={{ fontFamily: "var(--font-raleway)" }}>
+                  {s}
+                </span>
+              </li>
+            ))}
+          </motion.ol>
+
+          <motion.div {...fadeUp(0.3)} className="border-t border-white/10 pt-6 mb-8 space-y-2">
+            <p className="text-white/35 text-xs" style={{ fontFamily: "var(--font-raleway)" }}>
+              · Una classe per prenotazione, max tre classi per edificio scolastico
+            </p>
+            <p className="text-white/35 text-xs" style={{ fontFamily: "var(--font-raleway)" }}>
+              · Il servizio è gratuito
+            </p>
+            <p className="text-white/35 text-xs" style={{ fontFamily: "var(--font-raleway)" }}>
+              · La visita richiede presenza dell&apos;insegnante per tutta la durata
+            </p>
+          </motion.div>
+
+          <motion.div {...fadeUp(0.35)} className="flex gap-3">
+            <button
+              onClick={() => nav("intro")}
+              className="px-5 py-2 text-white/40 text-xs tracking-wider uppercase border border-white/15 rounded-full hover:text-white hover:border-white transition-all"
+              style={{ fontFamily: "var(--font-raleway)" }}
+            >
+              Annulla
+            </button>
+            <button
+              onClick={() => setScreen("date")}
+              className="px-6 py-2 text-white text-xs tracking-wider uppercase rounded-full transition-all"
+              style={{ background: "#f26c68", fontFamily: "var(--font-raleway)" }}
+            >
+              Inizia →
+            </button>
+          </motion.div>
+        </motion.div>
+      </div>
+    );
+  }
 
   // ── Success ───────────────────────────────────────────────────────────────
   if (screen === "success") {
