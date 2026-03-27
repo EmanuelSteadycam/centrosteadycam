@@ -594,7 +594,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
 
           <motion.div {...fadeUp(0.3)} className="border-t border-white/10 pt-6 mb-8 space-y-3">
             <p className="text-lg whitespace-nowrap" style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>
-              · Una classe per prenotazione, max tre classi per edificio scolastico
+              · Puoi prenotare una sola classe alla volta fino ad un massimo di 3 (tre) classi per Plesso.
             </p>
             <p className="text-lg whitespace-nowrap" style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>
               · Il servizio è gratuito · Orario visita: 8.00–13.00
