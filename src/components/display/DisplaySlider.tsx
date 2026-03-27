@@ -553,7 +553,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
     return (
       <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
         <Image src={`${WP}/Display_over_booking2-scaled.jpg`} alt="" fill className="object-cover object-center" unoptimized />
-        <div className="absolute inset-0 bg-black/78" />
+        <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.88)" }} />
         <motion.div {...fadeUp(0)} className="relative z-10 w-full max-w-lg mx-auto px-8 py-10">
           <motion.p
             {...fadeUp(0.05)}
