@@ -537,7 +537,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
   const BG = (
     <>
       <Image src={`${WP}/Display_over_booking2-scaled.jpg`} alt="" fill className="object-cover object-center" unoptimized />
-      <div className="absolute inset-0 bg-black/75" />
+      <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.88)" }} />
     </>
   );
 
@@ -656,32 +656,32 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
           {...fadeUp(0)}
           className="relative z-10 w-full max-w-lg mx-auto px-6 py-8 flex flex-col max-h-screen"
         >
-          <h2 className="text-center text-white text-2xl font-light tracking-[0.1em] uppercase mb-2"
-            style={{ fontFamily: "var(--font-raleway)" }}>
+          <h2 className="text-center text-3xl font-bold tracking-[0.1em] uppercase mb-2"
+            style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>
             Prenota la visita al Display
           </h2>
-          <p className="text-center text-white/40 text-base mb-7" style={{ fontFamily: "var(--font-raleway)" }}>
+          <p className="text-center text-base mb-5" style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>
             Scegli una data disponibile
           </p>
 
-          <div className="flex-1 overflow-y-auto space-y-6 pb-4">
+          <div className="overflow-y-auto space-y-4 pb-2" style={{ maxHeight: "45vh" }}>
             {sloading && (
-              <p className="text-center text-white/30 text-base py-10" style={{ fontFamily: "var(--font-raleway)" }}>
+              <p className="text-center text-base py-6" style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>
                 Caricamento...
               </p>
             )}
             {!sloading && slots.length === 0 && (
-              <p className="text-center text-white/50 text-base py-10 leading-relaxed" style={{ fontFamily: "var(--font-raleway)" }}>
+              <p className="text-center text-base py-6 leading-relaxed" style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>
                 Nessuna data disponibile al momento.<br />
-                <span className="text-white/30 text-sm">Controlla più avanti o contattaci.</span>
+                <span className="text-sm opacity-60">Controlla più avanti o contattaci.</span>
               </p>
             )}
             {Object.entries(grouped).map(([month, monthSlots]) => (
               <div key={month}>
-                <p className="text-white/25 text-sm uppercase tracking-widest mb-3" style={{ fontFamily: "var(--font-raleway)" }}>
+                <p className="text-sm uppercase tracking-widest mb-2 opacity-40" style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>
                   {new Date(month + "-01").toLocaleDateString("it-IT", { month: "long", year: "numeric" })}
                 </p>
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {monthSlots.map((slot) => {
                     const isSelected = selectedSlot?.id === slot.id;
                     const dateLabel = new Date(slot.date + "T00:00:00").toLocaleDateString("it-IT", {
@@ -691,14 +691,14 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
                       <button
                         key={slot.id}
                         onClick={() => setSelectedSlot(slot)}
-                        className={`w-full text-left px-4 py-3 rounded transition-all border ${
+                        className={`w-full text-left px-4 py-2 rounded transition-all border ${
                           isSelected
-                            ? "border-[#8ac893] bg-[#8ac893]/15 text-white"
-                            : "border-white/15 bg-white/5 text-white/65 hover:border-white/30 hover:bg-white/10"
+                            ? "border-[#8ac893] bg-[#8ac893]/15"
+                            : "border-white/15 bg-white/5 hover:border-white/30 hover:bg-white/10"
                         }`}
                       >
-                        <p className="text-base capitalize" style={{ fontFamily: "var(--font-raleway)" }}>{dateLabel}</p>
-                        <p className="text-sm text-white/35 mt-0.5" style={{ fontFamily: "var(--font-raleway)" }}>
+                        <p className="text-base capitalize" style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>{dateLabel}</p>
+                        <p className="text-sm opacity-50" style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>
                           h. 8.00–13.00
                         </p>
                       </button>
@@ -709,13 +709,13 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
             ))}
           </div>
 
-          <div className="flex gap-3 mt-6 justify-between">
+          <div className="flex gap-3 mt-5 justify-between">
             <button
-              onClick={() => nav("intro")}
-              className="px-6 py-2.5 text-white/50 text-sm tracking-wider uppercase border border-white/20 rounded-full hover:text-white hover:border-white transition-all"
-              style={{ fontFamily: "var(--font-raleway)" }}
+              onClick={() => setScreen("intro")}
+              className="px-6 py-2.5 text-sm tracking-wider uppercase border border-white/40 rounded-full hover:border-white transition-all"
+              style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}
             >
-              Annulla
+              ← Indietro
             </button>
             <button
               disabled={!selectedSlot}
