@@ -148,12 +148,12 @@ function HamburgerMenu({
                       letterSpacing: "0.1em",
                       textTransform: "uppercase",
                       color: lightBg ? "#222" : "#fff",
-                      background: isActive ? "#8ac893" : "transparent",
+                      background: isActive ? "#88BF81" : "transparent",
                       transition: "background 0.15s",
                       cursor: "pointer",
                       border: "none",
                     }}
-                    onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = "#8ac893"; }}
+                    onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = "#88BF81"; }}
                     onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
                   >
                     {item.label}
@@ -561,7 +561,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
         <motion.div {...fadeUp(0)} className="relative z-10 w-full max-w-lg mx-auto px-8 py-10">
           <motion.p
             {...fadeUp(0.05)}
-            className="text-[#8ac893] text-xl font-bold uppercase tracking-[0.2em] mb-4"
+            className="text-[#88BF81] text-xl font-bold uppercase tracking-[0.2em] mb-4"
             style={{ fontFamily: "var(--font-raleway)" }}
           >
             Display Techno
@@ -585,7 +585,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
             {steps.map((s, i) => (
               <li key={i} className="flex items-start gap-4">
                 <span
-                  className="shrink-0 w-8 h-8 rounded-full border border-[#8ac893] text-[#8ac893] text-base flex items-center justify-center mt-0.5"
+                  className="shrink-0 w-8 h-8 rounded-full border border-[#88BF81] text-[#88BF81] text-base flex items-center justify-center mt-0.5"
                   style={{ fontFamily: "var(--font-raleway)" }}
                 >
                   {i + 1}
@@ -680,7 +680,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
             )}
             {Object.entries(grouped).map(([month, monthSlots]) => (
               <div key={month}>
-                <p className="text-base font-semibold uppercase tracking-widest mb-2" style={{ fontFamily: "var(--font-raleway)", color: "#8ac893" }}>
+                <p className="text-base font-semibold uppercase tracking-widest mb-2" style={{ fontFamily: "var(--font-raleway)", color: "#88BF81" }}>
                   {new Date(month + "-01").toLocaleDateString("it-IT", { month: "long", year: "numeric" })}
                 </p>
                 <div className="space-y-1.5">
@@ -699,7 +699,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
                           isFull
                             ? "border-white/10 bg-white/3 opacity-50 cursor-not-allowed"
                             : isSelected
-                              ? "border-[#8ac893] bg-[#8ac893]/15"
+                              ? "border-[#88BF81] bg-[#88BF81]/15"
                               : "border-white/15 bg-white/5 hover:border-white/30 hover:bg-white/10"
                         }`}
                       >
@@ -764,11 +764,11 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
           style={{ fontFamily: "var(--font-raleway)" }}>
           Prenota la visita
         </h2>
-        <div className="text-center mb-6 px-4 py-3 rounded-lg" style={{ background: "rgba(138,200,147,0.15)", border: "1px solid #8ac893" }}>
-          <p className="text-xl font-semibold capitalize" style={{ fontFamily: "var(--font-raleway)", color: "#8ac893" }}>
+        <div className="text-center mb-6 px-4 py-3 rounded-lg" style={{ background: "rgba(136,191,129,0.15)", border: "1px solid #88BF81" }}>
+          <p className="text-xl font-semibold capitalize" style={{ fontFamily: "var(--font-raleway)", color: "#88BF81" }}>
             {selectedDateLabel}
           </p>
-          <p className="text-base mt-0.5" style={{ fontFamily: "var(--font-raleway)", color: "#8ac893" }}>
+          <p className="text-base mt-0.5" style={{ fontFamily: "var(--font-raleway)", color: "#88BF81" }}>
             h. 8.00–13.00
           </p>
         </div>
@@ -779,7 +779,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
           ))}
         </div>
 
-        <div style={{ background: "#8ac893", border: "1px solid #8ac893", padding: "24px", borderRadius: "8px" }}>
+        <div style={{ background: "#88BF81", border: "1px solid #88BF81", padding: "24px", borderRadius: "8px" }}>
           {formStep === 0 && (
             <div>
               <label className="block text-xs font-medium tracking-wider uppercase mb-2 text-white/70"
@@ -789,7 +789,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
               <select
                 value={form.giaPart}
                 onChange={(e) => setForm({ ...form, giaPart: e.target.value })}
-                className="w-full border border-white/40 px-3 py-2 text-sm bg-white/25 text-white focus:outline-none focus:border-[#8ac893]"
+                className="w-full border border-white/40 px-3 py-2 text-sm bg-white/25 text-white focus:outline-none focus:border-[#88BF81]"
               >
                 <option value="">Seleziona</option>
                 <option value="si">Sì</option>
@@ -806,7 +806,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
                   N° alunni (max 30)
                 </label>
                 <select value={form.nAlunni} onChange={(e) => setForm({ ...form, nAlunni: e.target.value })}
-                  className="w-full border border-white/40 px-3 py-2 text-sm bg-white/25 text-white focus:outline-none focus:border-[#8ac893]">
+                  className="w-full border border-white/40 px-3 py-2 text-sm bg-white/25 text-white focus:outline-none focus:border-[#88BF81]">
                   {Array.from({ length: 30 }, (_, i) => i + 1).map((n) => (
                     <option key={n} value={n}>{n}</option>
                   ))}
@@ -818,7 +818,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
                   N° adulti (max 4)
                 </label>
                 <select value={form.nAdulti} onChange={(e) => setForm({ ...form, nAdulti: e.target.value })}
-                  className="w-full border border-white/40 px-3 py-2 text-sm bg-white/25 text-white focus:outline-none focus:border-[#8ac893]">
+                  className="w-full border border-white/40 px-3 py-2 text-sm bg-white/25 text-white focus:outline-none focus:border-[#88BF81]">
                   {Array.from({ length: 4 }, (_, i) => i + 1).map((n) => (
                     <option key={n} value={n}>{n}</option>
                   ))}
@@ -830,7 +830,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
                   Alunni con disabilità motorie
                 </label>
                 <select value={form.disabilita} onChange={(e) => setForm({ ...form, disabilita: e.target.value })}
-                  className="w-full border border-white/40 px-3 py-2 text-sm bg-white/25 text-white focus:outline-none focus:border-[#8ac893]">
+                  className="w-full border border-white/40 px-3 py-2 text-sm bg-white/25 text-white focus:outline-none focus:border-[#88BF81]">
                   <option value="nessuno">Nessuno</option>
                   <option value="1">1</option>
                   <option value="2">2</option>
@@ -858,7 +858,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
                     value={form[field as keyof typeof form]}
                     onChange={(e) => setForm({ ...form, [field]: e.target.value })}
                     placeholder={placeholder}
-                    className="w-full border border-white/40 px-3 py-2 text-sm bg-white/25 text-white focus:outline-none focus:border-[#8ac893]"
+                    className="w-full border border-white/40 px-3 py-2 text-sm bg-white/25 text-white focus:outline-none focus:border-[#88BF81]"
                     required={field !== "cellulare"}
                   />
                 </div>
@@ -869,7 +869,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
                   Ordine di scuola
                 </label>
                 <select value={form.ordine} onChange={(e) => setForm({ ...form, ordine: e.target.value })}
-                  className="w-full border border-white/40 px-3 py-2 text-sm bg-white/25 text-white focus:outline-none focus:border-[#8ac893]">
+                  className="w-full border border-white/40 px-3 py-2 text-sm bg-white/25 text-white focus:outline-none focus:border-[#88BF81]">
                   <option>Scuola Primaria</option>
                   <option>Scuola Secondaria di I grado</option>
                   <option>Scuola Secondaria di II grado</option>
@@ -919,7 +919,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
 
 function SlideCentro() {
   const rects = [
-    { color: "#8ac893" }, // top-left green
+    { color: "#88BF81" }, // top-left green
     { color: "#f26c68" }, // top-right coral
     { color: "#d4a853" }, // bottom-left gold
     { color: "#43b9dc" }, // bottom-right blue
