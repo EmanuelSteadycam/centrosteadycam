@@ -472,6 +472,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
   const [selectedSlot, setSelectedSlot] = useState<AvailableSlot | null>(null);
   const [formStep, setFormStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const [form, setForm] = useState({
     giaPart: "", nAlunni: "15", nAdulti: "2", disabilita: "nessuno",
     istituto: "", ordine: "Scuola Secondaria di I grado",
@@ -494,7 +495,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
       .gte("date", today)
       .order("date", { ascending: true })
       .then(({ data }) => {
-        setSlots((data ?? []).filter((s) => s.bookings_count < s.max_capacity));
+        setSlots(data ?? []);
         setSloading(false);
       });
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -503,6 +504,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
   const handleSubmit = async () => {
     if (!selectedSlot) return;
     setSubmitting(true);
+    setSubmitError("");
     const { error } = await supabase.from("display_bookings").insert({
       slot_id: selectedSlot.id,
       tipo_scuola: "pubblica",
@@ -519,10 +521,13 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
       cellulare: form.cellulare || null,
       note: form.giaPart === "si" ? "Classe già partecipante" : null,
     });
-    if (!error) {
-      await supabase.rpc("increment_slot_bookings", { p_slot_id: selectedSlot.id });
-      setScreen("success");
+    if (error) {
+      setSubmitError(error.message);
+      setSubmitting(false);
+      return;
     }
+    await supabase.rpc("increment_slot_bookings", { p_slot_id: selectedSlot.id });
+    setScreen("success");
     setSubmitting(false);
   };
 
@@ -680,6 +685,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
                 </p>
                 <div className="space-y-1.5">
                   {monthSlots.map((slot) => {
+                    const isFull = slot.bookings_count >= slot.max_capacity;
                     const isSelected = selectedSlot?.id === slot.id;
                     const dateLabel = new Date(slot.date + "T00:00:00").toLocaleDateString("it-IT", {
                       weekday: "long", day: "numeric", month: "long",
@@ -687,17 +693,28 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
                     return (
                       <button
                         key={slot.id}
-                        onClick={() => setSelectedSlot(slot)}
-                        className={`w-full text-left px-4 py-2 rounded transition-all border ${
-                          isSelected
-                            ? "border-[#8ac893] bg-[#8ac893]/15"
-                            : "border-white/15 bg-white/5 hover:border-white/30 hover:bg-white/10"
+                        onClick={() => !isFull && setSelectedSlot(slot)}
+                        disabled={isFull}
+                        className={`w-full text-left px-4 py-2 rounded transition-all border flex items-center justify-between ${
+                          isFull
+                            ? "border-white/10 bg-white/3 opacity-50 cursor-not-allowed"
+                            : isSelected
+                              ? "border-[#8ac893] bg-[#8ac893]/15"
+                              : "border-white/15 bg-white/5 hover:border-white/30 hover:bg-white/10"
                         }`}
                       >
-                        <p className="text-base capitalize" style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>{dateLabel}</p>
-                        <p className="text-sm opacity-50" style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>
-                          h. 8.00–13.00
-                        </p>
+                        <div>
+                          <p className="text-base capitalize" style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>{dateLabel}</p>
+                          <p className="text-sm opacity-50" style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>
+                            h. 8.00–13.00
+                          </p>
+                        </div>
+                        {isFull && (
+                          <span className="text-xs px-2 py-0.5 rounded-full border border-white/30 shrink-0 ml-3"
+                            style={{ color: "#ffffff", fontFamily: "var(--font-raleway)" }}>
+                            Prenotata
+                          </span>
+                        )}
                       </button>
                     );
                   })}
@@ -860,6 +877,11 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
           )}
         </div>
 
+        {submitError && (
+          <p className="mt-4 text-sm text-red-400 text-center" style={{ fontFamily: "var(--font-raleway)" }}>
+            Errore: {submitError}
+          </p>
+        )}
         <div className="flex gap-3 mt-6 justify-between">
           <button
             onClick={() => formStep > 0 ? setFormStep(formStep - 1) : setScreen("date")}
