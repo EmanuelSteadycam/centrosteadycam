@@ -656,13 +656,10 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
           {...fadeUp(0)}
           className="relative z-10 w-full max-w-lg mx-auto px-6 py-8 flex flex-col max-h-screen"
         >
-          <h2 className="text-center text-3xl font-bold tracking-[0.1em] uppercase mb-2"
+          <h2 className="text-center text-3xl font-bold tracking-[0.1em] uppercase mb-5 whitespace-nowrap"
             style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>
-            Prenota la visita al Display
-          </h2>
-          <p className="text-center text-base mb-5" style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>
             Scegli una data disponibile
-          </p>
+          </h2>
 
           <div className="overflow-y-auto space-y-4 pb-2" style={{ maxHeight: "45vh" }}>
             {sloading && (
@@ -678,7 +675,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
             )}
             {Object.entries(grouped).map(([month, monthSlots]) => (
               <div key={month}>
-                <p className="text-sm uppercase tracking-widest mb-2 opacity-40" style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>
+                <p className="text-base font-semibold uppercase tracking-widest mb-2" style={{ fontFamily: "var(--font-raleway)", color: "#8ac893" }}>
                   {new Date(month + "-01").toLocaleDateString("it-IT", { month: "long", year: "numeric" })}
                 </p>
                 <div className="space-y-1.5">
