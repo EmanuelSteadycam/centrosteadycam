@@ -593,13 +593,13 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
           </motion.ol>
 
           <motion.div {...fadeUp(0.3)} className="border-t border-white/10 pt-6 mb-8 space-y-3">
-            <p className="text-base" style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>
+            <p className="text-base whitespace-nowrap" style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>
               · Una classe per prenotazione, max tre classi per edificio scolastico
             </p>
-            <p className="text-base" style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>
+            <p className="text-base whitespace-nowrap" style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>
               · Il servizio è gratuito · Orario visita: 8.00–13.00
             </p>
-            <p className="text-base" style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>
+            <p className="text-base whitespace-nowrap" style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>
               · La visita richiede la presenza dell&apos;insegnante per tutta la durata
             </p>
           </motion.div>
