@@ -779,7 +779,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
           ))}
         </div>
 
-        <div style={{ background: "rgba(138,200,147,0.12)", border: "1px solid rgba(138,200,147,0.3)", padding: "24px", borderRadius: "8px" }}>
+        <div style={{ background: "rgba(138,200,147,0.35)", border: "1px solid rgba(138,200,147,0.6)", padding: "24px", borderRadius: "8px" }}>
           {formStep === 0 && (
             <div>
               <label className="block text-xs font-medium tracking-wider uppercase mb-2 text-white/70"
