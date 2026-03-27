@@ -563,29 +563,29 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
           </motion.p>
           <motion.h2
             {...fadeUp(0.1)}
-            className="text-white text-3xl font-light tracking-[0.05em] mb-3"
-            style={{ fontFamily: "var(--font-raleway)" }}
+            className="text-5xl font-light tracking-[0.05em] mb-3"
+            style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}
           >
             Prenota la tua visita
           </motion.h2>
           <motion.p
             {...fadeUp(0.15)}
-            className="text-white/50 text-base mb-10"
+            className="text-white/50 text-lg mb-10"
             style={{ fontFamily: "var(--font-raleway)" }}
           >
             Segui i passi per completare la prenotazione
           </motion.p>
 
-          <motion.ol {...fadeUp(0.2)} className="space-y-4 mb-10">
+          <motion.ol {...fadeUp(0.2)} className="space-y-5 mb-10">
             {steps.map((s, i) => (
               <li key={i} className="flex items-start gap-4">
                 <span
-                  className="shrink-0 w-7 h-7 rounded-full border border-[#8ac893] text-[#8ac893] text-sm flex items-center justify-center mt-0.5"
+                  className="shrink-0 w-8 h-8 rounded-full border border-[#8ac893] text-[#8ac893] text-base flex items-center justify-center mt-0.5"
                   style={{ fontFamily: "var(--font-raleway)" }}
                 >
                   {i + 1}
                 </span>
-                <span className="text-white/80 text-base leading-relaxed" style={{ fontFamily: "var(--font-raleway)" }}>
+                <span className="text-xl leading-relaxed" style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>
                   {s}
                 </span>
               </li>
