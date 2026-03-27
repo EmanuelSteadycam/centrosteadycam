@@ -563,15 +563,15 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
           </motion.p>
           <motion.h2
             {...fadeUp(0.1)}
-            className="text-5xl font-light tracking-[0.05em] mb-3"
+            className="text-5xl font-light tracking-[0.05em] mb-3 whitespace-nowrap"
             style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}
           >
             Prenota la tua visita
           </motion.h2>
           <motion.p
             {...fadeUp(0.15)}
-            className="text-white/50 text-lg mb-10"
-            style={{ fontFamily: "var(--font-raleway)" }}
+            className="text-lg mb-10"
+            style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}
           >
             Segui i passi per completare la prenotazione
           </motion.p>
@@ -593,13 +593,13 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
           </motion.ol>
 
           <motion.div {...fadeUp(0.3)} className="border-t border-white/10 pt-6 mb-8 space-y-3">
-            <p className="text-white/45 text-sm" style={{ fontFamily: "var(--font-raleway)" }}>
+            <p className="text-base" style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>
               · Una classe per prenotazione, max tre classi per edificio scolastico
             </p>
-            <p className="text-white/45 text-sm" style={{ fontFamily: "var(--font-raleway)" }}>
+            <p className="text-base" style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>
               · Il servizio è gratuito · Orario visita: 8.00–13.00
             </p>
-            <p className="text-white/45 text-sm" style={{ fontFamily: "var(--font-raleway)" }}>
+            <p className="text-base" style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>
               · La visita richiede la presenza dell&apos;insegnante per tutta la durata
             </p>
           </motion.div>
@@ -607,8 +607,8 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
           <motion.div {...fadeUp(0.35)} className="flex gap-3">
             <button
               onClick={() => nav("intro")}
-              className="px-6 py-2.5 text-white/40 text-sm tracking-wider uppercase border border-white/15 rounded-full hover:text-white hover:border-white transition-all"
-              style={{ fontFamily: "var(--font-raleway)" }}
+              className="px-6 py-2.5 text-sm tracking-wider uppercase border border-white/40 rounded-full hover:border-white transition-all"
+              style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}
             >
               Annulla
             </button>
