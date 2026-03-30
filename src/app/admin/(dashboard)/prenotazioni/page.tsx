@@ -35,8 +35,8 @@ export default async function PrenotazioniPage() {
       <h1 className="text-xl font-semibold text-gray-800 mb-6">Prenotazioni Display</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-        <EmailToggle enabled={emailEnabled} />
         <WaitlistToggle enabled={waitlistEnabled} />
+        <EmailToggle enabled={emailEnabled} />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
