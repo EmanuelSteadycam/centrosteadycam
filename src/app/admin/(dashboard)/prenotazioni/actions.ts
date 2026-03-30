@@ -1,6 +1,7 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { createSupabaseAdminClient } from "@/lib/supabase-server";
+import { sendApprovalEmail } from "@/lib/mailup";
 
 export async function addSlot(date: string, timeSlot: string) {
   const supabase = createSupabaseAdminClient();
@@ -25,4 +26,56 @@ export async function deleteSlot(id: string) {
   const supabase = createSupabaseAdminClient();
   await supabase.from("display_slots").delete().eq("id", id);
   revalidatePath("/admin/prenotazioni");
+}
+
+export async function setEmailConfirmationEnabled(enabled: boolean) {
+  const supabase = createSupabaseAdminClient();
+  await supabase
+    .from("display_settings")
+    .update({ value: enabled ? "true" : "false" })
+    .eq("key", "confirmation_email_enabled");
+  revalidatePath("/admin/prenotazioni");
+}
+
+export async function approveBooking(id: number): Promise<{ error: string | null }> {
+  const supabase = createSupabaseAdminClient();
+
+  // Fetch booking + slot date
+  const { data: booking, error: fetchErr } = await supabase
+    .from("display_bookings")
+    .select("*, display_slots(date)")
+    .eq("id", id)
+    .single();
+
+  if (fetchErr || !booking) return { error: fetchErr?.message ?? "Prenotazione non trovata" };
+
+  // Update status
+  const { error: updateErr } = await supabase
+    .from("display_bookings")
+    .update({ status: "confirmed" })
+    .eq("id", id);
+
+  if (updateErr) return { error: updateErr.message };
+
+  // Send approval email
+  const slotDate = booking.display_slots?.date;
+  if (slotDate) {
+    try {
+      await sendApprovalEmail({
+        nome: booking.nome,
+        cognome: booking.cognome,
+        email: booking.email,
+        istituto: booking.istituto,
+        classe: booking.classe,
+        n_alunni: booking.n_alunni,
+        n_adulti: booking.n_adulti,
+        date: slotDate,
+      });
+    } catch (mailErr) {
+      console.error("MailUp approval email failed:", mailErr);
+    }
+  }
+
+  revalidatePath("/admin/prenotazioni");
+  return { error: null };
 }

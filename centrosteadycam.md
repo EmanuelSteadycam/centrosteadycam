@@ -162,28 +162,56 @@ Accesso protetto via Supabase Auth (email/password).
 | `src/app/admin/(dashboard)/layout.tsx` | Layout con sidebar |
 | `src/app/admin/(dashboard)/page.tsx` | Dashboard panoramica |
 | `src/app/admin/(dashboard)/prenotazioni/page.tsx` | Gestione slot + iscrizioni |
-| `src/app/admin/(dashboard)/prenotazioni/actions.ts` | Server Actions (add/toggle/delete slot) |
+| `src/app/admin/(dashboard)/prenotazioni/actions.ts` | Server Actions (slot + approveBooking + emailToggle) |
 | `src/components/admin/AdminSidebar.tsx` | Sidebar navigazione |
 | `src/components/admin/SlotManager.tsx` | Componente client gestione slot |
-| `src/components/admin/BookingsList.tsx` | Lista iscrizioni con filtro + export CSV |
+| `src/components/admin/BookingsList.tsx` | Lista iscrizioni con filtro + export CSV + bottone Approva |
+| `src/components/admin/EmailToggle.tsx` | Toggle ON/OFF mail di conferma automatica |
 | `src/lib/supabase-server.ts` | Client Supabase SSR (anon + service role) |
+| `src/lib/mailup.ts` | Client MailUp OAuth2 — 3 template email + addToDisplayGroup |
+| `src/app/display/actions.ts` | Server Action prenotazione → salva + email + gruppo MailUp |
+| `src/app/api/cron/reminders/route.ts` | Cron giornaliero promemoria visita |
 | `src/components/navigation/SiteShell.tsx` | Nasconde Navbar/Footer su /admin e /display |
 | `supabase/schema_admin.sql` | Tabelle display_slots + display_bookings + RLS |
 
 ### Setup admin (prima volta)
 1. Esegui `supabase/schema_admin.sql` nel SQL Editor di Supabase
-2. Crea utente in Supabase Auth → Authentication → Users
-3. Se email non verificata, esegui:
+2. Esegui questo SQL per la tabella impostazioni:
+   ```sql
+   CREATE TABLE IF NOT EXISTS display_settings (
+     key text PRIMARY KEY,
+     value text NOT NULL
+   );
+   INSERT INTO display_settings (key, value)
+   VALUES ('confirmation_email_enabled', 'true')
+   ON CONFLICT (key) DO NOTHING;
+   ```
+3. Crea utente in Supabase Auth → Authentication → Users
+4. Se email non verificata, esegui:
    ```sql
    UPDATE auth.users SET email_confirmed_at = NOW() WHERE email = 'tua@email.com';
    ```
-4. Aggiungi a `.env.local`:
+5. Aggiungi a `.env.local` (e su Vercel → Settings → Environment Variables):
    ```
    SUPABASE_SERVICE_ROLE_KEY=eyJ...
+   MAILUP_CLIENT_ID=...
+   MAILUP_CLIENT_SECRET=...
+   MAILUP_USERNAME=...
+   MAILUP_PASSWORD=...
+   MAILUP_LIST_ID=1
+   MAILUP_DISPLAY_GROUP_ID=23
+   CRON_SECRET=...
+   REMINDER_DAYS=3
    ```
 
+### Email automatiche (MailUp)
+- **Conferma ricezione** — inviata subito dopo la prenotazione (toggle ON/OFF in admin)
+- **Approvazione manuale** — bottone "✓ Approva" in admin → cambia status + invia email
+- **Promemoria** — cron ogni giorno alle 07:00 UTC, invia ai confermati con visita tra REMINDER_DAYS giorni
+- Il docente viene aggiunto al gruppo Display Techno (ID 23) in MailUp Lista 1 (upsert)
+
 ### Sezioni admin disponibili
-- **Prenotazioni** ✅ — slot + iscrizioni
+- **Prenotazioni** ✅ — slot + iscrizioni + email toggle + approvazione
 - **Blog** 🚧 — in costruzione
 - **Pagine** 🚧 — in costruzione
 - **Staff** 🚧 — in costruzione

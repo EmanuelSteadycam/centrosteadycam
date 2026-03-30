@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { approveBooking } from "@/app/admin/(dashboard)/prenotazioni/actions";
 
 type Booking = {
   id: number; created_at: string; istituto: string; nome: string; cognome: string;
@@ -10,17 +11,33 @@ type Booking = {
 
 export default function BookingsList({ bookings }: { bookings: Booking[] }) {
   const [filter, setFilter] = useState("");
+  const [localBookings, setLocalBookings] = useState(bookings);
+  const [isPending, startTransition] = useTransition();
+  const [approvingId, setApprovingId] = useState<number | null>(null);
 
-  const filtered = bookings.filter((b) =>
+  const filtered = localBookings.filter((b) =>
     !filter ||
     b.istituto.toLowerCase().includes(filter.toLowerCase()) ||
     b.cognome.toLowerCase().includes(filter.toLowerCase()) ||
     b.email.toLowerCase().includes(filter.toLowerCase())
   );
 
+  const handleApprove = (id: number) => {
+    setApprovingId(id);
+    startTransition(async () => {
+      const result = await approveBooking(id);
+      if (!result.error) {
+        setLocalBookings((prev) =>
+          prev.map((b) => b.id === id ? { ...b, status: "confirmed" } : b)
+        );
+      }
+      setApprovingId(null);
+    });
+  };
+
   const exportCSV = () => {
     const header = "Data,Istituto,Insegnante,Email,Telefono,Classe,Alunni,Adulti,Tipo visita,Stato";
-    const rows = bookings.map((b) => [
+    const rows = localBookings.map((b) => [
       b.display_slots ? b.display_slots.date : "",
       b.istituto, `${b.nome} ${b.cognome}`, b.email,
       b.cellulare ?? "", b.classe, b.n_alunni, b.n_adulti, b.tipo_visita, b.status,
@@ -67,10 +84,10 @@ export default function BookingsList({ bookings }: { bookings: Booking[] }) {
                   {b.cellulare && ` · ${b.cellulare}`}
                 </p>
                 <p className="text-xs text-gray-400 mt-0.5">
-                  Cl. {b.classe} · {b.n_alunni} alunni · {b.n_adulti} adulti · {b.tipo_visita}
+                  Cl. {b.classe} · {b.n_alunni} alunni · {b.n_adulti} adulti
                 </p>
               </div>
-              <div className="text-right shrink-0 ml-3">
+              <div className="text-right shrink-0 ml-3 flex flex-col items-end gap-1.5">
                 {b.display_slots && (
                   <p className="text-xs text-gray-500">
                     {new Date(b.display_slots.date + "T00:00:00").toLocaleDateString("it-IT", {
@@ -86,6 +103,15 @@ export default function BookingsList({ bookings }: { bookings: Booking[] }) {
                   {b.status === "confirmed" ? "Confermata" :
                    b.status === "cancelled" ? "Annullata" : "In attesa"}
                 </span>
+                {b.status === "pending" && (
+                  <button
+                    onClick={() => handleApprove(b.id)}
+                    disabled={isPending && approvingId === b.id}
+                    className="text-xs px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors disabled:opacity-50"
+                  >
+                    {isPending && approvingId === b.id ? "..." : "✓ Approva"}
+                  </button>
+                )}
               </div>
             </div>
           </div>

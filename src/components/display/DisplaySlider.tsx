@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { createBrowserClient } from "@supabase/ssr";
@@ -507,6 +507,7 @@ function useSupabase() {
 
 function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
   const [screen, setScreen] = useState<"intro" | "date" | "form" | "success">("intro");
+  const dateListRef = useRef<HTMLDivElement>(null);
   const [slots, setSlots] = useState<AvailableSlot[]>([]);
   const [sloading, setSloading] = useState(true);
   const [selectedSlot, setSelectedSlot] = useState<AvailableSlot | null>(null);
@@ -678,10 +679,10 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
             style={{ fontFamily: "var(--font-raleway)", fontSize: "30px" }}>
             Richiesta inviata
           </h2>
-          <p className="text-white/60 text-sm mb-2" style={{ fontFamily: "var(--font-raleway)" }}>
+          <p className="text-white font-semibold mb-3" style={{ fontFamily: "var(--font-raleway)", fontSize: "22px" }}>
             Grazie, {form.nome} {form.cognome}.
           </p>
-          <p className="text-white/40 text-xs mb-10 leading-relaxed" style={{ fontFamily: "var(--font-raleway)" }}>
+          <p className="text-white/80 mb-10 leading-relaxed" style={{ fontFamily: "var(--font-raleway)", fontSize: "18px" }}>
             Lo staff del Centro ti contatterà a breve per confermare la visita.
           </p>
           <PillBtn onClick={() => nav("intro")}>← Home</PillBtn>
@@ -704,7 +705,8 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
             Scegli una data disponibile
           </h2>
 
-          <div className="overflow-y-auto space-y-4 pb-2" style={{ maxHeight: "45vh" }}>
+          <div className="relative flex gap-2">
+          <div ref={dateListRef} className="overflow-y-auto space-y-4 pb-2 flex-1" style={{ maxHeight: "45vh", scrollbarWidth: "none" }}>
             {sloading && (
               <p className="text-center text-base py-6" style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>
                 Caricamento...
@@ -748,8 +750,8 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
                           </p>
                         </div>
                         {isFull && (
-                          <span className="text-xs px-2 py-0.5 rounded-full border border-white/30 shrink-0 ml-3"
-                            style={{ color: "#ffffff", fontFamily: "var(--font-raleway)" }}>
+                          <span className="text-xs font-semibold px-3 py-1 rounded-full shrink-0 ml-3"
+                            style={{ background: "#ffe694", color: "#1a1a1a", fontFamily: "var(--font-raleway)" }}>
                             Prenotata
                           </span>
                         )}
@@ -759,6 +761,22 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
                 </div>
               </div>
             ))}
+          </div>
+          {/* Frecce scroll */}
+          <div className="flex flex-col justify-between py-1 shrink-0">
+            <button
+              onClick={() => dateListRef.current?.scrollBy({ top: -120, behavior: "smooth" })}
+              className="w-8 h-8 flex items-center justify-center rounded-full border border-white/30 hover:border-[#88BF81] hover:text-[#88BF81] transition-all"
+              style={{ color: "#ffffff" }}>
+              ▲
+            </button>
+            <button
+              onClick={() => dateListRef.current?.scrollBy({ top: 120, behavior: "smooth" })}
+              className="w-8 h-8 flex items-center justify-center rounded-full border border-white/30 hover:border-[#88BF81] hover:text-[#88BF81] transition-all"
+              style={{ color: "#ffffff" }}>
+              ▼
+            </button>
+          </div>
           </div>
 
           <div className="flex gap-3 mt-5 justify-between">

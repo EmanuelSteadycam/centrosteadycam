@@ -1,11 +1,12 @@
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import SlotManager from "@/components/admin/SlotManager";
 import BookingsList from "@/components/admin/BookingsList";
+import EmailToggle from "@/components/admin/EmailToggle";
 
 export default async function PrenotazioniPage() {
   const supabase = createSupabaseServerClient();
 
-  const [{ data: slots }, { data: bookings }] = await Promise.all([
+  const [{ data: slots }, { data: bookings }, { data: settings }] = await Promise.all([
     supabase
       .from("display_slots")
       .select("*")
@@ -16,17 +17,25 @@ export default async function PrenotazioniPage() {
       .select("*, display_slots(date, time_slot)")
       .order("created_at", { ascending: false })
       .limit(100),
+    supabase
+      .from("display_settings")
+      .select("value")
+      .eq("key", "confirmation_email_enabled")
+      .single(),
   ]);
+
+  const emailEnabled = settings?.value === "true";
 
   return (
     <div>
       <h1 className="text-xl font-semibold text-gray-800 mb-6">Prenotazioni Display</h1>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        {/* Gestione slot */}
-        <SlotManager slots={slots ?? []} />
+      <div className="mb-4">
+        <EmailToggle enabled={emailEnabled} />
+      </div>
 
-        {/* Lista iscrizioni */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <SlotManager slots={slots ?? []} />
         <BookingsList bookings={bookings ?? []} />
       </div>
     </div>

@@ -1,5 +1,6 @@
 "use server";
 import { createSupabaseAdminClient } from "@/lib/supabase-server";
+import { sendConfirmationEmail, addToDisplayGroup } from "@/lib/mailup";
 
 export async function submitBooking(data: {
   slot_id: string;
@@ -27,6 +28,51 @@ export async function submitBooking(data: {
   if (error) return { error: error.message };
 
   await supabase.rpc("increment_slot_bookings", { p_slot_id: data.slot_id });
+
+  // Fetch slot date for the confirmation email
+  const { data: slot } = await supabase
+    .from("display_slots")
+    .select("date")
+    .eq("id", data.slot_id)
+    .single();
+
+  // Check if confirmation email is enabled
+  const { data: setting } = await supabase
+    .from("display_settings")
+    .select("value")
+    .eq("key", "confirmation_email_enabled")
+    .single();
+
+  const emailEnabled = setting?.value === "true";
+
+  if (slot && emailEnabled) {
+    try {
+      await addToDisplayGroup({
+        email: data.email,
+        nome: data.nome,
+        cognome: data.cognome,
+        istituto: data.istituto,
+      });
+    } catch (err) {
+      console.error("MailUp addToGroup failed:", err);
+    }
+
+    try {
+      await sendConfirmationEmail({
+        nome: data.nome,
+        cognome: data.cognome,
+        email: data.email,
+        istituto: data.istituto,
+        classe: data.classe,
+        n_alunni: data.n_alunni,
+        n_adulti: data.n_adulti,
+        date: slot.date,
+      });
+    } catch (mailErr) {
+      console.error("MailUp confirmation email failed:", mailErr);
+      // Email failure does not block the booking
+    }
+  }
 
   return { error: null };
 }
