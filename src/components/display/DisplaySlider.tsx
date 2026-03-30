@@ -779,17 +779,17 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
           ))}
         </div>
 
-        <div style={{ background: "#88BF81", border: "1px solid #88BF81", padding: "24px", borderRadius: "8px" }}>
+        <div style={{ background: "#ffe694", padding: "24px", borderRadius: "8px" }}>
           {formStep === 0 && (
             <div>
-              <label className="block text-xs font-medium tracking-wider uppercase mb-2 text-white/70"
+              <label className="block text-xs font-medium tracking-wider uppercase mb-2 text-gray-700"
                 style={{ fontFamily: "var(--font-raleway)" }}>
                 La tua classe ha già partecipato ai laboratori del Centro Display?
               </label>
               <select
                 value={form.giaPart}
                 onChange={(e) => setForm({ ...form, giaPart: e.target.value })}
-                className="w-full border border-white/40 px-3 py-2 text-sm bg-white/25 text-white focus:outline-none focus:border-[#88BF81]"
+                className="w-full border border-gray-300 px-3 py-2 text-sm bg-white text-gray-800 focus:outline-none focus:border-gray-500"
               >
                 <option value="">Seleziona</option>
                 <option value="si">Sì</option>
@@ -801,36 +801,36 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
           {formStep === 1 && (
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-medium tracking-wider uppercase mb-1 text-white/70"
+                <label className="block text-xs font-medium tracking-wider uppercase mb-1 text-gray-700"
                   style={{ fontFamily: "var(--font-raleway)" }}>
                   N° alunni (max 30)
                 </label>
                 <select value={form.nAlunni} onChange={(e) => setForm({ ...form, nAlunni: e.target.value })}
-                  className="w-full border border-white/40 px-3 py-2 text-sm bg-white/25 text-white focus:outline-none focus:border-[#88BF81]">
+                  className="w-full border border-gray-300 px-3 py-2 text-sm bg-white text-gray-800 focus:outline-none focus:border-gray-500">
                   {Array.from({ length: 30 }, (_, i) => i + 1).map((n) => (
                     <option key={n} value={n}>{n}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium tracking-wider uppercase mb-1 text-white/70"
+                <label className="block text-xs font-medium tracking-wider uppercase mb-1 text-gray-700"
                   style={{ fontFamily: "var(--font-raleway)" }}>
                   N° adulti (max 4)
                 </label>
                 <select value={form.nAdulti} onChange={(e) => setForm({ ...form, nAdulti: e.target.value })}
-                  className="w-full border border-white/40 px-3 py-2 text-sm bg-white/25 text-white focus:outline-none focus:border-[#88BF81]">
+                  className="w-full border border-gray-300 px-3 py-2 text-sm bg-white text-gray-800 focus:outline-none focus:border-gray-500">
                   {Array.from({ length: 4 }, (_, i) => i + 1).map((n) => (
                     <option key={n} value={n}>{n}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium tracking-wider uppercase mb-1 text-white/70"
+                <label className="block text-xs font-medium tracking-wider uppercase mb-1 text-gray-700"
                   style={{ fontFamily: "var(--font-raleway)" }}>
                   Alunni con disabilità motorie
                 </label>
                 <select value={form.disabilita} onChange={(e) => setForm({ ...form, disabilita: e.target.value })}
-                  className="w-full border border-white/40 px-3 py-2 text-sm bg-white/25 text-white focus:outline-none focus:border-[#88BF81]">
+                  className="w-full border border-gray-300 px-3 py-2 text-sm bg-white text-gray-800 focus:outline-none focus:border-gray-500">
                   <option value="nessuno">Nessuno</option>
                   <option value="1">1</option>
                   <option value="2">2</option>
@@ -851,25 +851,25 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
                 { label: "Cellulare (opzionale)", field: "cellulare", placeholder: "", type: "tel" },
               ].map(({ label, field, placeholder, type }) => (
                 <div key={field}>
-                  <label className="block text-xs font-medium tracking-wider uppercase mb-1 text-white/70"
+                  <label className="block text-xs font-medium tracking-wider uppercase mb-1 text-gray-700"
                     style={{ fontFamily: "var(--font-raleway)" }}>{label}</label>
                   <input
                     type={type}
                     value={form[field as keyof typeof form]}
                     onChange={(e) => setForm({ ...form, [field]: e.target.value })}
                     placeholder={placeholder}
-                    className="w-full border border-white/40 px-3 py-2 text-sm bg-white/25 text-white focus:outline-none focus:border-[#88BF81]"
+                    className="w-full border border-gray-300 px-3 py-2 text-sm bg-white text-gray-800 focus:outline-none focus:border-gray-500"
                     required={field !== "cellulare"}
                   />
                 </div>
               ))}
               <div>
-                <label className="block text-xs font-medium tracking-wider uppercase mb-1 text-white/70"
+                <label className="block text-xs font-medium tracking-wider uppercase mb-1 text-gray-700"
                   style={{ fontFamily: "var(--font-raleway)" }}>
                   Ordine di scuola
                 </label>
                 <select value={form.ordine} onChange={(e) => setForm({ ...form, ordine: e.target.value })}
-                  className="w-full border border-white/40 px-3 py-2 text-sm bg-white/25 text-white focus:outline-none focus:border-[#88BF81]">
+                  className="w-full border border-gray-300 px-3 py-2 text-sm bg-white text-gray-800 focus:outline-none focus:border-gray-500">
                   <option>Scuola Primaria</option>
                   <option>Scuola Secondaria di I grado</option>
                   <option>Scuola Secondaria di II grado</option>
