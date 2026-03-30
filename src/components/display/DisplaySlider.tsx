@@ -568,8 +568,8 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
           </motion.p>
           <motion.h2
             {...fadeUp(0.1)}
-            className="text-5xl font-light tracking-[0.05em] mb-3 whitespace-nowrap"
-            style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}
+            className="font-bold tracking-[0.05em] mb-3 whitespace-nowrap"
+            style={{ fontFamily: "var(--font-raleway)", color: "#ffffff", fontSize: "30px" }}
           >
             Prenota la tua visita
           </motion.h2>
@@ -636,8 +636,8 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
       <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
         {BG}
         <motion.div {...fadeUp(0)} className="relative z-10 text-center px-8 max-w-md">
-          <h2 className="text-2xl font-light text-white tracking-[0.2em] uppercase mb-4"
-            style={{ fontFamily: "var(--font-raleway)" }}>
+          <h2 className="font-bold text-white tracking-[0.2em] uppercase mb-4"
+            style={{ fontFamily: "var(--font-raleway)", fontSize: "30px" }}>
             Richiesta inviata
           </h2>
           <p className="text-white/60 text-sm mb-2" style={{ fontFamily: "var(--font-raleway)" }}>
@@ -760,8 +760,8 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
         {...fadeUp(0)}
         className="relative z-10 w-full max-w-xl mx-auto px-6 py-8 overflow-y-auto max-h-screen"
       >
-        <h2 className="text-center text-white text-2xl font-light tracking-[0.1em] uppercase mb-4"
-          style={{ fontFamily: "var(--font-raleway)" }}>
+        <h2 className="text-center text-white font-bold tracking-[0.1em] uppercase mb-4"
+          style={{ fontFamily: "var(--font-raleway)", fontSize: "30px" }}>
           Prenota la visita
         </h2>
         <div className="text-center mb-6 px-4 py-3 rounded-lg" style={{ background: "rgba(136,191,129,0.15)", border: "1px solid #88BF81" }}>
