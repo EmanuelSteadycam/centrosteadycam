@@ -453,6 +453,45 @@ function SlideRoom({
   );
 }
 
+// ── Custom Select ─────────────────────────────────────────────────────────
+function CustomSelect({ value, onChange, options }: {
+  value: string;
+  onChange: (v: string) => void;
+  options: { value: string; label: string }[];
+}) {
+  const [open, setOpen] = useState(false);
+  const selected = options.find((o) => o.value === value);
+  return (
+    <div className="relative" onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setOpen(false); }}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 focus:outline-none"
+        style={{ fontFamily: "var(--font-raleway)" }}
+      >
+        <span>{selected?.label ?? "Seleziona"}</span>
+        <span className="ml-2 text-gray-400">{open ? "▲" : "▼"}</span>
+      </button>
+      {open && (
+        <ul className="absolute z-50 w-full border border-gray-200 bg-white shadow-lg max-h-52 overflow-auto">
+          {options.map((o) => (
+            <li key={o.value}>
+              <button
+                type="button"
+                onClick={() => { onChange(o.value); setOpen(false); }}
+                className={`w-full text-left px-3 py-2 text-sm hover:bg-[#ffe694] transition-colors ${o.value === value ? "bg-[#ffe694] font-medium" : ""}`}
+                style={{ fontFamily: "var(--font-raleway)", color: "#333" }}
+              >
+                {o.label}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 type AvailableSlot = {
   id: string; date: string; time_slot: string;
   bookings_count: number; max_capacity: number;
@@ -786,15 +825,15 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
                 style={{ fontFamily: "var(--font-raleway)" }}>
                 La tua classe ha già partecipato ai laboratori del Centro Display?
               </label>
-              <select
+              <CustomSelect
                 value={form.giaPart}
-                onChange={(e) => setForm({ ...form, giaPart: e.target.value })}
-                className="w-full border border-gray-300 px-3 py-2 text-sm bg-white text-gray-800 focus:outline-none focus:border-gray-500"
-              >
-                <option value="">Seleziona</option>
-                <option value="si">Sì</option>
-                <option value="no">No, è la prima volta</option>
-              </select>
+                onChange={(v) => setForm({ ...form, giaPart: v })}
+                options={[
+                  { value: "", label: "Seleziona" },
+                  { value: "si", label: "Sì" },
+                  { value: "no", label: "No, è la prima volta" },
+                ]}
+              />
             </div>
           )}
 
@@ -805,37 +844,38 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
                   style={{ fontFamily: "var(--font-raleway)" }}>
                   N° alunni (max 30)
                 </label>
-                <select value={form.nAlunni} onChange={(e) => setForm({ ...form, nAlunni: e.target.value })}
-                  className="w-full border border-gray-300 px-3 py-2 text-sm bg-white text-gray-800 focus:outline-none focus:border-gray-500">
-                  {Array.from({ length: 30 }, (_, i) => i + 1).map((n) => (
-                    <option key={n} value={n}>{n}</option>
-                  ))}
-                </select>
+                <CustomSelect
+                  value={form.nAlunni}
+                  onChange={(v) => setForm({ ...form, nAlunni: v })}
+                  options={Array.from({ length: 30 }, (_, i) => ({ value: String(i + 1), label: String(i + 1) }))}
+                />
               </div>
               <div>
                 <label className="block text-xs font-medium tracking-wider uppercase mb-1 text-gray-700"
                   style={{ fontFamily: "var(--font-raleway)" }}>
                   N° adulti (max 4)
                 </label>
-                <select value={form.nAdulti} onChange={(e) => setForm({ ...form, nAdulti: e.target.value })}
-                  className="w-full border border-gray-300 px-3 py-2 text-sm bg-white text-gray-800 focus:outline-none focus:border-gray-500">
-                  {Array.from({ length: 4 }, (_, i) => i + 1).map((n) => (
-                    <option key={n} value={n}>{n}</option>
-                  ))}
-                </select>
+                <CustomSelect
+                  value={form.nAdulti}
+                  onChange={(v) => setForm({ ...form, nAdulti: v })}
+                  options={Array.from({ length: 4 }, (_, i) => ({ value: String(i + 1), label: String(i + 1) }))}
+                />
               </div>
               <div>
                 <label className="block text-xs font-medium tracking-wider uppercase mb-1 text-gray-700"
                   style={{ fontFamily: "var(--font-raleway)" }}>
                   Alunni con disabilità motorie
                 </label>
-                <select value={form.disabilita} onChange={(e) => setForm({ ...form, disabilita: e.target.value })}
-                  className="w-full border border-gray-300 px-3 py-2 text-sm bg-white text-gray-800 focus:outline-none focus:border-gray-500">
-                  <option value="nessuno">Nessuno</option>
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="piu">Più di due</option>
-                </select>
+                <CustomSelect
+                  value={form.disabilita}
+                  onChange={(v) => setForm({ ...form, disabilita: v })}
+                  options={[
+                    { value: "nessuno", label: "Nessuno" },
+                    { value: "1", label: "1" },
+                    { value: "2", label: "2" },
+                    { value: "piu", label: "Più di due" },
+                  ]}
+                />
               </div>
             </div>
           )}
@@ -868,12 +908,15 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
                   style={{ fontFamily: "var(--font-raleway)" }}>
                   Ordine di scuola
                 </label>
-                <select value={form.ordine} onChange={(e) => setForm({ ...form, ordine: e.target.value })}
-                  className="w-full border border-gray-300 px-3 py-2 text-sm bg-white text-gray-800 focus:outline-none focus:border-gray-500">
-                  <option>Scuola Primaria</option>
-                  <option>Scuola Secondaria di I grado</option>
-                  <option>Scuola Secondaria di II grado</option>
-                </select>
+                <CustomSelect
+                  value={form.ordine}
+                  onChange={(v) => setForm({ ...form, ordine: v })}
+                  options={[
+                    { value: "Scuola Primaria", label: "Scuola Primaria" },
+                    { value: "Scuola Secondaria di I grado", label: "Scuola Secondaria di I grado" },
+                    { value: "Scuola Secondaria di II grado", label: "Scuola Secondaria di II grado" },
+                  ]}
+                />
               </div>
             </div>
           )}
