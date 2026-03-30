@@ -568,7 +568,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
           </motion.p>
           <motion.h2
             {...fadeUp(0.1)}
-            className="font-bold tracking-[0.05em] mb-3 whitespace-nowrap"
+            className="font-bold tracking-[0.05em] mb-3 whitespace-nowrap uppercase"
             style={{ fontFamily: "var(--font-raleway)", color: "#ffffff", fontSize: "30px" }}
           >
             Prenota la tua visita
