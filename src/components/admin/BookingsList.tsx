@@ -1,6 +1,6 @@
 "use client";
 import { useState, useTransition } from "react";
-import { approveBooking } from "@/app/admin/(dashboard)/prenotazioni/actions";
+import { approveBooking, rejectBooking } from "@/app/admin/(dashboard)/prenotazioni/actions";
 
 type Booking = {
   id: number; created_at: string; istituto: string; nome: string; cognome: string;
@@ -14,6 +14,7 @@ export default function BookingsList({ bookings }: { bookings: Booking[] }) {
   const [localBookings, setLocalBookings] = useState(bookings);
   const [isPending, startTransition] = useTransition();
   const [approvingId, setApprovingId] = useState<number | null>(null);
+  const [rejectingId, setRejectingId] = useState<number | null>(null);
 
   const filtered = localBookings.filter((b) =>
     !filter ||
@@ -32,6 +33,20 @@ export default function BookingsList({ bookings }: { bookings: Booking[] }) {
         );
       }
       setApprovingId(null);
+    });
+  };
+
+  const handleReject = (id: number) => {
+    if (!confirm("Rifiutare questa richiesta e inviare la mail di non accettazione?")) return;
+    setRejectingId(id);
+    startTransition(async () => {
+      const result = await rejectBooking(id);
+      if (!result.error) {
+        setLocalBookings((prev) =>
+          prev.map((b) => b.id === id ? { ...b, status: "cancelled" } : b)
+        );
+      }
+      setRejectingId(null);
     });
   };
 
@@ -104,13 +119,22 @@ export default function BookingsList({ bookings }: { bookings: Booking[] }) {
                    b.status === "cancelled" ? "Annullata" : "In attesa"}
                 </span>
                 {b.status === "pending" && (
-                  <button
-                    onClick={() => handleApprove(b.id)}
-                    disabled={isPending && approvingId === b.id}
-                    className="text-xs px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors disabled:opacity-50"
-                  >
-                    {isPending && approvingId === b.id ? "..." : "✓ Approva"}
-                  </button>
+                  <div className="flex gap-1.5">
+                    <button
+                      onClick={() => handleApprove(b.id)}
+                      disabled={isPending && approvingId === b.id}
+                      className="text-xs px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors disabled:opacity-50"
+                    >
+                      {isPending && approvingId === b.id ? "..." : "✓ Approva"}
+                    </button>
+                    <button
+                      onClick={() => handleReject(b.id)}
+                      disabled={isPending && rejectingId === b.id}
+                      className="text-xs px-2.5 py-0.5 rounded-full bg-red-50 text-red-500 hover:bg-red-100 transition-colors disabled:opacity-50"
+                    >
+                      {isPending && rejectingId === b.id ? "..." : "✕ Rifiuta"}
+                    </button>
+                  </div>
                 )}
               </div>
             </div>

@@ -171,7 +171,7 @@ export async function sendConfirmationEmail(booking: {
 
   const html = emailLayout(`
     <p>Gentile <strong>${booking.nome} ${booking.cognome}</strong>,</p>
-    <p>abbiamo ricevuto la tua richiesta di prenotazione per il <strong>Laboratorio Display Techno</strong>.</p>
+    <p>abbiamo ricevuto la tua richiesta di prenotazione per la <strong>visita al Centro</strong>.</p>
     ${detailTable([
       ["Data richiesta", dateFormatted],
       ["Orario", "h. 8.00 – 13.00"],
@@ -186,7 +186,7 @@ export async function sendConfirmationEmail(booking: {
   await sendMail({
     to: booking.email,
     toName: `${booking.nome} ${booking.cognome}`,
-    subject: "Prenotazione ricevuta — Display Techno | Centro Steadycam",
+    subject: "Richiesta di prenotazione ricevuta — Centro Steadycam",
     html,
   });
 }
@@ -209,7 +209,7 @@ export async function sendApprovalEmail(booking: {
 
   const html = emailLayout(`
     <p>Gentile <strong>${booking.nome} ${booking.cognome}</strong>,</p>
-    <p>siamo lieti di comunicarti che la tua prenotazione per il <strong>Laboratorio Display Techno</strong> è stata <strong style="color:#3a8a35;">confermata</strong>!</p>
+    <p>siamo lieti di comunicarti che la tua prenotazione per la <strong>visita al Centro</strong> è stata <strong style="color:#3a8a35;">confermata</strong>!</p>
     ${detailTable([
       ["Data confermata", dateFormatted],
       ["Orario", "h. 8.00 – 13.00"],
@@ -224,7 +224,7 @@ export async function sendApprovalEmail(booking: {
   await sendMail({
     to: booking.email,
     toName: `${booking.nome} ${booking.cognome}`,
-    subject: "Prenotazione confermata — Display Techno | Centro Steadycam",
+    subject: "Prenotazione confermata — Centro Steadycam",
     html,
   });
 }
@@ -248,7 +248,7 @@ export async function sendReminderEmail(booking: {
 
   const html = emailLayout(`
     <p>Gentile <strong>${booking.nome} ${booking.cognome}</strong>,</p>
-    <p>ti ricordiamo che la visita al <strong>Laboratorio Display Techno</strong> è prevista <strong>tra ${booking.reminderDays} ${booking.reminderDays === 1 ? "giorno" : "giorni"}</strong>.</p>
+    <p>ti ricordiamo che la <strong>visita al Centro</strong> è prevista <strong>tra ${booking.reminderDays} ${booking.reminderDays === 1 ? "giorno" : "giorni"}</strong>.</p>
     ${detailTable([
       ["Data", dateFormatted],
       ["Orario", "h. 8.00 – 13.00"],
@@ -263,7 +263,41 @@ export async function sendReminderEmail(booking: {
   await sendMail({
     to: booking.email,
     toName: `${booking.nome} ${booking.cognome}`,
-    subject: `Promemoria visita tra ${booking.reminderDays} giorni — Display Techno | Centro Steadycam`,
+    subject: `Promemoria: visita al Centro tra ${booking.reminderDays} ${booking.reminderDays === 1 ? "giorno" : "giorni"} — Centro Steadycam`,
+    html,
+  });
+}
+
+// ── 4. Rifiuto richiesta ───────────────────────────────────────────────────
+export async function sendRejectionEmail(booking: {
+  nome: string;
+  cognome: string;
+  email: string;
+  istituto: string;
+  classe: string;
+  date: string;
+}) {
+  const dateFormatted = new Date(booking.date + "T00:00:00").toLocaleDateString(
+    "it-IT",
+    { weekday: "long", day: "numeric", month: "long", year: "numeric" }
+  );
+
+  const html = emailLayout(`
+    <p>Gentile <strong>${booking.nome} ${booking.cognome}</strong>,</p>
+    <p>ci dispiace comunicarti che la tua richiesta di prenotazione per la <strong>visita al Centro</strong> non ha potuto essere accettata per la data selezionata.</p>
+    ${detailTable([
+      ["Data richiesta", dateFormatted],
+      ["Istituto / Plesso", booking.istituto],
+      ["Classe", booking.classe],
+    ])}
+    <p>La disponibilità delle date è limitata: ti invitiamo a verificare la presenza di nuove date disponibili sul nostro sito oppure a contattarci direttamente per trovare insieme una soluzione.</p>
+    <p style="margin-top:28px;">Ci scusiamo per l'inconveniente.<br><strong>Staff Centro Steadycam</strong></p>
+  `);
+
+  await sendMail({
+    to: booking.email,
+    toName: `${booking.nome} ${booking.cognome}`,
+    subject: "Richiesta di prenotazione — Centro Steadycam",
     html,
   });
 }

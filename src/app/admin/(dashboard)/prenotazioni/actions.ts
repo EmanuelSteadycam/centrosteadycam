@@ -1,7 +1,7 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { createSupabaseAdminClient } from "@/lib/supabase-server";
-import { sendApprovalEmail } from "@/lib/mailup";
+import { sendApprovalEmail, sendRejectionEmail } from "@/lib/mailup";
 
 export async function addSlot(date: string, timeSlot: string) {
   const supabase = createSupabaseAdminClient();
@@ -73,6 +73,44 @@ export async function approveBooking(id: number): Promise<{ error: string | null
       });
     } catch (mailErr) {
       console.error("MailUp approval email failed:", mailErr);
+    }
+  }
+
+  revalidatePath("/admin/prenotazioni");
+  return { error: null };
+}
+
+export async function rejectBooking(id: number): Promise<{ error: string | null }> {
+  const supabase = createSupabaseAdminClient();
+
+  const { data: booking, error: fetchErr } = await supabase
+    .from("display_bookings")
+    .select("*, display_slots(date)")
+    .eq("id", id)
+    .single();
+
+  if (fetchErr || !booking) return { error: fetchErr?.message ?? "Prenotazione non trovata" };
+
+  const { error: updateErr } = await supabase
+    .from("display_bookings")
+    .update({ status: "cancelled" })
+    .eq("id", id);
+
+  if (updateErr) return { error: updateErr.message };
+
+  const slotDate = booking.display_slots?.date;
+  if (slotDate) {
+    try {
+      await sendRejectionEmail({
+        nome: booking.nome,
+        cognome: booking.cognome,
+        email: booking.email,
+        istituto: booking.istituto,
+        classe: booking.classe,
+        date: slotDate,
+      });
+    } catch (mailErr) {
+      console.error("MailUp rejection email failed:", mailErr);
     }
   }
 
