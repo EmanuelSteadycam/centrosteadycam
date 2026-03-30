@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { createBrowserClient } from "@supabase/ssr";
+import { submitBooking } from "@/app/display/actions";
 
 // ── Slide types ───────────────────────────────────────────────────────────────
 export type SlideId =
@@ -544,9 +545,8 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
     if (!selectedSlot) return;
     setSubmitting(true);
     setSubmitError("");
-    const { error } = await supabase.from("display_bookings").insert({
+    const { error } = await submitBooking({
       slot_id: selectedSlot.id,
-      tipo_scuola: "pubblica",
       tipo_visita: selectedSlot.time_slot,
       n_alunni: parseInt(form.nAlunni),
       n_adulti: parseInt(form.nAdulti),
@@ -561,11 +561,10 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
       note: form.giaPart === "si" ? "Classe già partecipante" : null,
     });
     if (error) {
-      setSubmitError(error.message);
+      setSubmitError(error);
       setSubmitting(false);
       return;
     }
-    await supabase.rpc("increment_slot_bookings", { p_slot_id: selectedSlot.id });
     setScreen("success");
     setSubmitting(false);
   };
