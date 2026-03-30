@@ -77,6 +77,14 @@ git push -u origin main
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | eyJ... |
 | `SUPABASE_SERVICE_ROLE_KEY` | eyJ... (solo server) |
 | `WORDPRESS_API_URL` | https://centrosteadycam.it/wp-json/wp/v2 |
+| `MAILUP_CLIENT_ID` | cebb7602-... |
+| `MAILUP_CLIENT_SECRET` | b034464a-... |
+| `MAILUP_USERNAME` | m182102 |
+| `MAILUP_PASSWORD` | *** |
+| `MAILUP_LIST_ID` | 1 |
+| `MAILUP_DISPLAY_GROUP_ID` | 23 |
+| `CRON_SECRET` | centrosteadycam-cron-2026 |
+| `REMINDER_DAYS` | 3 |
 
 4. Deploy → il sito sarà live su `https://centrosteadycam.vercel.app`
 
@@ -167,8 +175,9 @@ Accesso protetto via Supabase Auth (email/password).
 | `src/components/admin/SlotManager.tsx` | Componente client gestione slot |
 | `src/components/admin/BookingsList.tsx` | Lista iscrizioni con filtro + export CSV + bottone Approva |
 | `src/components/admin/EmailToggle.tsx` | Toggle ON/OFF mail di conferma automatica |
+| `src/components/admin/WaitlistToggle.tsx` | Toggle ON/OFF modalità lista d'attesa |
 | `src/lib/supabase-server.ts` | Client Supabase SSR (anon + service role) |
-| `src/lib/mailup.ts` | Client MailUp OAuth2 — 3 template email + addToDisplayGroup |
+| `src/lib/mailup.ts` | Client MailUp OAuth2 — 4 template email + addToDisplayGroup |
 | `src/app/display/actions.ts` | Server Action prenotazione → salva + email + gruppo MailUp |
 | `src/app/api/cron/reminders/route.ts` | Cron giornaliero promemoria visita |
 | `src/components/navigation/SiteShell.tsx` | Nasconde Navbar/Footer su /admin e /display |
@@ -176,15 +185,24 @@ Accesso protetto via Supabase Auth (email/password).
 
 ### Setup admin (prima volta)
 1. Esegui `supabase/schema_admin.sql` nel SQL Editor di Supabase
-2. Esegui questo SQL per la tabella impostazioni:
+2. Esegui questo SQL per la tabella impostazioni e i permessi:
    ```sql
    CREATE TABLE IF NOT EXISTS display_settings (
      key text PRIMARY KEY,
      value text NOT NULL
    );
-   INSERT INTO display_settings (key, value)
-   VALUES ('confirmation_email_enabled', 'true')
+   INSERT INTO display_settings (key, value) VALUES
+     ('confirmation_email_enabled', 'true'),
+     ('waitlist_enabled', 'false')
    ON CONFLICT (key) DO NOTHING;
+
+   -- Rende slot_id opzionale (lista d'attesa)
+   ALTER TABLE display_bookings ALTER COLUMN slot_id DROP NOT NULL;
+
+   -- RLS su display_settings
+   ALTER TABLE display_settings ENABLE ROW LEVEL SECURITY;
+   CREATE POLICY "settings_read" ON display_settings FOR SELECT USING (true);
+   CREATE POLICY "settings_write" ON display_settings FOR UPDATE USING (auth.role() = 'service_role');
    ```
 3. Crea utente in Supabase Auth → Authentication → Users
 4. Se email non verificata, esegui:
@@ -200,18 +218,29 @@ Accesso protetto via Supabase Auth (email/password).
    MAILUP_PASSWORD=...
    MAILUP_LIST_ID=1
    MAILUP_DISPLAY_GROUP_ID=23
-   CRON_SECRET=...
+   CRON_SECRET=centrosteadycam-cron-2026
    REMINDER_DAYS=3
    ```
 
-### Email automatiche (MailUp)
-- **Conferma ricezione** — inviata subito dopo la prenotazione (toggle ON/OFF in admin)
-- **Approvazione manuale** — bottone "✓ Approva" in admin → cambia status + invia email
-- **Promemoria** — cron ogni giorno alle 07:00 UTC, invia ai confermati con visita tra REMINDER_DAYS giorni
-- Il docente viene aggiunto al gruppo Display Techno (ID 23) in MailUp Lista 1 (upsert)
+### Email automatiche (MailUp — 4 template)
+| Template | Trigger | Oggetto |
+|----------|---------|---------|
+| Conferma ricezione | Automatica dopo il form (toggle ON/OFF) | "Richiesta di prenotazione ricevuta" |
+| Approvazione | Bottone ✓ Approva in admin | "Prenotazione confermata" |
+| Rifiuto | Bottone ✕ Rifiuta in admin | "Richiesta di prenotazione" |
+| Promemoria | Cron 07:00 UTC, REMINDER_DAYS giorni prima | "Promemoria: visita al Centro tra X giorni" |
+
+- Il docente viene aggiunto al gruppo **Display Techno (ID 23)** in MailUp Lista 1 (upsert: cerca email esistente, poi aggiunge al gruppo)
+- Cron configurato in `vercel.json` — su Vercel Free Plan gira 1 volta/giorno
+
+### Toggle admin (pagina Prenotazioni)
+| Toggle | Colore | Effetto |
+|--------|--------|---------|
+| Lista d'attesa | Arancione | Rimuove scelta data, adatta tutti i testi del form |
+| Mail di conferma | Verde | Abilita/disabilita email automatica post-iscrizione |
 
 ### Sezioni admin disponibili
-- **Prenotazioni** ✅ — slot + iscrizioni + email toggle + approvazione
+- **Prenotazioni** ✅ — slot + iscrizioni + toggle + approva/rifiuta + email
 - **Blog** 🚧 — in costruzione
 - **Pagine** 🚧 — in costruzione
 - **Staff** 🚧 — in costruzione
