@@ -3,7 +3,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase-server";
 import { sendConfirmationEmail, addToDisplayGroup } from "@/lib/mailup";
 
 export async function submitBooking(data: {
-  slot_id: string;
+  slot_id: string | null;
   tipo_visita: string;
   n_alunni: number;
   n_adulti: number;
@@ -27,14 +27,14 @@ export async function submitBooking(data: {
 
   if (error) return { error: error.message };
 
-  await supabase.rpc("increment_slot_bookings", { p_slot_id: data.slot_id });
+  if (data.slot_id) {
+    await supabase.rpc("increment_slot_bookings", { p_slot_id: data.slot_id });
+  }
 
-  // Fetch slot date for the confirmation email
-  const { data: slot } = await supabase
-    .from("display_slots")
-    .select("date")
-    .eq("id", data.slot_id)
-    .single();
+  // Fetch slot date for the confirmation email (only if slot exists)
+  const { data: slot } = data.slot_id
+    ? await supabase.from("display_slots").select("date").eq("id", data.slot_id).single()
+    : { data: null };
 
   // Check if confirmation email is enabled
   const { data: setting } = await supabase

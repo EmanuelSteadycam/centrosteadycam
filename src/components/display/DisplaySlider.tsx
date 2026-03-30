@@ -511,6 +511,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
   const [slots, setSlots] = useState<AvailableSlot[]>([]);
   const [sloading, setSloading] = useState(true);
   const [selectedSlot, setSelectedSlot] = useState<AvailableSlot | null>(null);
+  const [isWaitlist, setIsWaitlist] = useState(false);
   const [formStep, setFormStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
@@ -539,16 +540,22 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
         setSlots(data ?? []);
         setSloading(false);
       });
+    supabase
+      .from("display_settings")
+      .select("value")
+      .eq("key", "waitlist_enabled")
+      .single()
+      .then(({ data }) => setIsWaitlist(data?.value === "true"));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSubmit = async () => {
-    if (!selectedSlot) return;
+    if (!isWaitlist && !selectedSlot) return;
     setSubmitting(true);
     setSubmitError("");
     const { error } = await submitBooking({
-      slot_id: selectedSlot.id,
-      tipo_visita: selectedSlot.time_slot,
+      slot_id: isWaitlist ? null : selectedSlot!.id,
+      tipo_visita: isWaitlist ? "lista_attesa" : selectedSlot!.time_slot,
       n_alunni: parseInt(form.nAlunni),
       n_adulti: parseInt(form.nAdulti),
       disabilita: form.disabilita !== "nessuno",
@@ -587,12 +594,18 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
 
   // ── Intro / istruzioni ───────────────────────────────────────────────────
   if (screen === "intro") {
-    const steps = [
-      "Scegli una data disponibile",
-      "Compila tutti i campi richiesti",
-      "Invia la prenotazione",
-      "Attendi l'email di conferma dello staff",
-    ];
+    const steps = isWaitlist
+      ? [
+          "Compila tutti i campi richiesti",
+          "Invia la richiesta",
+          "Sarai contattato quando si libera una data",
+        ]
+      : [
+          "Scegli una data disponibile",
+          "Compila tutti i campi richiesti",
+          "Invia la prenotazione",
+          "Attendi l'email di conferma dello staff",
+        ];
     return (
       <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
         <Image src={`${WP}/Display_over_booking2-scaled.jpg`} alt="" fill className="object-cover object-center" unoptimized />
@@ -610,14 +623,14 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
             className="font-bold tracking-[0.05em] mb-3 whitespace-nowrap uppercase"
             style={{ fontFamily: "var(--font-raleway)", color: "#ffffff", fontSize: "30px" }}
           >
-            Prenota la tua visita
+            {isWaitlist ? "Iscriviti alla lista d'attesa" : "Prenota la tua visita"}
           </motion.h2>
           <motion.p
             {...fadeUp(0.15)}
             className="text-lg mb-10"
             style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}
           >
-            Segui i passi per completare la prenotazione
+            {isWaitlist ? "Segui i passi per iscriverti alla lista d'attesa" : "Segui i passi per completare la prenotazione"}
           </motion.p>
 
           <motion.ol {...fadeUp(0.2)} className="space-y-5 mb-10">
@@ -657,11 +670,11 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
               Annulla
             </button>
             <button
-              onClick={() => setScreen("date")}
+              onClick={() => isWaitlist ? setScreen("form") : setScreen("date")}
               className="px-7 py-2.5 text-white text-sm tracking-wider uppercase rounded-full transition-all"
               style={{ background: "#f26c68", fontFamily: "var(--font-raleway)" }}
             >
-              Inizia →
+              {isWaitlist ? "Iscriviti →" : "Inizia →"}
             </button>
           </motion.div>
         </motion.div>
@@ -677,13 +690,15 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
         <motion.div {...fadeUp(0)} className="relative z-10 text-center px-8 max-w-md">
           <h2 className="font-bold text-white tracking-[0.2em] uppercase mb-4"
             style={{ fontFamily: "var(--font-raleway)", fontSize: "30px" }}>
-            Richiesta inviata
+            {isWaitlist ? "Iscrizione alla lista ricevuta" : "Richiesta inviata"}
           </h2>
           <p className="text-white font-semibold mb-3" style={{ fontFamily: "var(--font-raleway)", fontSize: "22px" }}>
             Grazie, {form.nome} {form.cognome}.
           </p>
           <p className="text-white/80 mb-10 leading-relaxed" style={{ fontFamily: "var(--font-raleway)", fontSize: "18px" }}>
-            Lo staff del Centro ti contatterà a breve per confermare la visita.
+            {isWaitlist
+              ? "Sei in lista d'attesa. Ti contatteremo non appena si libera una data disponibile."
+              : "Lo staff del Centro ti contatterà a breve per confermare la visita."}
           </p>
           <PillBtn onClick={() => nav("intro")}>← Home</PillBtn>
         </motion.div>
@@ -818,16 +833,18 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
       >
         <h2 className="text-center text-white font-bold tracking-[0.1em] uppercase mb-4"
           style={{ fontFamily: "var(--font-raleway)", fontSize: "30px" }}>
-          Prenota la visita
+          {isWaitlist ? "Lista d'attesa" : "Prenota la visita"}
         </h2>
-        <div className="text-center mb-6 px-4 py-3 rounded-lg" style={{ background: "rgba(136,191,129,0.15)", border: "1px solid #88BF81" }}>
-          <p className="text-xl font-semibold capitalize" style={{ fontFamily: "var(--font-raleway)", color: "#88BF81" }}>
-            {selectedDateLabel}
-          </p>
-          <p className="text-base mt-0.5" style={{ fontFamily: "var(--font-raleway)", color: "#88BF81" }}>
-            h. 8.00–13.00
-          </p>
-        </div>
+        {!isWaitlist && (
+          <div className="text-center mb-6 px-4 py-3 rounded-lg" style={{ background: "rgba(136,191,129,0.15)", border: "1px solid #88BF81" }}>
+            <p className="text-xl font-semibold capitalize" style={{ fontFamily: "var(--font-raleway)", color: "#88BF81" }}>
+              {selectedDateLabel}
+            </p>
+            <p className="text-base mt-0.5" style={{ fontFamily: "var(--font-raleway)", color: "#88BF81" }}>
+              h. 8.00–13.00
+            </p>
+          </div>
+        )}
 
         <div className="flex gap-2 mb-8 justify-center">
           {DUMMY_STEPS.map((_s, i) => (
@@ -937,7 +954,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
         )}
         <div className="flex gap-3 mt-6 justify-between">
           <button
-            onClick={() => formStep > 0 ? setFormStep(formStep - 1) : setScreen("date")}
+            onClick={() => formStep > 0 ? setFormStep(formStep - 1) : setScreen(isWaitlist ? "intro" : "date")}
             className="px-6 py-2.5 text-white/60 text-sm tracking-wider uppercase border border-white/30 rounded-full hover:text-white hover:border-white transition-all"
             style={{ fontFamily: "var(--font-raleway)" }}
           >

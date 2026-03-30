@@ -28,6 +28,15 @@ export async function deleteSlot(id: string) {
   revalidatePath("/admin/prenotazioni");
 }
 
+export async function setWaitlistEnabled(enabled: boolean) {
+  const supabase = createSupabaseAdminClient();
+  await supabase
+    .from("display_settings")
+    .update({ value: enabled ? "true" : "false" })
+    .eq("key", "waitlist_enabled");
+  revalidatePath("/admin/prenotazioni");
+}
+
 export async function setEmailConfirmationEnabled(enabled: boolean) {
   const supabase = createSupabaseAdminClient();
   await supabase
