@@ -885,10 +885,10 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
               {[
                 { label: "Istituto", field: "istituto", placeholder: "Istituto Comprensivo...", type: "text" },
                 { label: "Classe", field: "classe", placeholder: "es. 2A", type: "text" },
-                { label: "Nome insegnante", field: "nome", placeholder: "", type: "text" },
-                { label: "Cognome insegnante", field: "cognome", placeholder: "", type: "text" },
-                { label: "Email", field: "email", placeholder: "", type: "email" },
-                { label: "Cellulare (opzionale)", field: "cellulare", placeholder: "", type: "tel" },
+                { label: "Nome insegnante referente", field: "nome", placeholder: "", type: "text" },
+                { label: "Cognome insegnante referente", field: "cognome", placeholder: "", type: "text" },
+                { label: "Email insegnante referente", field: "email", placeholder: "", type: "email" },
+                { label: "Telefono insegnante referente", field: "cellulare", placeholder: "", type: "tel" },
               ].map(({ label, field, placeholder, type }) => (
                 <div key={field}>
                   <label className="block text-xs font-medium tracking-wider uppercase mb-1 text-gray-700"
@@ -899,7 +899,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
                     onChange={(e) => setForm({ ...form, [field]: e.target.value })}
                     placeholder={placeholder}
                     className="w-full border border-gray-300 px-3 py-2 text-sm bg-white text-gray-800 focus:outline-none focus:border-gray-500"
-                    required={field !== "cellulare"}
+                    required
                   />
                 </div>
               ))}
@@ -922,6 +922,11 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
           )}
         </div>
 
+        {formStep === 2 && (
+          <p className="mt-3 text-white/50 leading-relaxed" style={{ fontFamily: "var(--font-raleway)", fontSize: "11px" }}>
+            *I dati verranno trattati dal Centro Display esclusivamente per fini riguardanti il Centro stesso e non saranno in alcun modo ceduti a terzi.
+          </p>
+        )}
         {submitError && (
           <p className="mt-4 text-sm text-red-400 text-center" style={{ fontFamily: "var(--font-raleway)" }}>
             Errore: {submitError}
