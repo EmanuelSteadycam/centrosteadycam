@@ -69,10 +69,11 @@ export async function submitBooking(data: {
         date: slot.date,
       });
     } catch (mailErr) {
-      console.error("MailUp confirmation email failed:", mailErr);
-      // Email failure does not block the booking
+      const msg = mailErr instanceof Error ? mailErr.message : String(mailErr);
+      console.error("MailUp confirmation email failed:", msg);
+      return { error: null, emailError: msg };
     }
   }
 
-  return { error: null };
+  return { error: null, emailError: null };
 }

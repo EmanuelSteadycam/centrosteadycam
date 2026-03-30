@@ -553,7 +553,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
     if (!isWaitlist && !selectedSlot) return;
     setSubmitting(true);
     setSubmitError("");
-    const { error } = await submitBooking({
+    const { error, emailError } = await submitBooking({
       slot_id: isWaitlist ? null : selectedSlot!.id,
       tipo_visita: isWaitlist ? "lista_attesa" : selectedSlot!.time_slot,
       n_alunni: parseInt(form.nAlunni),
@@ -573,6 +573,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
       setSubmitting(false);
       return;
     }
+    if (emailError) console.warn("DEBUG email error:", emailError);
     setScreen("success");
     setSubmitting(false);
   };
