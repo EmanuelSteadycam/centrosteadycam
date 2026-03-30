@@ -514,7 +514,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
   const [submitError, setSubmitError] = useState("");
   const [form, setForm] = useState({
     giaPart: "", nAlunni: "15", nAdulti: "2", disabilita: "nessuno",
-    istituto: "", ordine: "Scuola Secondaria di I grado",
+    istituto: "", plesso: "",
     classe: "", nome: "", cognome: "", email: "", cellulare: "",
   });
   const supabase = useSupabase();
@@ -552,7 +552,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
       n_adulti: parseInt(form.nAdulti),
       disabilita: form.disabilita !== "nessuno",
       istituto: form.istituto,
-      ordine_scuola: form.ordine,
+      ordine_scuola: form.plesso,
       nome: form.nome,
       cognome: form.cognome,
       classe: form.classe,
@@ -884,6 +884,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
             <div className="space-y-3">
               {[
                 { label: "Istituto", field: "istituto", placeholder: "Istituto Comprensivo...", type: "text" },
+                { label: "Plesso", field: "plesso", placeholder: "", type: "text" },
                 { label: "Classe", field: "classe", placeholder: "es. 2A", type: "text" },
                 { label: "Nome insegnante referente", field: "nome", placeholder: "", type: "text" },
                 { label: "Cognome insegnante referente", field: "cognome", placeholder: "", type: "text" },
@@ -903,21 +904,6 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
                   />
                 </div>
               ))}
-              <div>
-                <label className="block text-xs font-medium tracking-wider uppercase mb-1 text-gray-700"
-                  style={{ fontFamily: "var(--font-raleway)" }}>
-                  Ordine di scuola
-                </label>
-                <CustomSelect
-                  value={form.ordine}
-                  onChange={(v) => setForm({ ...form, ordine: v })}
-                  options={[
-                    { value: "Scuola Primaria", label: "Scuola Primaria" },
-                    { value: "Scuola Secondaria di I grado", label: "Scuola Secondaria di I grado" },
-                    { value: "Scuola Secondaria di II grado", label: "Scuola Secondaria di II grado" },
-                  ]}
-                />
-              </div>
             </div>
           )}
         </div>
@@ -950,7 +936,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
             </button>
           ) : (
             <button
-              disabled={submitting || !form.nome || !form.email || !form.istituto}
+              disabled={submitting || !form.nome || !form.email || !form.istituto || !form.plesso}
               onClick={handleSubmit}
               className="px-7 py-2.5 text-white text-sm tracking-wider uppercase rounded-full disabled:opacity-50 transition-all"
               style={{ background: "#f26c68", fontFamily: "var(--font-raleway)" }}
