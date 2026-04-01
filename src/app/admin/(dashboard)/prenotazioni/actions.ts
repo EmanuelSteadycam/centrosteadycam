@@ -1,7 +1,7 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { createSupabaseAdminClient } from "@/lib/supabase-server";
-import { sendApprovalEmail, sendRejectionEmail } from "@/lib/mailup";
+import { sendApprovalEmail, sendRejectionEmail, removeFromDisplayGroup } from "@/lib/mailup";
 
 export async function addSlot(date: string, timeSlot: string) {
   const supabase = createSupabaseAdminClient();
@@ -91,8 +91,26 @@ export async function approveBooking(id: number): Promise<{ error: string | null
 
 export async function deleteBooking(id: number): Promise<{ error: string | null }> {
   const supabase = createSupabaseAdminClient();
+
+  // Fetch email before deleting
+  const { data: booking } = await supabase
+    .from("display_bookings")
+    .select("email")
+    .eq("id", id)
+    .single();
+
   const { error } = await supabase.from("display_bookings").delete().eq("id", id);
   if (error) return { error: error.message };
+
+  // Rimuovi dal gruppo MailUp
+  if (booking?.email) {
+    try {
+      await removeFromDisplayGroup(booking.email);
+    } catch (err) {
+      console.error("MailUp removeFromGroup failed:", err);
+    }
+  }
+
   revalidatePath("/admin/prenotazioni");
   return { error: null };
 }

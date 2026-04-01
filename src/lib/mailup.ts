@@ -153,6 +153,30 @@ export async function addToDisplayGroup(recipient: {
   }
 }
 
+// ── Rimuovi contatto dal gruppo Display ───────────────────────────────────
+export async function removeFromDisplayGroup(email: string) {
+  const token = await getToken();
+  const listId = Number(process.env.MAILUP_LIST_ID ?? "1");
+  const groupId = Number(process.env.MAILUP_DISPLAY_GROUP_ID ?? "23");
+  const base = "https://services.mailup.com/API/v1.1/Rest/ConsoleService.svc/Console";
+
+  // Cerca il contatto per email
+  const searchRes = await fetch(
+    `${base}/List/${listId}/Recipients/EmailOptins?pageSize=1&pageNumber=1&filterby="Email='${email}'"`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+
+  const searchData = searchRes.ok ? await searchRes.json() : null;
+  const existing = searchData?.Items?.[0];
+
+  if (existing?.idRecipient) {
+    await fetch(`${base}/Group/${groupId}/Recipient/${existing.idRecipient}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  }
+}
+
 // ── 1. Conferma ricezione form ─────────────────────────────────────────────
 export async function sendConfirmationEmail(booking: {
   nome: string;
