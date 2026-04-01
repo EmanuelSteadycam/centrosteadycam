@@ -89,6 +89,14 @@ export async function approveBooking(id: number): Promise<{ error: string | null
   return { error: null };
 }
 
+export async function deleteBooking(id: number): Promise<{ error: string | null }> {
+  const supabase = createSupabaseAdminClient();
+  const { error } = await supabase.from("display_bookings").delete().eq("id", id);
+  if (error) return { error: error.message };
+  revalidatePath("/admin/prenotazioni");
+  return { error: null };
+}
+
 export async function rejectBooking(id: number): Promise<{ error: string | null }> {
   const supabase = createSupabaseAdminClient();
 

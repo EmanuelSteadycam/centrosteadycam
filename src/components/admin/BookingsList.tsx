@@ -1,6 +1,6 @@
 "use client";
 import { useState, useTransition } from "react";
-import { approveBooking, rejectBooking } from "@/app/admin/(dashboard)/prenotazioni/actions";
+import { approveBooking, rejectBooking, deleteBooking } from "@/app/admin/(dashboard)/prenotazioni/actions";
 
 type Booking = {
   id: number; created_at: string; istituto: string; nome: string; cognome: string;
@@ -15,6 +15,7 @@ export default function BookingsList({ bookings }: { bookings: Booking[] }) {
   const [isPending, startTransition] = useTransition();
   const [approvingId, setApprovingId] = useState<number | null>(null);
   const [rejectingId, setRejectingId] = useState<number | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const filtered = localBookings.filter((b) =>
     !filter ||
@@ -33,6 +34,18 @@ export default function BookingsList({ bookings }: { bookings: Booking[] }) {
         );
       }
       setApprovingId(null);
+    });
+  };
+
+  const handleDelete = (id: number) => {
+    if (!confirm("Eliminare definitivamente questa prenotazione?")) return;
+    setDeletingId(id);
+    startTransition(async () => {
+      const result = await deleteBooking(id);
+      if (!result.error) {
+        setLocalBookings((prev) => prev.filter((b) => b.id !== id));
+      }
+      setDeletingId(null);
     });
   };
 
@@ -118,24 +131,33 @@ export default function BookingsList({ bookings }: { bookings: Booking[] }) {
                   {b.status === "confirmed" ? "Confermata" :
                    b.status === "cancelled" ? "Annullata" : "In attesa"}
                 </span>
-                {b.status === "pending" && (
-                  <div className="flex gap-1.5">
-                    <button
-                      onClick={() => handleApprove(b.id)}
-                      disabled={isPending && approvingId === b.id}
-                      className="text-xs px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors disabled:opacity-50"
-                    >
-                      {isPending && approvingId === b.id ? "..." : "✓ Approva"}
-                    </button>
-                    <button
-                      onClick={() => handleReject(b.id)}
-                      disabled={isPending && rejectingId === b.id}
-                      className="text-xs px-2.5 py-0.5 rounded-full bg-red-50 text-red-500 hover:bg-red-100 transition-colors disabled:opacity-50"
-                    >
-                      {isPending && rejectingId === b.id ? "..." : "✕ Rifiuta"}
-                    </button>
-                  </div>
-                )}
+                <div className="flex gap-1.5 flex-wrap justify-end">
+                  {b.status === "pending" && (
+                    <>
+                      <button
+                        onClick={() => handleApprove(b.id)}
+                        disabled={isPending && approvingId === b.id}
+                        className="text-xs px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors disabled:opacity-50"
+                      >
+                        {isPending && approvingId === b.id ? "..." : "✓ Approva"}
+                      </button>
+                      <button
+                        onClick={() => handleReject(b.id)}
+                        disabled={isPending && rejectingId === b.id}
+                        className="text-xs px-2.5 py-0.5 rounded-full bg-red-50 text-red-500 hover:bg-red-100 transition-colors disabled:opacity-50"
+                      >
+                        {isPending && rejectingId === b.id ? "..." : "✕ Rifiuta"}
+                      </button>
+                    </>
+                  )}
+                  <button
+                    onClick={() => handleDelete(b.id)}
+                    disabled={isPending && deletingId === b.id}
+                    className="text-xs px-2.5 py-0.5 rounded-full bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors disabled:opacity-50"
+                  >
+                    {isPending && deletingId === b.id ? "..." : "🗑"}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
