@@ -92,15 +92,20 @@ export async function approveBooking(id: number): Promise<{ error: string | null
 export async function deleteBooking(id: number): Promise<{ error: string | null }> {
   const supabase = createSupabaseAdminClient();
 
-  // Fetch email before deleting
+  // Fetch email + slot_id before deleting
   const { data: booking } = await supabase
     .from("display_bookings")
-    .select("email")
+    .select("email, slot_id")
     .eq("id", id)
     .single();
 
   const { error } = await supabase.from("display_bookings").delete().eq("id", id);
   if (error) return { error: error.message };
+
+  // Decrementa bookings_count dello slot
+  if (booking?.slot_id) {
+    await supabase.rpc("decrement_slot_bookings", { p_slot_id: booking.slot_id });
+  }
 
   // Rimuovi dal gruppo MailUp
   if (booking?.email) {
