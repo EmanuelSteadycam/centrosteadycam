@@ -67,6 +67,37 @@ function formatDate(date: string): string {
   });
 }
 
+// ── Cerca idRecipient per email (cerca prima nel gruppo, poi nella lista) ──
+async function findRecipientId(token: string, email: string): Promise<number | null> {
+  const listId = Number(process.env.MAILUP_LIST_ID ?? "1");
+  const groupId = Number(process.env.MAILUP_DISPLAY_GROUP_ID ?? "23");
+  const filter = encodeURIComponent(`"Email='${email}'"`);
+
+  // 1. Cerca nel gruppo (trova anche contatti pending)
+  for (const status of ["EmailOptins", "EmailOptinsPending"]) {
+    const res = await fetch(
+      `${API_BASE}/Group/${groupId}/Recipients/${status}?pageSize=1&pageNumber=1&filterby=${filter}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    const data = res.ok ? await res.json() : null;
+    const id = data?.Items?.[0]?.idRecipient;
+    if (id) return id;
+  }
+
+  // 2. Fallback: cerca nella lista
+  for (const status of ["EmailOptins", "EmailOptinsPending"]) {
+    const res = await fetch(
+      `${API_BASE}/List/${listId}/Recipients/${status}?pageSize=1&pageNumber=1&filterby=${filter}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    const data = res.ok ? await res.json() : null;
+    const id = data?.Items?.[0]?.idRecipient;
+    if (id) return id;
+  }
+
+  return null;
+}
+
 // ── Aggiungi contatto al gruppo Display (upsert) ──────────────────────────
 export async function addToDisplayGroup(recipient: {
   email: string;
@@ -75,23 +106,15 @@ export async function addToDisplayGroup(recipient: {
   istituto: string;
 }) {
   const token = await getToken();
-  const listId = Number(process.env.MAILUP_LIST_ID ?? "1");
   const groupId = Number(process.env.MAILUP_DISPLAY_GROUP_ID ?? "23");
 
-  // Cerca se il contatto esiste già nella lista
-  const searchRes = await fetch(
-    `${API_BASE}/List/${listId}/Recipients/EmailOptins?pageSize=1&pageNumber=1&filterby="Email='${recipient.email}'"`,
-    { headers: { Authorization: `Bearer ${token}` } }
-  );
+  const idRecipient = await findRecipientId(token, recipient.email);
 
-  const searchData = searchRes.ok ? await searchRes.json() : null;
-  const existing = searchData?.Items?.[0];
-
-  if (existing?.idRecipient) {
+  if (idRecipient) {
     await fetch(`${API_BASE}/Group/${groupId}/Recipient`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ idRecipient: existing.idRecipient }),
+      body: JSON.stringify({ idRecipient }),
     });
   } else {
     await fetch(`${API_BASE}/Group/${groupId}/Recipient`, {
@@ -101,9 +124,9 @@ export async function addToDisplayGroup(recipient: {
         Email: recipient.email,
         Name: `${recipient.nome} ${recipient.cognome}`,
         Fields: [
-          { Description: "Nome", Id: 1, Value: recipient.nome },
-          { Description: "Cognome", Id: 2, Value: recipient.cognome },
-          { Description: "Istituto", Id: 3, Value: recipient.istituto },
+          { Description: "FirstName", Id: 1, Value: recipient.nome },
+          { Description: "LastName", Id: 2, Value: recipient.cognome },
+          { Description: "Display_Istituto_Scolastico", Id: 29, Value: recipient.istituto },
         ],
       }),
     });
@@ -113,23 +136,15 @@ export async function addToDisplayGroup(recipient: {
 // ── Rimuovi contatto dal gruppo Display ───────────────────────────────────
 export async function removeFromDisplayGroup(email: string) {
   const token = await getToken();
-  const listId = Number(process.env.MAILUP_LIST_ID ?? "1");
   const groupId = Number(process.env.MAILUP_DISPLAY_GROUP_ID ?? "23");
 
-  const searchRes = await fetch(
-    `${API_BASE}/List/${listId}/Recipients/EmailOptins?pageSize=1&pageNumber=1&filterby="Email='${email}'"`,
-    { headers: { Authorization: `Bearer ${token}` } }
-  );
+  const idRecipient = await findRecipientId(token, email);
+  if (!idRecipient) return;
 
-  const searchData = searchRes.ok ? await searchRes.json() : null;
-  const existing = searchData?.Items?.[0];
-
-  if (existing?.idRecipient) {
-    await fetch(`${API_BASE}/Group/${groupId}/Recipient/${existing.idRecipient}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-  }
+  await fetch(`${API_BASE}/Group/${groupId}/Recipient/${idRecipient}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
 }
 
 // ── 1. Conferma ricezione form ─────────────────────────────────────────────
@@ -147,12 +162,12 @@ export async function sendConfirmationEmail(booking: {
     to: booking.email,
     idMessage: Number(process.env.MAILUP_MSG_CONFIRMATION ?? "60"),
     fields: [
-      { Description: "nome", Value: booking.nome },
-      { Description: "cognome", Value: booking.cognome },
-      { Description: "data", Value: formatDate(booking.date) },
-      { Description: "istituto", Value: booking.istituto },
-      { Description: "classe", Value: booking.classe },
-      { Description: "partecipanti", Value: `${booking.n_alunni} alunni + ${booking.n_adulti} adulti` },
+      { Description: "FirstName", Value: booking.nome },
+      { Description: "LastName", Value: booking.cognome },
+      { Description: "Display_Data_iscrizione", Value: formatDate(booking.date) },
+      { Description: "Display_Istituto_Scolastico", Value: booking.istituto },
+      { Description: "Display_Classe", Value: booking.classe },
+      { Description: "Display_partecipanti", Value: `${booking.n_alunni} alunni + ${booking.n_adulti} adulti` },
     ],
   });
 }
@@ -172,12 +187,12 @@ export async function sendApprovalEmail(booking: {
     to: booking.email,
     idMessage: Number(process.env.MAILUP_MSG_APPROVAL ?? "59"),
     fields: [
-      { Description: "nome", Value: booking.nome },
-      { Description: "cognome", Value: booking.cognome },
-      { Description: "data", Value: formatDate(booking.date) },
-      { Description: "istituto", Value: booking.istituto },
-      { Description: "classe", Value: booking.classe },
-      { Description: "partecipanti", Value: `${booking.n_alunni} alunni + ${booking.n_adulti} adulti` },
+      { Description: "FirstName", Value: booking.nome },
+      { Description: "LastName", Value: booking.cognome },
+      { Description: "Display_Data_iscrizione", Value: formatDate(booking.date) },
+      { Description: "Display_Istituto_Scolastico", Value: booking.istituto },
+      { Description: "Display_Classe", Value: booking.classe },
+      { Description: "Display_partecipanti", Value: `${booking.n_alunni} alunni + ${booking.n_adulti} adulti` },
     ],
   });
 }
@@ -195,11 +210,11 @@ export async function sendRejectionEmail(booking: {
     to: booking.email,
     idMessage: Number(process.env.MAILUP_MSG_REJECTION ?? "58"),
     fields: [
-      { Description: "nome", Value: booking.nome },
-      { Description: "cognome", Value: booking.cognome },
-      { Description: "data", Value: formatDate(booking.date) },
-      { Description: "istituto", Value: booking.istituto },
-      { Description: "classe", Value: booking.classe },
+      { Description: "FirstName", Value: booking.nome },
+      { Description: "LastName", Value: booking.cognome },
+      { Description: "Display_Data_iscrizione", Value: formatDate(booking.date) },
+      { Description: "Display_Istituto_Scolastico", Value: booking.istituto },
+      { Description: "Display_Classe", Value: booking.classe },
     ],
   });
 }
@@ -220,13 +235,13 @@ export async function sendReminderEmail(booking: {
     to: booking.email,
     idMessage: Number(process.env.MAILUP_MSG_REMINDER ?? "57"),
     fields: [
-      { Description: "nome", Value: booking.nome },
-      { Description: "cognome", Value: booking.cognome },
-      { Description: "data", Value: formatDate(booking.date) },
-      { Description: "istituto", Value: booking.istituto },
-      { Description: "classe", Value: booking.classe },
-      { Description: "partecipanti", Value: `${booking.n_alunni} alunni + ${booking.n_adulti} adulti` },
-      { Description: "giorni", Value: String(booking.reminderDays) },
+      { Description: "FirstName", Value: booking.nome },
+      { Description: "LastName", Value: booking.cognome },
+      { Description: "Display_Data_iscrizione", Value: formatDate(booking.date) },
+      { Description: "Display_Istituto_Scolastico", Value: booking.istituto },
+      { Description: "Display_Classe", Value: booking.classe },
+      { Description: "Display_partecipanti", Value: `${booking.n_alunni} alunni + ${booking.n_adulti} adulti` },
+      { Description: "Display_giorni_reminder", Value: String(booking.reminderDays) },
     ],
   });
 }

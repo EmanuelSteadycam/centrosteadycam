@@ -83,6 +83,10 @@ git push -u origin main
 | `MAILUP_PASSWORD` | *** |
 | `MAILUP_LIST_ID` | 1 |
 | `MAILUP_DISPLAY_GROUP_ID` | 23 |
+| `MAILUP_MSG_CONFIRMATION` | 60 |
+| `MAILUP_MSG_APPROVAL` | 59 |
+| `MAILUP_MSG_REJECTION` | 58 |
+| `MAILUP_MSG_REMINDER` | 57 |
 | `CRON_SECRET` | centrosteadycam-cron-2026 |
 | `REMINDER_DAYS` | 3 |
 
@@ -218,19 +222,35 @@ Accesso protetto via Supabase Auth (email/password).
    MAILUP_PASSWORD=...
    MAILUP_LIST_ID=1
    MAILUP_DISPLAY_GROUP_ID=23
+   MAILUP_MSG_CONFIRMATION=60
+   MAILUP_MSG_APPROVAL=59
+   MAILUP_MSG_REJECTION=58
+   MAILUP_MSG_REMINDER=57
    CRON_SECRET=centrosteadycam-cron-2026
    REMINDER_DAYS=3
    ```
 
 ### Email automatiche (MailUp — 4 template)
-| Template | Trigger | Oggetto |
-|----------|---------|---------|
-| Conferma ricezione | Automatica dopo il form (toggle ON/OFF) | "Richiesta di prenotazione ricevuta" |
-| Approvazione | Bottone ✓ Approva in admin | "Prenotazione confermata" |
-| Rifiuto | Bottone ✕ Rifiuta in admin | "Richiesta di prenotazione" |
-| Promemoria | Cron 07:00 UTC, REMINDER_DAYS giorni prima | "Promemoria: visita al Centro tra X giorni" |
+| Template | ID MailUp | Trigger |
+|----------|-----------|---------|
+| Conferma ricezione | 60 | Automatica dopo il form (toggle ON/OFF) |
+| Approvazione | 59 | Bottone ✓ Approva in admin |
+| Rifiuto | 58 | Bottone ✕ Rifiuta in admin |
+| Promemoria | 57 | Cron 07:00 UTC, REMINDER_DAYS giorni prima |
 
-- Il docente viene aggiunto al gruppo **Display Techno (ID 23)** in MailUp Lista 1 (upsert: cerca email esistente, poi aggiunge al gruppo)
+#### Campi dinamici MailUp (Configurazioni → Gestione piattaforma → Campi anagrafici)
+| ID campo | Nome campo | Usato in |
+|----------|-----------|---------|
+| 1 | `FirstName` | nome docente (tag: `[FirstName]`) |
+| 2 | `LastName` | cognome docente (tag: `[LastName]`) |
+| 28 | `Display_Data_iscrizione` | data visita |
+| 29 | `Display_Istituto_Scolastico` | istituto scolastico |
+| 30 | `Display_Classe` | classe |
+| 31 | `Display_partecipanti` | num. partecipanti |
+| 32 | `Display_giorni_reminder` | giorni al promemoria |
+
+- Il docente viene aggiunto al gruppo **Display Techno (ID 23)** in MailUp Lista 1 (upsert: cerca per email con `encodeURIComponent`, prova `EmailOptins` e `EmailOptinsPending` sia nel gruppo che nella lista)
+- Alla cancellazione dalla admin, il contatto viene rimosso dal gruppo MailUp (`removeFromDisplayGroup`)
 - Cron configurato in `vercel.json` — su Vercel Free Plan gira 1 volta/giorno
 
 ### Toggle admin (pagina Prenotazioni)
