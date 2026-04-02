@@ -67,32 +67,34 @@ function formatDate(date: string): string {
   });
 }
 
-// ── Cerca idRecipient per email (cerca prima nel gruppo, poi nella lista) ──
+// ── Cerca idRecipient per email ───────────────────────────────────────────
 async function findRecipientId(token: string, email: string): Promise<number | null> {
   const listId = Number(process.env.MAILUP_LIST_ID ?? "1");
   const groupId = Number(process.env.MAILUP_DISPLAY_GROUP_ID ?? "23");
-  const filter = encodeURIComponent(`"Email='${email}'"`);
 
-  // 1. Cerca nel gruppo (trova anche contatti pending)
-  for (const status of ["EmailOptins", "EmailOptinsPending"]) {
-    const res = await fetch(
-      `${API_BASE}/Group/${groupId}/Recipients/${status}?pageSize=1&pageNumber=1&filterby=${filter}`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    const data = res.ok ? await res.json() : null;
-    const id = data?.Items?.[0]?.idRecipient;
-    if (id) return id;
-  }
+  // Prova diversi formati di filter per compatibilità MailUp
+  const filters = [
+    `"Email='${email}'"`,
+    `Email='${email}'`,
+  ];
 
-  // 2. Fallback: cerca nella lista
-  for (const status of ["EmailOptins", "EmailOptinsPending"]) {
-    const res = await fetch(
-      `${API_BASE}/List/${listId}/Recipients/${status}?pageSize=1&pageNumber=1&filterby=${filter}`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    const data = res.ok ? await res.json() : null;
-    const id = data?.Items?.[0]?.idRecipient;
-    if (id) return id;
+  const endpoints = [
+    `${API_BASE}/Group/${groupId}/Recipients/EmailOptins`,
+    `${API_BASE}/List/${listId}/Recipients/EmailOptins`,
+  ];
+
+  for (const baseUrl of endpoints) {
+    for (const rawFilter of filters) {
+      const url = `${baseUrl}?pageSize=1&pageNumber=1&filterby=${encodeURIComponent(rawFilter)}`;
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+      const text = await res.text();
+      console.log(`[MailUp search] ${res.status} ${url} → ${text.slice(0, 200)}`);
+      try {
+        const data = JSON.parse(text);
+        const id = data?.Items?.[0]?.idRecipient;
+        if (id) return id;
+      } catch {}
+    }
   }
 
   return null;
