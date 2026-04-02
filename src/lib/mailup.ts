@@ -30,7 +30,7 @@ async function getToken(): Promise<string> {
   return _token.value;
 }
 
-type Field = { Description: string; Value: string };
+type Field = { Id: number; Description: string; Value: string };
 
 async function sendMail({
   to,
@@ -162,12 +162,12 @@ export async function sendConfirmationEmail(booking: {
     to: booking.email,
     idMessage: Number(process.env.MAILUP_MSG_CONFIRMATION ?? "60"),
     fields: [
-      { Description: "FirstName", Value: booking.nome },
-      { Description: "LastName", Value: booking.cognome },
-      { Description: "Display_Data_iscrizione", Value: formatDate(booking.date) },
-      { Description: "Display_Istituto_Scolastico", Value: booking.istituto },
-      { Description: "Display_Classe", Value: booking.classe },
-      { Description: "Display_partecipanti", Value: `${booking.n_alunni} alunni + ${booking.n_adulti} adulti` },
+      { Id: 1,  Description: "FirstName", Value: booking.nome },
+      { Id: 2,  Description: "LastName",  Value: booking.cognome },
+      { Id: 28, Description: "Display_Data_iscrizione",    Value: formatDate(booking.date) },
+      { Id: 29, Description: "Display_Istituto_Scolastico", Value: booking.istituto },
+      { Id: 30, Description: "Display_Classe",             Value: booking.classe },
+      { Id: 31, Description: "Display_partecipanti",       Value: `${booking.n_alunni} alunni + ${booking.n_adulti} adulti` },
     ],
   });
 }
@@ -187,12 +187,12 @@ export async function sendApprovalEmail(booking: {
     to: booking.email,
     idMessage: Number(process.env.MAILUP_MSG_APPROVAL ?? "59"),
     fields: [
-      { Description: "FirstName", Value: booking.nome },
-      { Description: "LastName", Value: booking.cognome },
-      { Description: "Display_Data_iscrizione", Value: formatDate(booking.date) },
-      { Description: "Display_Istituto_Scolastico", Value: booking.istituto },
-      { Description: "Display_Classe", Value: booking.classe },
-      { Description: "Display_partecipanti", Value: `${booking.n_alunni} alunni + ${booking.n_adulti} adulti` },
+      { Id: 1,  Description: "FirstName", Value: booking.nome },
+      { Id: 2,  Description: "LastName",  Value: booking.cognome },
+      { Id: 28, Description: "Display_Data_iscrizione",    Value: formatDate(booking.date) },
+      { Id: 29, Description: "Display_Istituto_Scolastico", Value: booking.istituto },
+      { Id: 30, Description: "Display_Classe",             Value: booking.classe },
+      { Id: 31, Description: "Display_partecipanti",       Value: `${booking.n_alunni} alunni + ${booking.n_adulti} adulti` },
     ],
   });
 }
@@ -210,11 +210,11 @@ export async function sendRejectionEmail(booking: {
     to: booking.email,
     idMessage: Number(process.env.MAILUP_MSG_REJECTION ?? "58"),
     fields: [
-      { Description: "FirstName", Value: booking.nome },
-      { Description: "LastName", Value: booking.cognome },
-      { Description: "Display_Data_iscrizione", Value: formatDate(booking.date) },
-      { Description: "Display_Istituto_Scolastico", Value: booking.istituto },
-      { Description: "Display_Classe", Value: booking.classe },
+      { Id: 1,  Description: "FirstName", Value: booking.nome },
+      { Id: 2,  Description: "LastName",  Value: booking.cognome },
+      { Id: 28, Description: "Display_Data_iscrizione",    Value: formatDate(booking.date) },
+      { Id: 29, Description: "Display_Istituto_Scolastico", Value: booking.istituto },
+      { Id: 30, Description: "Display_Classe",             Value: booking.classe },
     ],
   });
 }
@@ -235,13 +235,13 @@ export async function sendReminderEmail(booking: {
     to: booking.email,
     idMessage: Number(process.env.MAILUP_MSG_REMINDER ?? "57"),
     fields: [
-      { Description: "FirstName", Value: booking.nome },
-      { Description: "LastName", Value: booking.cognome },
-      { Description: "Display_Data_iscrizione", Value: formatDate(booking.date) },
-      { Description: "Display_Istituto_Scolastico", Value: booking.istituto },
-      { Description: "Display_Classe", Value: booking.classe },
-      { Description: "Display_partecipanti", Value: `${booking.n_alunni} alunni + ${booking.n_adulti} adulti` },
-      { Description: "Display_giorni_reminder", Value: String(booking.reminderDays) },
+      { Id: 1,  Description: "FirstName", Value: booking.nome },
+      { Id: 2,  Description: "LastName",  Value: booking.cognome },
+      { Id: 28, Description: "Display_Data_iscrizione",    Value: formatDate(booking.date) },
+      { Id: 29, Description: "Display_Istituto_Scolastico", Value: booking.istituto },
+      { Id: 30, Description: "Display_Classe",             Value: booking.classe },
+      { Id: 31, Description: "Display_partecipanti",       Value: `${booking.n_alunni} alunni + ${booking.n_adulti} adulti` },
+      { Id: 32, Description: "Display_giorni_reminder",    Value: String(booking.reminderDays) },
     ],
   });
 }
