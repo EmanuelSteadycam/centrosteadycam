@@ -1,8 +1,9 @@
 const TOKEN_URL = "https://services.mailup.com/Authorization/OAuth/Token";
 const SEND_URL =
   "https://services.mailup.com/API/v1.1/Rest/ConsoleService.svc/Console/Email/Send";
+const API_BASE = "https://services.mailup.com/API/v1.1/Rest/ConsoleService.svc/Console";
 
-// In-memory token cache (resets on server restart, fine for serverless)
+// In-memory token cache
 let _token: { value: string; expiresAt: number } | null = null;
 
 async function getToken(): Promise<string> {
@@ -29,16 +30,16 @@ async function getToken(): Promise<string> {
   return _token.value;
 }
 
+type Field = { Description: string; Value: string };
+
 async function sendMail({
   to,
-  toName,
-  subject,
-  html,
+  idMessage,
+  fields,
 }: {
   to: string;
-  toName: string;
-  subject: string;
-  html: string;
+  idMessage: number;
+  fields: Field[];
 }) {
   const token = await getToken();
   const res = await fetch(SEND_URL, {
@@ -48,11 +49,9 @@ async function sendMail({
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({
-      Html: { Body: html },
-      Text: { Body: html.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim() },
-      idList: Number(process.env.MAILUP_LIST_ID ?? "1"),
-      Subject: subject,
-      Recipient: { Email: to, Name: toName, idRecipient: 0 },
+      Email: to,
+      idMessage,
+      Fields: fields,
     }),
   });
 
@@ -62,49 +61,10 @@ async function sendMail({
   }
 }
 
-// ── HTML wrapper ──────────────────────────────────────────────────────────────
-function emailLayout(content: string): string {
-  return `<!DOCTYPE html>
-<html lang="it">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f0f0f0;font-family:Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0;">
-    <tr><td align="center">
-      <table width="580" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;max-width:580px;">
-        <tr>
-          <td style="background:#0D1117;padding:28px 40px;text-align:center;">
-            <p style="margin:0;color:#88BF81;font-size:11px;letter-spacing:3px;text-transform:uppercase;font-weight:bold;">Centro Steadycam</p>
-            <p style="margin:6px 0 0;color:#ffffff;font-size:22px;font-weight:bold;letter-spacing:2px;text-transform:uppercase;">Display Techno</p>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:36px 40px;color:#333333;font-size:15px;line-height:1.7;">
-            ${content}
-          </td>
-        </tr>
-        <tr>
-          <td style="background:#f8f8f8;padding:20px 40px;text-align:center;border-top:1px solid #eeeeee;">
-            <p style="margin:0;color:#999999;font-size:11px;">Centro Steadycam · <a href="https://centrosteadycam.it" style="color:#88BF81;text-decoration:none;">centrosteadycam.it</a></p>
-          </td>
-        </tr>
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>`;
-}
-
-function detailRow(label: string, value: string): string {
-  return `<tr>
-    <td style="padding:6px 12px;font-size:13px;color:#666666;white-space:nowrap;">${label}</td>
-    <td style="padding:6px 12px;font-size:14px;color:#222222;font-weight:bold;">${value}</td>
-  </tr>`;
-}
-
-function detailTable(rows: Array<[string, string]>): string {
-  return `<table cellpadding="0" cellspacing="0" style="background:#f9f9f9;border-radius:6px;border:1px solid #eeeeee;margin:20px 0;width:100%;">
-    ${rows.map(([l, v]) => detailRow(l, v)).join("")}
-  </table>`;
+function formatDate(date: string): string {
+  return new Date(date + "T00:00:00").toLocaleDateString("it-IT", {
+    weekday: "long", day: "numeric", month: "long", year: "numeric",
+  });
 }
 
 // ── Aggiungi contatto al gruppo Display (upsert) ──────────────────────────
@@ -117,11 +77,10 @@ export async function addToDisplayGroup(recipient: {
   const token = await getToken();
   const listId = Number(process.env.MAILUP_LIST_ID ?? "1");
   const groupId = Number(process.env.MAILUP_DISPLAY_GROUP_ID ?? "23");
-  const base = "https://services.mailup.com/API/v1.1/Rest/ConsoleService.svc/Console";
 
-  // 1. Cerca se il contatto esiste già nella lista
+  // Cerca se il contatto esiste già nella lista
   const searchRes = await fetch(
-    `${base}/List/${listId}/Recipients/EmailOptins?pageSize=1&pageNumber=1&filterby="Email='${recipient.email}'"`,
+    `${API_BASE}/List/${listId}/Recipients/EmailOptins?pageSize=1&pageNumber=1&filterby="Email='${recipient.email}'"`,
     { headers: { Authorization: `Bearer ${token}` } }
   );
 
@@ -129,15 +88,13 @@ export async function addToDisplayGroup(recipient: {
   const existing = searchData?.Items?.[0];
 
   if (existing?.idRecipient) {
-    // Contatto già in lista → aggiungilo solo al gruppo
-    await fetch(`${base}/Group/${groupId}/Recipient`, {
+    await fetch(`${API_BASE}/Group/${groupId}/Recipient`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({ idRecipient: existing.idRecipient }),
     });
   } else {
-    // Nuovo contatto → crealo direttamente nel gruppo
-    await fetch(`${base}/Group/${groupId}/Recipient`, {
+    await fetch(`${API_BASE}/Group/${groupId}/Recipient`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({
@@ -158,11 +115,9 @@ export async function removeFromDisplayGroup(email: string) {
   const token = await getToken();
   const listId = Number(process.env.MAILUP_LIST_ID ?? "1");
   const groupId = Number(process.env.MAILUP_DISPLAY_GROUP_ID ?? "23");
-  const base = "https://services.mailup.com/API/v1.1/Rest/ConsoleService.svc/Console";
 
-  // Cerca il contatto per email
   const searchRes = await fetch(
-    `${base}/List/${listId}/Recipients/EmailOptins?pageSize=1&pageNumber=1&filterby="Email='${email}'"`,
+    `${API_BASE}/List/${listId}/Recipients/EmailOptins?pageSize=1&pageNumber=1&filterby="Email='${email}'"`,
     { headers: { Authorization: `Bearer ${token}` } }
   );
 
@@ -170,7 +125,7 @@ export async function removeFromDisplayGroup(email: string) {
   const existing = searchData?.Items?.[0];
 
   if (existing?.idRecipient) {
-    await fetch(`${base}/Group/${groupId}/Recipient/${existing.idRecipient}`, {
+    await fetch(`${API_BASE}/Group/${groupId}/Recipient/${existing.idRecipient}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -188,34 +143,21 @@ export async function sendConfirmationEmail(booking: {
   n_adulti: number;
   date: string;
 }) {
-  const dateFormatted = new Date(booking.date + "T00:00:00").toLocaleDateString(
-    "it-IT",
-    { weekday: "long", day: "numeric", month: "long", year: "numeric" }
-  );
-
-  const html = emailLayout(`
-    <p>Gentile <strong>${booking.nome} ${booking.cognome}</strong>,</p>
-    <p>abbiamo ricevuto la tua richiesta di prenotazione per la <strong>visita al Centro</strong>.</p>
-    ${detailTable([
-      ["Data richiesta", dateFormatted],
-      ["Orario", "h. 8.00 – 13.00"],
-      ["Istituto / Plesso", booking.istituto],
-      ["Classe", booking.classe],
-      ["Partecipanti", `${booking.n_alunni} alunni + ${booking.n_adulti} adulti`],
-    ])}
-    <p>Lo staff del Centro Steadycam ti contatterà a breve per <strong>confermare definitivamente</strong> la prenotazione.</p>
-    <p style="margin-top:28px;color:#888888;font-size:13px;">Se non hai effettuato tu questa richiesta, ignora questa email.</p>
-  `);
-
   await sendMail({
     to: booking.email,
-    toName: `${booking.nome} ${booking.cognome}`,
-    subject: "Richiesta di prenotazione ricevuta — Centro Steadycam",
-    html,
+    idMessage: Number(process.env.MAILUP_MSG_CONFIRMATION ?? "60"),
+    fields: [
+      { Description: "nome", Value: booking.nome },
+      { Description: "cognome", Value: booking.cognome },
+      { Description: "data", Value: formatDate(booking.date) },
+      { Description: "istituto", Value: booking.istituto },
+      { Description: "classe", Value: booking.classe },
+      { Description: "partecipanti", Value: `${booking.n_alunni} alunni + ${booking.n_adulti} adulti` },
+    ],
   });
 }
 
-// ── 2. Conferma approvazione manuale ──────────────────────────────────────
+// ── 2. Approvazione manuale ────────────────────────────────────────────────
 export async function sendApprovalEmail(booking: {
   nome: string;
   cognome: string;
@@ -226,34 +168,43 @@ export async function sendApprovalEmail(booking: {
   n_adulti: number;
   date: string;
 }) {
-  const dateFormatted = new Date(booking.date + "T00:00:00").toLocaleDateString(
-    "it-IT",
-    { weekday: "long", day: "numeric", month: "long", year: "numeric" }
-  );
-
-  const html = emailLayout(`
-    <p>Gentile <strong>${booking.nome} ${booking.cognome}</strong>,</p>
-    <p>siamo lieti di comunicarti che la tua prenotazione per la <strong>visita al Centro</strong> è stata <strong style="color:#3a8a35;">confermata</strong>!</p>
-    ${detailTable([
-      ["Data confermata", dateFormatted],
-      ["Orario", "h. 8.00 – 13.00"],
-      ["Istituto / Plesso", booking.istituto],
-      ["Classe", booking.classe],
-      ["Partecipanti", `${booking.n_alunni} alunni + ${booking.n_adulti} adulti`],
-    ])}
-    <p>Vi aspettiamo! Per qualsiasi informazione puoi contattarci tramite il sito.</p>
-    <p style="margin-top:28px;">A presto,<br><strong>Staff Centro Steadycam</strong></p>
-  `);
-
   await sendMail({
     to: booking.email,
-    toName: `${booking.nome} ${booking.cognome}`,
-    subject: "Prenotazione confermata — Centro Steadycam",
-    html,
+    idMessage: Number(process.env.MAILUP_MSG_APPROVAL ?? "59"),
+    fields: [
+      { Description: "nome", Value: booking.nome },
+      { Description: "cognome", Value: booking.cognome },
+      { Description: "data", Value: formatDate(booking.date) },
+      { Description: "istituto", Value: booking.istituto },
+      { Description: "classe", Value: booking.classe },
+      { Description: "partecipanti", Value: `${booking.n_alunni} alunni + ${booking.n_adulti} adulti` },
+    ],
   });
 }
 
-// ── 3. Promemoria prima della visita ──────────────────────────────────────
+// ── 3. Rifiuto richiesta ───────────────────────────────────────────────────
+export async function sendRejectionEmail(booking: {
+  nome: string;
+  cognome: string;
+  email: string;
+  istituto: string;
+  classe: string;
+  date: string;
+}) {
+  await sendMail({
+    to: booking.email,
+    idMessage: Number(process.env.MAILUP_MSG_REJECTION ?? "58"),
+    fields: [
+      { Description: "nome", Value: booking.nome },
+      { Description: "cognome", Value: booking.cognome },
+      { Description: "data", Value: formatDate(booking.date) },
+      { Description: "istituto", Value: booking.istituto },
+      { Description: "classe", Value: booking.classe },
+    ],
+  });
+}
+
+// ── 4. Promemoria prima della visita ──────────────────────────────────────
 export async function sendReminderEmail(booking: {
   nome: string;
   cognome: string;
@@ -265,63 +216,17 @@ export async function sendReminderEmail(booking: {
   date: string;
   reminderDays: number;
 }) {
-  const dateFormatted = new Date(booking.date + "T00:00:00").toLocaleDateString(
-    "it-IT",
-    { weekday: "long", day: "numeric", month: "long", year: "numeric" }
-  );
-
-  const html = emailLayout(`
-    <p>Gentile <strong>${booking.nome} ${booking.cognome}</strong>,</p>
-    <p>ti ricordiamo che la <strong>visita al Centro</strong> è prevista <strong>tra ${booking.reminderDays} ${booking.reminderDays === 1 ? "giorno" : "giorni"}</strong>.</p>
-    ${detailTable([
-      ["Data", dateFormatted],
-      ["Orario", "h. 8.00 – 13.00"],
-      ["Istituto / Plesso", booking.istituto],
-      ["Classe", booking.classe],
-      ["Partecipanti", `${booking.n_alunni} alunni + ${booking.n_adulti} adulti`],
-    ])}
-    <p>Per informazioni o modifiche contattaci tramite il sito.</p>
-    <p style="margin-top:28px;">A presto,<br><strong>Staff Centro Steadycam</strong></p>
-  `);
-
   await sendMail({
     to: booking.email,
-    toName: `${booking.nome} ${booking.cognome}`,
-    subject: `Promemoria: visita al Centro tra ${booking.reminderDays} ${booking.reminderDays === 1 ? "giorno" : "giorni"} — Centro Steadycam`,
-    html,
-  });
-}
-
-// ── 4. Rifiuto richiesta ───────────────────────────────────────────────────
-export async function sendRejectionEmail(booking: {
-  nome: string;
-  cognome: string;
-  email: string;
-  istituto: string;
-  classe: string;
-  date: string;
-}) {
-  const dateFormatted = new Date(booking.date + "T00:00:00").toLocaleDateString(
-    "it-IT",
-    { weekday: "long", day: "numeric", month: "long", year: "numeric" }
-  );
-
-  const html = emailLayout(`
-    <p>Gentile <strong>${booking.nome} ${booking.cognome}</strong>,</p>
-    <p>ci dispiace comunicarti che la tua richiesta di prenotazione per la <strong>visita al Centro</strong> non ha potuto essere accettata per la data selezionata.</p>
-    ${detailTable([
-      ["Data richiesta", dateFormatted],
-      ["Istituto / Plesso", booking.istituto],
-      ["Classe", booking.classe],
-    ])}
-    <p>La disponibilità delle date è limitata: ti invitiamo a verificare la presenza di nuove date disponibili sul nostro sito oppure a contattarci direttamente per trovare insieme una soluzione.</p>
-    <p style="margin-top:28px;">Ci scusiamo per l'inconveniente.<br><strong>Staff Centro Steadycam</strong></p>
-  `);
-
-  await sendMail({
-    to: booking.email,
-    toName: `${booking.nome} ${booking.cognome}`,
-    subject: "Richiesta di prenotazione — Centro Steadycam",
-    html,
+    idMessage: Number(process.env.MAILUP_MSG_REMINDER ?? "57"),
+    fields: [
+      { Description: "nome", Value: booking.nome },
+      { Description: "cognome", Value: booking.cognome },
+      { Description: "data", Value: formatDate(booking.date) },
+      { Description: "istituto", Value: booking.istituto },
+      { Description: "classe", Value: booking.classe },
+      { Description: "partecipanti", Value: `${booking.n_alunni} alunni + ${booking.n_adulti} adulti` },
+      { Description: "giorni", Value: String(booking.reminderDays) },
+    ],
   });
 }
