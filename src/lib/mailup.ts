@@ -72,28 +72,31 @@ async function findRecipientId(token: string, email: string): Promise<number | n
   const listId = Number(process.env.MAILUP_LIST_ID ?? "1");
   const groupId = Number(process.env.MAILUP_DISPLAY_GROUP_ID ?? "23");
 
-  // MailUp vuole = letterale, solo le virgolette doppie vanno encodate
-  const filterParam = `"Email='${email}'"`.replace(/"/g, "%22");
+  // Scarica tutti i destinatari del gruppo e cerca per email in JS
+  // (evita filterby che causa 500 su MailUp)
+  const res = await fetch(
+    `${API_BASE}/Group/${groupId}/Recipients?pageSize=500&pageNumber=1`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  if (res.ok) {
+    const data = await res.json();
+    const item = (data?.Items ?? []).find(
+      (r: { Email?: string }) => r.Email?.toLowerCase() === email.toLowerCase()
+    );
+    if (item?.idRecipient) return item.idRecipient;
+  }
 
-  const urls = [
-    `${API_BASE}/Group/${groupId}/Recipients?pageSize=1&pageNumber=1&filterby=${filterParam}`,
-    `${API_BASE}/List/${listId}/Recipients/EmailOptins?pageSize=1&pageNumber=1&filterby=${filterParam}`,
-  ];
-
-  for (const url of urls) {
-    const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-    const text = await res.text();
-    console.log(`[MailUp] ${res.status} ${url}`);
-    console.log(`[MailUp] response: ${text.slice(0, 300)}`);
-    if (res.ok) {
-      try {
-        const data = JSON.parse(text);
-        const item = data?.Items?.[0];
-        console.log(`[MailUp] first item: ${JSON.stringify(item)}`);
-        const id = item?.idRecipient;
-        if (id) return id;
-      } catch {}
-    }
+  // Fallback: cerca nella lista
+  const listRes = await fetch(
+    `${API_BASE}/List/${listId}/Recipients/EmailOptins?pageSize=500&pageNumber=1`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  if (listRes.ok) {
+    const data = await listRes.json();
+    const item = (data?.Items ?? []).find(
+      (r: { Email?: string }) => r.Email?.toLowerCase() === email.toLowerCase()
+    );
+    if (item?.idRecipient) return item.idRecipient;
   }
 
   return null;
