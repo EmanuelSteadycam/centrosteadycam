@@ -146,7 +146,7 @@ export async function removeFromDisplayGroup(
   const token = await getToken();
   const groupId = Number(process.env.MAILUP_DISPLAY_GROUP_ID ?? "23");
 
-  const res = await fetch(`${API_BASE}/Group/${groupId}/Recipient/${mailupId}`, {
+  const res = await fetch(`${API_BASE}/Group/${groupId}/Unsubscribe/${mailupId}`, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${token}` },
   });
