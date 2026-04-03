@@ -75,26 +75,25 @@ async function findRecipientId(token: string, email: string): Promise<number | n
   // MailUp vuole = letterale, solo le virgolette doppie vanno encodate
   const filterParam = `"Email='${email}'"`.replace(/"/g, "%22");
 
-  // 1. Cerca nel gruppo (/Recipients senza suffisso EmailOptins)
-  const groupRes = await fetch(
+  const urls = [
     `${API_BASE}/Group/${groupId}/Recipients?pageSize=1&pageNumber=1&filterby=${filterParam}`,
-    { headers: { Authorization: `Bearer ${token}` } }
-  );
-  if (groupRes.ok) {
-    const data = await groupRes.json();
-    const id = data?.Items?.[0]?.idRecipient;
-    if (id) return id;
-  }
-
-  // 2. Fallback: cerca nella lista
-  const listRes = await fetch(
     `${API_BASE}/List/${listId}/Recipients/EmailOptins?pageSize=1&pageNumber=1&filterby=${filterParam}`,
-    { headers: { Authorization: `Bearer ${token}` } }
-  );
-  if (listRes.ok) {
-    const data = await listRes.json();
-    const id = data?.Items?.[0]?.idRecipient;
-    if (id) return id;
+  ];
+
+  for (const url of urls) {
+    const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+    const text = await res.text();
+    console.log(`[MailUp] ${res.status} ${url}`);
+    console.log(`[MailUp] response: ${text.slice(0, 300)}`);
+    if (res.ok) {
+      try {
+        const data = JSON.parse(text);
+        const item = data?.Items?.[0];
+        console.log(`[MailUp] first item: ${JSON.stringify(item)}`);
+        const id = item?.idRecipient;
+        if (id) return id;
+      } catch {}
+    }
   }
 
   return null;
