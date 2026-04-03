@@ -38,8 +38,7 @@ async function updateRecipientFields(
   idRecipient: number,
   fields: Field[]
 ): Promise<void> {
-  const listId = Number(process.env.MAILUP_LIST_ID ?? "1");
-  const res = await fetch(`${API_BASE}/List/${listId}/Recipient/${idRecipient}`, {
+  const res = await fetch(`${API_BASE}/Recipient/Detail`, {
     method: "PUT",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     body: JSON.stringify({ idRecipient, Fields: fields }),
