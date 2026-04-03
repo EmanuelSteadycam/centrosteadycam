@@ -36,12 +36,13 @@ type Field = { Id: number; Description: string; Value: string };
 async function updateRecipientFields(
   token: string,
   idRecipient: number,
+  email: string,
   fields: Field[]
 ): Promise<void> {
   const res = await fetch(`${API_BASE}/Recipient/Detail`, {
     method: "PUT",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ idRecipient, Fields: fields }),
+    body: JSON.stringify({ idRecipient, Email: email, Fields: fields }),
   });
   if (!res.ok) {
     const err = await res.text();
@@ -67,7 +68,7 @@ async function sendMail({
   // Aggiorna il profilo con i campi specifici della prenotazione
   // così i tag [FirstName], [Display_Data_iscrizione] ecc. vengono sostituiti
   if (mailupId) {
-    await updateRecipientFields(token, mailupId, fields);
+    await updateRecipientFields(token, mailupId, to, fields);
   }
 
   const res = await fetch(SEND_URL, {
