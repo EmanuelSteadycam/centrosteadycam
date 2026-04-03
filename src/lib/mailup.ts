@@ -72,31 +72,15 @@ async function findRecipientId(token: string, email: string): Promise<number | n
   const listId = Number(process.env.MAILUP_LIST_ID ?? "1");
   const groupId = Number(process.env.MAILUP_DISPLAY_GROUP_ID ?? "23");
 
-  // Scarica tutti i destinatari del gruppo e cerca per email in JS
-  // (evita filterby che causa 500 su MailUp)
+  // MailUp accetta virgolette letterali nel filterby (senza URL encoding)
   const res = await fetch(
-    `${API_BASE}/Group/${groupId}/Recipients?pageSize=500&pageNumber=1`,
+    `${API_BASE}/List/${listId}/Recipients/EmailOptins?pageSize=1&pageNumber=1&filterby="Email='${email}'"`,
     { headers: { Authorization: `Bearer ${token}` } }
   );
   if (res.ok) {
     const data = await res.json();
-    const item = (data?.Items ?? []).find(
-      (r: { Email?: string }) => r.Email?.toLowerCase() === email.toLowerCase()
-    );
-    if (item?.idRecipient) return item.idRecipient;
-  }
-
-  // Fallback: cerca nella lista
-  const listRes = await fetch(
-    `${API_BASE}/List/${listId}/Recipients/EmailOptins?pageSize=500&pageNumber=1`,
-    { headers: { Authorization: `Bearer ${token}` } }
-  );
-  if (listRes.ok) {
-    const data = await listRes.json();
-    const item = (data?.Items ?? []).find(
-      (r: { Email?: string }) => r.Email?.toLowerCase() === email.toLowerCase()
-    );
-    if (item?.idRecipient) return item.idRecipient;
+    const id = data?.Items?.[0]?.idRecipient;
+    if (id) return id;
   }
 
   return null;
