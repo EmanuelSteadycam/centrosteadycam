@@ -72,13 +72,14 @@ async function findRecipientId(token: string, email: string): Promise<number | n
   const listId = Number(process.env.MAILUP_LIST_ID ?? "1");
   const groupId = Number(process.env.MAILUP_DISPLAY_GROUP_ID ?? "23");
 
-  // MailUp accetta virgolette letterali nel filterby (senza URL encoding)
-  const res = await fetch(
-    `${API_BASE}/List/${listId}/Recipients/EmailOptins?pageSize=1&pageNumber=1&filterby="Email='${email}'"`,
-    { headers: { Authorization: `Bearer ${token}` } }
-  );
-  if (res.ok) {
-    const data = await res.json();
+  // Cerca in EmailOptins e EmailOptouts (contatto potrebbe essere non confermato)
+  for (const status of ["EmailOptins", "EmailOptouts"]) {
+    const res = await fetch(
+      `${API_BASE}/List/${listId}/Recipients/${status}?pageSize=1&pageNumber=1&filterby="Email='${email}'"`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    const data = res.ok ? await res.json() : null;
+    console.log(`[MailUp find] ${status} → ${res.status} items:${data?.Items?.length ?? "err"} id:${data?.Items?.[0]?.idRecipient ?? "none"}`);
     const id = data?.Items?.[0]?.idRecipient;
     if (id) return id;
   }
