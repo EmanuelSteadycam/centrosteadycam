@@ -38,7 +38,8 @@ async function updateRecipientFields(
   idRecipient: number,
   fields: Field[]
 ): Promise<void> {
-  const res = await fetch(`${API_BASE}/Recipient/${idRecipient}`, {
+  const listId = Number(process.env.MAILUP_LIST_ID ?? "1");
+  const res = await fetch(`${API_BASE}/List/${listId}/Recipient`, {
     method: "PUT",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     body: JSON.stringify({ idRecipient, Fields: fields }),
@@ -46,6 +47,8 @@ async function updateRecipientFields(
   if (!res.ok) {
     const err = await res.text();
     console.error(`[MailUp] updateRecipientFields failed: ${res.status} — ${err}`);
+  } else {
+    console.log(`[MailUp] updateRecipientFields ok: id:${idRecipient}`);
   }
 }
 
