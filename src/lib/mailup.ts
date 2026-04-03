@@ -32,16 +32,42 @@ async function getToken(): Promise<string> {
 
 type Field = { Id: number; Description: string; Value: string };
 
+// ── Aggiorna profilo destinatario prima dell'invio ─────────────────────────
+async function updateRecipientFields(
+  token: string,
+  idRecipient: number,
+  fields: Field[]
+): Promise<void> {
+  const res = await fetch(`${API_BASE}/Recipient/${idRecipient}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ idRecipient, Fields: fields }),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    console.error(`[MailUp] updateRecipientFields failed: ${res.status} — ${err}`);
+  }
+}
+
 async function sendMail({
   to,
   idMessage,
   fields,
+  mailupId,
 }: {
   to: string;
   idMessage: number;
   fields: Field[];
+  mailupId?: number | null;
 }) {
   const token = await getToken();
+
+  // Aggiorna il profilo con i campi specifici della prenotazione
+  // così i tag [FirstName], [Display_Data_iscrizione] ecc. vengono sostituiti
+  if (mailupId) {
+    await updateRecipientFields(token, mailupId, fields);
+  }
+
   const res = await fetch(SEND_URL, {
     method: "POST",
     headers: {
@@ -67,27 +93,10 @@ function formatDate(date: string): string {
   });
 }
 
-// ── Cerca idRecipient per email ───────────────────────────────────────────
-async function findRecipientId(token: string, email: string): Promise<number | null> {
-  const listId = Number(process.env.MAILUP_LIST_ID ?? "1");
-  const groupId = Number(process.env.MAILUP_DISPLAY_GROUP_ID ?? "23");
-
-  // Cerca in EmailOptins e EmailOptouts (contatto potrebbe essere non confermato)
-  for (const status of ["EmailOptins", "EmailOptouts"]) {
-    const res = await fetch(
-      `${API_BASE}/List/${listId}/Recipients/${status}?pageSize=1&pageNumber=1&filterby="Email='${email}'"`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    const data = res.ok ? await res.json() : null;
-    console.log(`[MailUp find] ${status} → ${res.status} items:${data?.Items?.length ?? "err"} id:${data?.Items?.[0]?.idRecipient ?? "none"}`);
-    const id = data?.Items?.[0]?.idRecipient;
-    if (id) return id;
-  }
-
-  return null;
-}
 
 // ── Aggiungi contatto al gruppo Display — ritorna idRecipient ─────────────
+// MailUp fa upsert per email: se il contatto esiste già (in qualsiasi lista/gruppo),
+// aggiorna il profilo e lo aggiunge al gruppo, restituendo l'idRecipient esistente.
 export async function addToDisplayGroup(recipient: {
   email: string;
   nome: string;
@@ -97,68 +106,72 @@ export async function addToDisplayGroup(recipient: {
   const token = await getToken();
   const groupId = Number(process.env.MAILUP_DISPLAY_GROUP_ID ?? "23");
 
-  const existingId = await findRecipientId(token, recipient.email);
-
   const res = await fetch(`${API_BASE}/Group/${groupId}/Recipient`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: existingId
-      ? JSON.stringify({ idRecipient: existingId })
-      : JSON.stringify({
-          Email: recipient.email,
-          Name: `${recipient.nome} ${recipient.cognome}`,
-          Fields: [
-            { Description: "nome",    Id: 1, Value: recipient.nome },
-            { Description: "cognome", Id: 2, Value: recipient.cognome },
-            { Description: "Display_Istituto_Scolastico", Id: 29, Value: recipient.istituto },
-          ],
-        }),
+    body: JSON.stringify({
+      Email: recipient.email,
+      Name: `${recipient.nome} ${recipient.cognome}`,
+      Fields: [
+        { Description: "FirstName", Id: 1, Value: recipient.nome },
+        { Description: "LastName",  Id: 2, Value: recipient.cognome },
+        { Description: "Display_Istituto_Scolastico", Id: 29, Value: recipient.istituto },
+      ],
+    }),
   });
+
+  console.log(`[MailUp addToGroup] status: ${res.status}`);
 
   if (res.ok) {
     const body = await res.json();
+    console.log(`[MailUp addToGroup] body: ${JSON.stringify(body)}`);
     // MailUp ritorna l'idRecipient come numero intero nella risposta
-    const returnedId = typeof body === "number" ? body : body?.idRecipient ?? null;
-    return returnedId ?? existingId ?? null;
+    return typeof body === "number" ? body : (body?.idRecipient ?? null);
   }
-  return existingId ?? null;
+
+  const err = await res.text();
+  console.error(`[MailUp addToGroup] failed: ${res.status} — ${err}`);
+  return null;
 }
 
 // ── Rimuovi contatto dal gruppo Display ───────────────────────────────────
 export async function removeFromDisplayGroup(
-  email: string,
+  _email: string,
   mailupId?: number | null
 ) {
+  if (!mailupId) return;
+
   const token = await getToken();
   const groupId = Number(process.env.MAILUP_DISPLAY_GROUP_ID ?? "23");
 
-  // Usa l'ID salvato in DB se disponibile, altrimenti cerca
-  const idRecipient = mailupId ?? (await findRecipientId(token, email));
-  if (!idRecipient) return;
-
-  await fetch(`${API_BASE}/Group/${groupId}/Recipient/${idRecipient}`, {
+  const res = await fetch(`${API_BASE}/Group/${groupId}/Recipient/${mailupId}`, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${token}` },
   });
+  console.log(`[MailUp removeFromGroup] id:${mailupId} status:${res.status}`);
 }
 
 // ── 1. Conferma ricezione form ─────────────────────────────────────────────
-export async function sendConfirmationEmail(booking: {
-  nome: string;
-  cognome: string;
-  email: string;
-  istituto: string;
-  classe: string;
-  n_alunni: number;
-  n_adulti: number;
-  date: string;
-}) {
+export async function sendConfirmationEmail(
+  booking: {
+    nome: string;
+    cognome: string;
+    email: string;
+    istituto: string;
+    classe: string;
+    n_alunni: number;
+    n_adulti: number;
+    date: string;
+  },
+  mailupId?: number | null
+) {
   await sendMail({
     to: booking.email,
     idMessage: Number(process.env.MAILUP_MSG_CONFIRMATION ?? "60"),
+    mailupId,
     fields: [
-      { Id: 1,  Description: "nome",    Value: booking.nome },
-      { Id: 2,  Description: "cognome", Value: booking.cognome },
+      { Id: 1,  Description: "FirstName", Value: booking.nome },
+      { Id: 2,  Description: "LastName",  Value: booking.cognome },
       { Id: 28, Description: "Display_Data_iscrizione",    Value: formatDate(booking.date) },
       { Id: 29, Description: "Display_Istituto_Scolastico", Value: booking.istituto },
       { Id: 30, Description: "Display_Classe",             Value: booking.classe },
@@ -168,22 +181,26 @@ export async function sendConfirmationEmail(booking: {
 }
 
 // ── 2. Approvazione manuale ────────────────────────────────────────────────
-export async function sendApprovalEmail(booking: {
-  nome: string;
-  cognome: string;
-  email: string;
-  istituto: string;
-  classe: string;
-  n_alunni: number;
-  n_adulti: number;
-  date: string;
-}) {
+export async function sendApprovalEmail(
+  booking: {
+    nome: string;
+    cognome: string;
+    email: string;
+    istituto: string;
+    classe: string;
+    n_alunni: number;
+    n_adulti: number;
+    date: string;
+  },
+  mailupId?: number | null
+) {
   await sendMail({
     to: booking.email,
     idMessage: Number(process.env.MAILUP_MSG_APPROVAL ?? "59"),
+    mailupId,
     fields: [
-      { Id: 1,  Description: "nome",    Value: booking.nome },
-      { Id: 2,  Description: "cognome", Value: booking.cognome },
+      { Id: 1,  Description: "FirstName", Value: booking.nome },
+      { Id: 2,  Description: "LastName",  Value: booking.cognome },
       { Id: 28, Description: "Display_Data_iscrizione",    Value: formatDate(booking.date) },
       { Id: 29, Description: "Display_Istituto_Scolastico", Value: booking.istituto },
       { Id: 30, Description: "Display_Classe",             Value: booking.classe },
@@ -193,20 +210,24 @@ export async function sendApprovalEmail(booking: {
 }
 
 // ── 3. Rifiuto richiesta ───────────────────────────────────────────────────
-export async function sendRejectionEmail(booking: {
-  nome: string;
-  cognome: string;
-  email: string;
-  istituto: string;
-  classe: string;
-  date: string;
-}) {
+export async function sendRejectionEmail(
+  booking: {
+    nome: string;
+    cognome: string;
+    email: string;
+    istituto: string;
+    classe: string;
+    date: string;
+  },
+  mailupId?: number | null
+) {
   await sendMail({
     to: booking.email,
     idMessage: Number(process.env.MAILUP_MSG_REJECTION ?? "58"),
+    mailupId,
     fields: [
-      { Id: 1,  Description: "nome",    Value: booking.nome },
-      { Id: 2,  Description: "cognome", Value: booking.cognome },
+      { Id: 1,  Description: "FirstName", Value: booking.nome },
+      { Id: 2,  Description: "LastName",  Value: booking.cognome },
       { Id: 28, Description: "Display_Data_iscrizione",    Value: formatDate(booking.date) },
       { Id: 29, Description: "Display_Istituto_Scolastico", Value: booking.istituto },
       { Id: 30, Description: "Display_Classe",             Value: booking.classe },
@@ -215,23 +236,27 @@ export async function sendRejectionEmail(booking: {
 }
 
 // ── 4. Promemoria prima della visita ──────────────────────────────────────
-export async function sendReminderEmail(booking: {
-  nome: string;
-  cognome: string;
-  email: string;
-  istituto: string;
-  classe: string;
-  n_alunni: number;
-  n_adulti: number;
-  date: string;
-  reminderDays: number;
-}) {
+export async function sendReminderEmail(
+  booking: {
+    nome: string;
+    cognome: string;
+    email: string;
+    istituto: string;
+    classe: string;
+    n_alunni: number;
+    n_adulti: number;
+    date: string;
+    reminderDays: number;
+  },
+  mailupId?: number | null
+) {
   await sendMail({
     to: booking.email,
     idMessage: Number(process.env.MAILUP_MSG_REMINDER ?? "57"),
+    mailupId,
     fields: [
-      { Id: 1,  Description: "nome",    Value: booking.nome },
-      { Id: 2,  Description: "cognome", Value: booking.cognome },
+      { Id: 1,  Description: "FirstName", Value: booking.nome },
+      { Id: 2,  Description: "LastName",  Value: booking.cognome },
       { Id: 28, Description: "Display_Data_iscrizione",    Value: formatDate(booking.date) },
       { Id: 29, Description: "Display_Istituto_Scolastico", Value: booking.istituto },
       { Id: 30, Description: "Display_Classe",             Value: booking.classe },

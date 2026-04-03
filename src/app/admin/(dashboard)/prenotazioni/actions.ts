@@ -79,7 +79,7 @@ export async function approveBooking(id: number): Promise<{ error: string | null
         n_alunni: booking.n_alunni,
         n_adulti: booking.n_adulti,
         date: slotDate,
-      });
+      }, booking.mailup_id);
     } catch (mailErr) {
       console.error("MailUp approval email failed:", mailErr);
     }
@@ -148,7 +148,7 @@ export async function rejectBooking(id: number): Promise<{ error: string | null 
         istituto: booking.istituto,
         classe: booking.classe,
         date: slotDate,
-      });
+      }, booking.mailup_id);
     } catch (mailErr) {
       console.error("MailUp rejection email failed:", mailErr);
     }

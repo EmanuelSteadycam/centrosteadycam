@@ -47,8 +47,9 @@ export async function submitBooking(data: {
   const emailEnabled = setting?.value === "true";
 
   if (slot && emailEnabled) {
+    let mailupId: number | null = null;
     try {
-      const mailupId = await addToDisplayGroup({
+      mailupId = await addToDisplayGroup({
         email: data.email,
         nome: data.nome,
         cognome: data.cognome,
@@ -74,7 +75,7 @@ export async function submitBooking(data: {
         n_alunni: data.n_alunni,
         n_adulti: data.n_adulti,
         date: slot.date,
-      });
+      }, mailupId);
     } catch (mailErr) {
       const msg = mailErr instanceof Error ? mailErr.message : String(mailErr);
       console.error("MailUp confirmation email failed:", msg);
