@@ -44,7 +44,7 @@ export async function GET(request: Request) {
         n_adulti: b.n_adulti,
         date: b.display_slots.date,
         reminderDays,
-      }, b.mailup_id);
+      });
       sent++;
     } catch (err) {
       console.error(`Reminder failed for booking ${b.id}:`, err);
