@@ -92,10 +92,10 @@ export async function approveBooking(id: number): Promise<{ error: string | null
 export async function deleteBooking(id: number): Promise<{ error: string | null }> {
   const supabase = createSupabaseAdminClient();
 
-  // Fetch email + slot_id before deleting
+  // Fetch email + slot_id + mailup_id before deleting
   const { data: booking } = await supabase
     .from("display_bookings")
-    .select("email, slot_id")
+    .select("email, slot_id, mailup_id")
     .eq("id", id)
     .single();
 
@@ -107,10 +107,10 @@ export async function deleteBooking(id: number): Promise<{ error: string | null 
     await supabase.rpc("decrement_slot_bookings", { p_slot_id: booking.slot_id });
   }
 
-  // Rimuovi dal gruppo MailUp
+  // Rimuovi dal gruppo MailUp usando l'ID salvato
   if (booking?.email) {
     try {
-      await removeFromDisplayGroup(booking.email);
+      await removeFromDisplayGroup(booking.email, booking.mailup_id);
     } catch (err) {
       console.error("MailUp removeFromGroup failed:", err);
     }

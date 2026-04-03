@@ -19,13 +19,14 @@ export async function submitBooking(data: {
 }) {
   const supabase = createSupabaseAdminClient();
 
-  const { error } = await supabase.from("display_bookings").insert({
-    ...data,
-    tipo_scuola: "pubblica",
-    status: "pending",
-  });
+  const { data: inserted, error } = await supabase
+    .from("display_bookings")
+    .insert({ ...data, tipo_scuola: "pubblica", status: "pending" })
+    .select("id")
+    .single();
 
   if (error) return { error: error.message };
+  const bookingId = inserted?.id;
 
   if (data.slot_id) {
     await supabase.rpc("increment_slot_bookings", { p_slot_id: data.slot_id });
@@ -47,12 +48,18 @@ export async function submitBooking(data: {
 
   if (slot && emailEnabled) {
     try {
-      await addToDisplayGroup({
+      const mailupId = await addToDisplayGroup({
         email: data.email,
         nome: data.nome,
         cognome: data.cognome,
         istituto: data.istituto,
       });
+      if (mailupId && bookingId) {
+        await supabase
+          .from("display_bookings")
+          .update({ mailup_id: mailupId })
+          .eq("id", bookingId);
+      }
     } catch (err) {
       console.error("MailUp addToGroup failed:", err);
     }

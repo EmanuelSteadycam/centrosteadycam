@@ -87,47 +87,53 @@ async function findRecipientId(token: string, email: string): Promise<number | n
   return null;
 }
 
-// ── Aggiungi contatto al gruppo Display (upsert) ──────────────────────────
+// ── Aggiungi contatto al gruppo Display — ritorna idRecipient ─────────────
 export async function addToDisplayGroup(recipient: {
   email: string;
   nome: string;
   cognome: string;
   istituto: string;
-}) {
+}): Promise<number | null> {
   const token = await getToken();
   const groupId = Number(process.env.MAILUP_DISPLAY_GROUP_ID ?? "23");
 
-  const idRecipient = await findRecipientId(token, recipient.email);
+  const existingId = await findRecipientId(token, recipient.email);
 
-  if (idRecipient) {
-    await fetch(`${API_BASE}/Group/${groupId}/Recipient`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ idRecipient }),
-    });
-  } else {
-    await fetch(`${API_BASE}/Group/${groupId}/Recipient`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({
-        Email: recipient.email,
-        Name: `${recipient.nome} ${recipient.cognome}`,
-        Fields: [
-          { Description: "FirstName", Id: 1, Value: recipient.nome },
-          { Description: "LastName", Id: 2, Value: recipient.cognome },
-          { Description: "Display_Istituto_Scolastico", Id: 29, Value: recipient.istituto },
-        ],
-      }),
-    });
+  const res = await fetch(`${API_BASE}/Group/${groupId}/Recipient`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: existingId
+      ? JSON.stringify({ idRecipient: existingId })
+      : JSON.stringify({
+          Email: recipient.email,
+          Name: `${recipient.nome} ${recipient.cognome}`,
+          Fields: [
+            { Description: "FirstName", Id: 1, Value: recipient.nome },
+            { Description: "LastName", Id: 2, Value: recipient.cognome },
+            { Description: "Display_Istituto_Scolastico", Id: 29, Value: recipient.istituto },
+          ],
+        }),
+  });
+
+  if (res.ok) {
+    const body = await res.json();
+    // MailUp ritorna l'idRecipient come numero intero nella risposta
+    const returnedId = typeof body === "number" ? body : body?.idRecipient ?? null;
+    return returnedId ?? existingId ?? null;
   }
+  return existingId ?? null;
 }
 
 // ── Rimuovi contatto dal gruppo Display ───────────────────────────────────
-export async function removeFromDisplayGroup(email: string) {
+export async function removeFromDisplayGroup(
+  email: string,
+  mailupId?: number | null
+) {
   const token = await getToken();
   const groupId = Number(process.env.MAILUP_DISPLAY_GROUP_ID ?? "23");
 
-  const idRecipient = await findRecipientId(token, email);
+  // Usa l'ID salvato in DB se disponibile, altrimenti cerca
+  const idRecipient = mailupId ?? (await findRecipientId(token, email));
   if (!idRecipient) return;
 
   await fetch(`${API_BASE}/Group/${groupId}/Recipient/${idRecipient}`, {
