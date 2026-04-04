@@ -1256,6 +1256,12 @@ export default function DisplaySlider() {
     return () => window.removeEventListener("keydown", onKey);
   }, [current, nav]);
 
+  // Blocca swipe a due dita (navigazione browser) mentre lo slider è montato
+  useEffect(() => {
+    document.body.style.overscrollBehaviorX = "none";
+    return () => { document.body.style.overscrollBehaviorX = ""; };
+  }, []);
+
   const variants = {
     enter: (d: number) => transAxis === "y"
       ? { y: d > 0 ? "100%" : "-100%", x: 0, opacity: 0 }
