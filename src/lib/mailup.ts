@@ -61,7 +61,7 @@ async function sendMail({
       TrackingInfo: {
         CustomParams: "",
         Enabled:      false,
-        Protocols:    [{ Checked: false, Protocol: "http" }, { Checked: true, Protocol: "https" }],
+        Protocols:    [],
         Domains:      [],
       },
     }),
