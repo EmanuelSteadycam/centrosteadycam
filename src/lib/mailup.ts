@@ -51,11 +51,19 @@ async function sendMail({
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     body: JSON.stringify({
-      Subject:       subject,
-      Content:       htmlBody,
-      Notes:         "Transactional — generato dal sito",
-      SenderName:    process.env.MAILUP_SENDER_NAME    ?? "Centro Steadycam",
-      SenderAddress: process.env.MAILUP_SENDER_EMAIL   ?? "",
+      Subject:        subject,
+      Content:        htmlBody,
+      Notes:          "Transactional — generato dal sito",
+      SenderName:     process.env.MAILUP_SENDER_NAME  ?? "Centro Steadycam",
+      SenderAddress:  process.env.MAILUP_SENDER_EMAIL ?? "",
+      Embed:          false,
+      IsConfirmation: false,
+      TrackingInfo: {
+        CustomParams: "",
+        Enabled:      false,
+        Protocols:    [{ Checked: false, Protocol: "http" }, { Checked: true, Protocol: "https" }],
+        Domains:      [],
+      },
     }),
   });
 
