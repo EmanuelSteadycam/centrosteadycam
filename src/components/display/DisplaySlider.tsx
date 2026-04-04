@@ -1250,16 +1250,7 @@ export default function DisplaySlider() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement)?.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
-      const i = ORDER.indexOf(current);
-      if (e.key === "ArrowRight" || e.key === "ArrowDown") {
-        if (i < ORDER.length - 1) nav(ORDER[i + 1]);
-      } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
-        if (i > 0) nav(ORDER[i - 1]);
-      } else if (e.key === "Escape") {
-        setMenuOpen(false);
-      }
+      if (e.key === "Escape") setMenuOpen(false);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
