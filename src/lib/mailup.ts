@@ -89,6 +89,13 @@ async function sendMail({
   }
 
   console.log(`[MailUp] sent to ${to}`);
+
+  // 3. Cancella il messaggio (non serve tenerlo, l'HTML è già stato inviato)
+  const delRes = await fetch(`${API_BASE}/List/${listId}/Email/${idMessage}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  console.log(`[MailUp] message deleted: id:${idMessage} status:${delRes.status}`);
 }
 
 // ── helpers ───────────────────────────────────────────────────────────────
