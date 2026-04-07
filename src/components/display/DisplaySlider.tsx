@@ -542,7 +542,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [form, setForm] = useState({
-    giaPart: "", nAlunni: "15", nAdulti: "2", disabilita: "nessuno",
+    giaPart: "", nAlunni: "", nAdulti: "2", disabilita: "nessuno",
     istituto: "", plesso: "",
     classe: "", nome: "", cognome: "", email: "", cellulare: "",
   });
@@ -908,7 +908,10 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
                 <CustomSelect
                   value={form.nAlunni}
                   onChange={(v) => setForm({ ...form, nAlunni: v })}
-                  options={Array.from({ length: 30 }, (_, i) => ({ value: String(i + 1), label: String(i + 1) }))}
+                  options={[
+                    { value: "", label: "Seleziona" },
+                    ...Array.from({ length: 30 }, (_, i) => ({ value: String(i + 1), label: String(i + 1) })),
+                  ]}
                 />
               </div>
               <div>
@@ -989,7 +992,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
           </button>
           {formStep < DUMMY_STEPS.length - 1 ? (
             <button
-              disabled={formStep === 0 && !form.giaPart}
+              disabled={(formStep === 0 && !form.giaPart) || (formStep === 1 && !form.nAlunni)}
               onClick={() => setFormStep(formStep + 1)}
               className="px-7 py-2.5 text-white text-sm tracking-wider uppercase rounded-full disabled:opacity-40 disabled:cursor-not-allowed transition-all"
               style={{ background: "#f26c68", fontFamily: "var(--font-raleway)" }}
