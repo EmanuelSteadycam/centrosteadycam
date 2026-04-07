@@ -1001,9 +1001,14 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
             </button>
           ) : (
             <button
-              disabled={submitting || !form.nome || !form.email || !form.istituto || !form.plesso}
+              disabled={
+                submitting ||
+                !form.istituto || !form.plesso || !form.classe ||
+                !form.nome || !form.cognome || !form.cellulare ||
+                !form.email || !(form.email.includes("@") && form.email.includes("."))
+              }
               onClick={handleSubmit}
-              className="px-7 py-2.5 text-white text-sm tracking-wider uppercase rounded-full disabled:opacity-50 transition-all"
+              className="px-7 py-2.5 text-white text-sm tracking-wider uppercase rounded-full disabled:opacity-40 disabled:cursor-not-allowed transition-all"
               style={{ background: "#f26c68", fontFamily: "var(--font-raleway)" }}
             >
               {submitting ? "Invio..." : "Conferma"}
