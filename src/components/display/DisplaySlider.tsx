@@ -989,8 +989,9 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
           </button>
           {formStep < DUMMY_STEPS.length - 1 ? (
             <button
+              disabled={formStep === 0 && !form.giaPart}
               onClick={() => setFormStep(formStep + 1)}
-              className="px-7 py-2.5 text-white text-sm tracking-wider uppercase rounded-full transition-all"
+              className="px-7 py-2.5 text-white text-sm tracking-wider uppercase rounded-full disabled:opacity-40 disabled:cursor-not-allowed transition-all"
               style={{ background: "#f26c68", fontFamily: "var(--font-raleway)" }}
             >
               Avanti →
