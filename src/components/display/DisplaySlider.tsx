@@ -727,7 +727,15 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
               ? "Sei in lista d'attesa. Ti contatteremo non appena si libera una data disponibile."
               : "Lo staff del Centro ti contatterà a breve per confermare la visita."}
           </p>
-          <PillBtn onClick={() => nav("intro")}>← Home</PillBtn>
+          <div className="flex gap-4 justify-center flex-wrap">
+            <PillBtn onClick={() => nav("intro")}>← Home</PillBtn>
+            <PillBtn onClick={() => {
+              setScreen("intro");
+              setFormStep(0);
+              setSelectedSlot(null);
+              setForm({ giaPart: "", nAlunni: "", nAdulti: "2", disabilita: "nessuno", istituto: "", plesso: "", classe: "", nome: "", cognome: "", email: "", cellulare: "" });
+            }}>Iscrivi altra classe</PillBtn>
+          </div>
         </motion.div>
       </div>
     );
