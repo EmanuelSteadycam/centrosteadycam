@@ -161,6 +161,32 @@ function HamburgerMenu({
                   </motion.button>
                 );
               })}
+
+              {/* Separatore + link home */}
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: 0.04 + menuItems.length * 0.05 + 0.06, ease: "easeOut" }}
+                style={{ marginTop: "28px", paddingRight: "8px" }}
+              >
+                <a
+                  href="/"
+                  style={{
+                    fontFamily: "var(--font-raleway)",
+                    fontWeight: 300,
+                    fontSize: "13px",
+                    letterSpacing: "0.15em",
+                    textTransform: "uppercase",
+                    color: "#88BF81",
+                    textDecoration: "none",
+                    opacity: 0.85,
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.opacity = "1"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.opacity = "0.85"; }}
+                >
+                  ← centrosteadycam.it
+                </a>
+              </motion.div>
             </nav>
           </motion.div>
         )}
