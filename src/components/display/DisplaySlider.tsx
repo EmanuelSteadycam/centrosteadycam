@@ -1259,13 +1259,16 @@ export default function DisplaySlider() {
   // Blocca swipe a due dita (navigazione browser) mentre lo slider è montato
   useEffect(() => {
     document.body.style.overscrollBehaviorX = "none";
-    const onWheel = (e: WheelEvent) => {
-      if (Math.abs(e.deltaX) > 10) e.preventDefault();
+    // Inserisce uno stato dummy nella history del browser: lo swipe-back
+    // consumerà questo stato invece di uscire dalla pagina
+    window.history.pushState(null, "", window.location.href);
+    const onPopState = () => {
+      window.history.pushState(null, "", window.location.href);
     };
-    window.addEventListener("wheel", onWheel, { passive: false });
+    window.addEventListener("popstate", onPopState);
     return () => {
       document.body.style.overscrollBehaviorX = "";
-      window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("popstate", onPopState);
     };
   }, []);
 
