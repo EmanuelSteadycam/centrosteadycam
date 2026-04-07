@@ -1259,7 +1259,14 @@ export default function DisplaySlider() {
   // Blocca swipe a due dita (navigazione browser) mentre lo slider è montato
   useEffect(() => {
     document.body.style.overscrollBehaviorX = "none";
-    return () => { document.body.style.overscrollBehaviorX = ""; };
+    const onWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaX) > 10) e.preventDefault();
+    };
+    window.addEventListener("wheel", onWheel, { passive: false });
+    return () => {
+      document.body.style.overscrollBehaviorX = "";
+      window.removeEventListener("wheel", onWheel);
+    };
   }, []);
 
   const variants = {
