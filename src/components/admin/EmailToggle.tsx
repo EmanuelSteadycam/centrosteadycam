@@ -1,15 +1,15 @@
 "use client";
 import { useState, useTransition } from "react";
-import { setEmailConfirmationEnabled } from "@/app/admin/(dashboard)/prenotazioni/actions";
+import { setEmailConfirmationEnabled } from "@/app/admin/(dashboard)/eventi/[slug]/actions";
 
-export default function EmailToggle({ enabled }: { enabled: boolean }) {
+export default function EmailToggle({ enabled, eventSlug }: { enabled: boolean; eventSlug: string }) {
   const [active, setActive] = useState(enabled);
   const [isPending, startTransition] = useTransition();
 
   const toggle = () => {
     const next = !active;
     setActive(next);
-    startTransition(() => setEmailConfirmationEnabled(next));
+    startTransition(() => setEmailConfirmationEnabled(eventSlug, next));
   };
 
   return (

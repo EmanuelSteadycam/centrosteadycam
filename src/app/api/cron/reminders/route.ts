@@ -16,11 +16,20 @@ export async function GET(request: Request) {
   const targetDate = target.toISOString().split("T")[0];
 
   const supabase = createSupabaseAdminClient();
+
+  // Fetch the Display event id for reminders
+  const { data: displayEvent } = await supabase
+    .from("events")
+    .select("id")
+    .eq("slug", "display")
+    .single();
+
   const { data: bookings, error } = await supabase
-    .from("display_bookings")
-    .select("*, display_slots!inner(date)")
+    .from("event_bookings")
+    .select("*, event_slots!inner(date)")
+    .eq("event_id", displayEvent?.id ?? "")
     .eq("status", "confirmed")
-    .eq("display_slots.date", targetDate);
+    .eq("event_slots.date", targetDate);
 
   if (error) {
     console.error("Reminders cron DB error:", error);
@@ -42,7 +51,7 @@ export async function GET(request: Request) {
         classe: b.classe,
         n_alunni: b.n_alunni,
         n_adulti: b.n_adulti,
-        date: b.display_slots.date,
+        date: b.event_slots.date,
         reminderDays,
       });
       sent++;

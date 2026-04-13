@@ -1,15 +1,15 @@
 "use client";
 import { useState, useTransition } from "react";
-import { setWaitlistEnabled } from "@/app/admin/(dashboard)/prenotazioni/actions";
+import { setWaitlistEnabled } from "@/app/admin/(dashboard)/eventi/[slug]/actions";
 
-export default function WaitlistToggle({ enabled }: { enabled: boolean }) {
+export default function WaitlistToggle({ enabled, eventSlug }: { enabled: boolean; eventSlug: string }) {
   const [active, setActive] = useState(enabled);
   const [isPending, startTransition] = useTransition();
 
   const toggle = () => {
     const next = !active;
     setActive(next);
-    startTransition(() => setWaitlistEnabled(next));
+    startTransition(() => setWaitlistEnabled(eventSlug, next));
   };
 
   return (

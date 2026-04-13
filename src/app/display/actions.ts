@@ -19,9 +19,18 @@ export async function submitBooking(data: {
 }) {
   const supabase = createSupabaseAdminClient();
 
+  // Fetch the Display event id
+  const { data: event } = await supabase
+    .from("events")
+    .select("id")
+    .eq("slug", "display")
+    .single();
+
+  if (!event) return { error: "Evento Display non trovato" };
+
   const { data: inserted, error } = await supabase
-    .from("display_bookings")
-    .insert({ ...data, tipo_scuola: "pubblica", status: "pending" })
+    .from("event_bookings")
+    .insert({ ...data, event_id: event.id, status: "pending" })
     .select("id")
     .single();
 
@@ -29,18 +38,19 @@ export async function submitBooking(data: {
   const bookingId = inserted?.id;
 
   if (data.slot_id) {
-    await supabase.rpc("increment_slot_bookings", { p_slot_id: data.slot_id });
+    await supabase.rpc("increment_event_slot_bookings", { p_slot_id: data.slot_id });
   }
 
   // Fetch slot date for the confirmation email (only if slot exists)
   const { data: slot } = data.slot_id
-    ? await supabase.from("display_slots").select("date").eq("id", data.slot_id).single()
+    ? await supabase.from("event_slots").select("date").eq("id", data.slot_id).single()
     : { data: null };
 
   // Check if confirmation email is enabled
   const { data: setting } = await supabase
-    .from("display_settings")
+    .from("event_settings")
     .select("value")
+    .eq("event_id", event.id)
     .eq("key", "confirmation_email_enabled")
     .single();
 
@@ -57,7 +67,7 @@ export async function submitBooking(data: {
       });
       if (mailupId && bookingId) {
         await supabase
-          .from("display_bookings")
+          .from("event_bookings")
           .update({ mailup_id: mailupId })
           .eq("id", bookingId);
       }

@@ -155,7 +155,7 @@ export async function sendConfirmationEmail(booking: {
 }) {
   await sendMail({
     to:       booking.email,
-    subject:  "Abbiamo ricevuto la tua richiesta — Laboratorio Display",
+    subject:  "DISPLAY - abbiamo ricevuto la tua richiesta",
     htmlBody: buildConfirmationHtml({ ...booking, date: formatDate(booking.date) }),
   });
 }
@@ -167,7 +167,7 @@ export async function sendApprovalEmail(booking: {
 }) {
   await sendMail({
     to:       booking.email,
-    subject:  "La tua visita al Laboratorio Display è confermata",
+    subject:  "DISPLAY - la tua visita è confermata",
     htmlBody: buildApprovalHtml({ ...booking, date: formatDate(booking.date) }),
   });
 }
@@ -179,7 +179,7 @@ export async function sendRejectionEmail(booking: {
 }) {
   await sendMail({
     to:       booking.email,
-    subject:  "Aggiornamento sulla tua richiesta — Laboratorio Display",
+    subject:  "DISPLAY - aggiornamento sulla tua richiesta",
     htmlBody: buildRejectionHtml({ ...booking, date: formatDate(booking.date) }),
   });
 }
@@ -192,7 +192,7 @@ export async function sendReminderEmail(booking: {
 }) {
   await sendMail({
     to:       booking.email,
-    subject:  `Promemoria: visita al Laboratorio Display tra ${booking.reminderDays} giorni`,
+    subject:  `DISPLAY - promemoria visita tra ${booking.reminderDays} giorni`,
     htmlBody: buildReminderHtml({ ...booking, date: formatDate(booking.date) }),
   });
 }

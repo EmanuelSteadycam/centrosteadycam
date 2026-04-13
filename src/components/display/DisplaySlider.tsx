@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { createBrowserClient } from "@supabase/ssr";
 import { submitBooking } from "@/app/display/actions";
+import SiteSwitcherPill from "@/components/SiteSwitcherPill";
 
 // ── Slide types ───────────────────────────────────────────────────────────────
 export type SlideId =
@@ -241,6 +242,17 @@ function PillBtn({
 function SlideIntro({ nav, onMenu }: { nav: (id: SlideId) => void; onMenu: () => void }) {
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-center bg-[#111] overflow-hidden">
+
+      {/* Switcher */}
+      <div className="absolute top-[50px] left-6 z-10">
+        <SiteSwitcherPill
+          active={1}
+          indicatorColor="#a3d39c"
+          textColor="rgba(255,255,255,0.6)"
+          activeTextColor="#1d1d1f"
+          pillBg="rgba(160,160,160,0.45)"
+        />
+      </div>
 
       {/* Main logo — the actual "display" block-font image */}
       <motion.div
@@ -557,21 +569,31 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
   useEffect(() => {
     const today = new Date().toISOString().slice(0, 10);
     supabase
-      .from("display_slots")
-      .select("id, date, time_slot, bookings_count, max_capacity")
-      .eq("is_open", true)
-      .gte("date", today)
-      .order("date", { ascending: true })
-      .then(({ data }) => {
-        setSlots(data ?? []);
-        setSloading(false);
-      });
-    supabase
-      .from("display_settings")
-      .select("value")
-      .eq("key", "waitlist_enabled")
+      .from("events")
+      .select("id")
+      .eq("slug", "display")
       .single()
-      .then(({ data }) => setIsWaitlist(data?.value === "true"));
+      .then(({ data: event }) => {
+        if (!event) { setSloading(false); return; }
+        supabase
+          .from("event_slots")
+          .select("id, date, time_slot, bookings_count, max_capacity")
+          .eq("event_id", event.id)
+          .eq("is_open", true)
+          .gte("date", today)
+          .order("date", { ascending: true })
+          .then(({ data }) => {
+            setSlots(data ?? []);
+            setSloading(false);
+          });
+        supabase
+          .from("event_settings")
+          .select("value")
+          .eq("event_id", event.id)
+          .eq("key", "waitlist_enabled")
+          .single()
+          .then(({ data }) => setIsWaitlist(data?.value === "true"));
+      });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

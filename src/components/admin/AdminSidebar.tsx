@@ -10,7 +10,7 @@ const icons: Record<string, React.ReactNode> = {
       <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
     </svg>
   ),
-  prenotazioni: (
+  eventi: (
     <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
       <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
       <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>
@@ -43,7 +43,7 @@ const icons: Record<string, React.ReactNode> = {
 
 const nav = [
   { href: "/admin",              label: "Dashboard",    icon: icons.dashboard    },
-  { href: "/admin/prenotazioni", label: "Prenotazioni", icon: icons.prenotazioni },
+  { href: "/admin/eventi",       label: "Eventi",       icon: icons.eventi       },
   { href: "/admin/blog",         label: "Blog",         icon: icons.blog         },
   { href: "/admin/pagine",       label: "Pagine",       icon: icons.pagine       },
   { href: "/admin/staff",        label: "Staff",        icon: icons.staff        },

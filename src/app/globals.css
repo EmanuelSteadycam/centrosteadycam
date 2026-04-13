@@ -76,6 +76,43 @@
   .wp-content h2  { @apply text-2xl font-title font-semibold mt-8 mb-4; }
   .wp-content h3  { @apply text-xl font-title font-semibold mt-6 mb-3; }
   .wp-content ul  { @apply list-disc pl-6 mb-4 space-y-1; }
-  .wp-content a   { @apply text-cs-orange hover:underline; }
+  .wp-content a   { color: #8ac893; text-decoration: underline; }
   .wp-content img { @apply rounded my-6 max-w-full; }
 }
+
+/* Outside @layer — overrides Tailwind prose */
+.ProseMirror a { color: #8ac893 !important; text-decoration: underline !important; cursor: text; }
+
+/* Bottoni verdi nel contenuto articolo */
+.btn-group-block { display: flex; gap: 12px; flex-wrap: wrap; margin: 20px 0; }
+.btn-green-block { display: inline-block; padding: 10px 28px; background-color: #8ac893; color: #fff !important; text-decoration: none !important; font-size: 13px; font-family: var(--font-title, sans-serif); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; border-radius: 2px; transition: background-color 0.2s; }
+.btn-green-block:hover { background-color: #6db57a !important; }
+
+/* Stile in admin editor */
+.ProseMirror .btn-group-block { padding: 8px; background: #f9fafb; border: 1px dashed #d1d5db; border-radius: 4px; }
+
+/* Glitch hero title */
+@keyframes glitch-out {
+  0%   { opacity: 1; transform: translateX(0);    clip-path: inset(0 0 0 0); }
+  15%  { opacity: 1; transform: translateX(-8px);  clip-path: inset(0 60% 0 0); }
+  30%  { opacity: 0.8; transform: translateX(10px); clip-path: inset(0 0 0 55%); }
+  45%  { opacity: 0.6; transform: translateX(-6px); clip-path: inset(0 40% 0 30%); }
+  60%  { opacity: 0.3; transform: translateX(12px); clip-path: inset(0 0 0 80%); }
+  80%  { opacity: 0.1; transform: translateX(-4px); clip-path: inset(0 90% 0 0); }
+  100% { opacity: 0;   transform: translateX(0);    clip-path: inset(0 50% 0 50%); }
+}
+@keyframes glitch-in {
+  0%   { opacity: 0;   transform: translateX(0);    clip-path: inset(0 50% 0 50%); }
+  20%  { opacity: 0.2; transform: translateX(10px);  clip-path: inset(0 0 0 70%); }
+  35%  { opacity: 0.5; transform: translateX(-8px);  clip-path: inset(0 65% 0 0); }
+  50%  { opacity: 0.7; transform: translateX(6px);   clip-path: inset(0 0 0 40%); }
+  65%  { opacity: 0.8; transform: translateX(-4px);  clip-path: inset(0 30% 0 10%); }
+  80%  { opacity: 0.9; transform: translateX(2px);   clip-path: inset(0 5% 0 5%); }
+  100% { opacity: 1;   transform: translateX(0);    clip-path: inset(0 0 0 0); }
+}
+.glitch-out { animation: glitch-out 0.35s ease-out forwards; }
+.glitch-in  { animation: glitch-in  0.35s ease-in  forwards; }
+
+/* Video embed nel frontend blog */
+.wp-content iframe,
+.wp-content .youtube-embed { max-width: 100%; aspect-ratio: 16/9; width: 100%; border: none; border-radius: 4px; margin: 1.5rem 0; display: block; }

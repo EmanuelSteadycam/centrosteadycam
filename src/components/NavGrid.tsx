@@ -12,12 +12,19 @@ const cards = [
   { label: "comunicare salute",img: `${WP}/Logo-per-home@3x.png`,                 href: "/comunicare-salute" },
 ];
 
-export default function NavGrid({ exclude }: { exclude?: string }) {
+export default function NavGrid({ exclude, cols }: { exclude?: string; cols?: number }) {
   const items = exclude ? cards.filter((c) => c.href !== exclude) : cards;
+  const colsMap: Record<number, string> = {
+    2: "grid-cols-2", 3: "grid-cols-3", 4: "grid-cols-4",
+    5: "grid-cols-5", 6: "grid-cols-6", 7: "grid-cols-7",
+  };
+  const gridClass = cols
+    ? (colsMap[cols] ?? "grid-cols-4")
+    : "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7";
   return (
     <section style={{ background: "rgba(136,191,129,0.49)" }} className="py-8">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-1">
+        <div className={`grid ${gridClass} gap-1`}>
           {items.map((card) => (
             <Link key={card.href} href={card.href} className="nav-card group">
               {/* eslint-disable-next-line @next/next/no-img-element */}

@@ -35,7 +35,7 @@ function layout(title: string, body: string): string {
 
       <!-- logo -->
       <tr><td align="center" bgcolor="#000000" style="background-color:#000000;padding:36px 40px 28px;">
-        <img src="${LOGO}" width="280" alt="Laboratorio Display" style="display:block;width:280px;max-width:100%;height:auto;">
+        <img src="${LOGO}" width="280" alt="Centro Display" style="display:block;width:280px;max-width:100%;height:auto;">
       </td></tr>
 
       <!-- divisore -->
@@ -54,7 +54,7 @@ function layout(title: string, body: string): string {
           <a href="https://centrosteadycam.it" style="color:#88bf81;">centrosteadycam.it</a>
         </p>
         <p style="margin:0;font-family:'Raleway',Arial,sans-serif;font-size:11px;font-weight:300;color:#3a3a3a;line-height:1.7;">
-          Hai ricevuto questa email in riferimento a una visita al Laboratorio Display.
+          Hai ricevuto questa email in riferimento a una visita al Centro Display.
         </p>
       </td></tr>
 
@@ -88,15 +88,15 @@ export function buildConfirmationHtml(b: {
   nome: string; cognome: string; istituto: string; classe: string;
   n_alunni: number; n_adulti: number; date: string;
 }): string {
-  return layout("Richiesta ricevuta — Laboratorio Display", `
+  return layout("Richiesta ricevuta — Centro Display", `
     <tr><td style="padding:32px 40px 8px;">
-      <p style="margin:0 0 10px;font-family:'Raleway',Arial,sans-serif;font-size:11px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:#88bf81;">Laboratorio Display</p>
+      <p style="margin:0 0 10px;font-family:'Raleway',Arial,sans-serif;font-size:11px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:#88bf81;">Centro Display</p>
       <h1 style="margin:0;font-family:'Raleway',Arial,sans-serif;font-size:26px;font-weight:300;color:#ffffff;line-height:1.3;">Abbiamo ricevuto la tua richiesta</h1>
     </td></tr>
 
     <tr><td style="padding:20px 40px 0;font-family:'Raleway',Arial,sans-serif;font-size:16px;font-weight:300;color:#ffffff;line-height:1.8;">
       <p style="margin:0 0 16px;">Gentile <strong style="font-weight:600;">${esc(b.nome)} ${esc(b.cognome)}</strong>,</p>
-      <p style="margin:0;">abbiamo ricevuto la tua richiesta di visita al <strong style="font-weight:600;">Laboratorio Display</strong>.
+      <p style="margin:0;">abbiamo ricevuto la tua richiesta di visita al <strong style="font-weight:600;">Centro Display</strong>.
       La tua iscrizione è in fase di valutazione da parte del nostro staff.
       Riceverai una comunicazione non appena la richiesta sarà stata esaminata.</p>
     </td></tr>
@@ -110,7 +110,7 @@ export function buildConfirmationHtml(b: {
 
     <tr><td style="padding:0 40px 36px;font-family:'Raleway',Arial,sans-serif;font-size:16px;font-weight:300;color:#ffffff;line-height:1.8;">
       <p style="margin:0 0 16px;">Per ulteriori informazioni visita il sito <a href="https://centrosteadycam.it" style="color:#88bf81;">centrosteadycam.it</a>.</p>
-      <p style="margin:0;color:#888888;">A presto,<br><span style="color:#ffffff;font-weight:400;">Lo staff del Laboratorio Display</span></p>
+      <p style="margin:0;color:#888888;">A presto,<br><span style="color:#ffffff;font-weight:400;">Lo staff del Centro Display</span></p>
     </td></tr>
   `);
 }
@@ -120,15 +120,15 @@ export function buildApprovalHtml(b: {
   nome: string; cognome: string; istituto: string; classe: string;
   n_alunni: number; n_adulti: number; date: string;
 }): string {
-  return layout("Visita confermata — Laboratorio Display", `
+  return layout("Visita confermata — Centro Display", `
     <tr><td style="padding:32px 40px 8px;">
-      <p style="margin:0 0 10px;font-family:'Raleway',Arial,sans-serif;font-size:11px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:#88bf81;">Laboratorio Display</p>
+      <p style="margin:0 0 10px;font-family:'Raleway',Arial,sans-serif;font-size:11px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:#88bf81;">Centro Display</p>
       <h1 style="margin:0;font-family:'Raleway',Arial,sans-serif;font-size:26px;font-weight:300;color:#ffffff;line-height:1.3;">La tua visita è confermata</h1>
     </td></tr>
 
     <tr><td style="padding:20px 40px 0;font-family:'Raleway',Arial,sans-serif;font-size:16px;font-weight:300;color:#ffffff;line-height:1.8;">
       <p style="margin:0 0 16px;">Gentile <strong style="font-weight:600;">${esc(b.nome)} ${esc(b.cognome)}</strong>,</p>
-      <p style="margin:0;">siamo lieti di comunicarti che la tua visita al <strong style="font-weight:600;">Laboratorio Display</strong>
+      <p style="margin:0;">siamo lieti di comunicarti che la tua visita al <strong style="font-weight:600;">Centro Display</strong>
       è stata <strong style="font-weight:600;color:#88bf81;">confermata</strong>.
       Ti aspettiamo con la tua classe nella data indicata.</p>
     </td></tr>
@@ -142,7 +142,7 @@ export function buildApprovalHtml(b: {
 
     <tr><td style="padding:0 40px 36px;font-family:'Raleway',Arial,sans-serif;font-size:16px;font-weight:300;color:#ffffff;line-height:1.8;">
       <p style="margin:0 0 16px;">Per informazioni o comunicazioni contattaci dal sito <a href="https://centrosteadycam.it" style="color:#88bf81;">centrosteadycam.it</a>.</p>
-      <p style="margin:0;color:#888888;">A presto,<br><span style="color:#ffffff;font-weight:400;">Lo staff del Laboratorio Display</span></p>
+      <p style="margin:0;color:#888888;">A presto,<br><span style="color:#ffffff;font-weight:400;">Lo staff del Centro Display</span></p>
     </td></tr>
   `);
 }
@@ -151,16 +151,16 @@ export function buildApprovalHtml(b: {
 export function buildRejectionHtml(b: {
   nome: string; cognome: string; istituto: string; classe: string; date: string;
 }): string {
-  return layout("Aggiornamento richiesta — Laboratorio Display", `
+  return layout("Aggiornamento richiesta — Centro Display", `
     <tr><td style="padding:32px 40px 8px;">
-      <p style="margin:0 0 10px;font-family:'Raleway',Arial,sans-serif;font-size:11px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:#88bf81;">Laboratorio Display</p>
+      <p style="margin:0 0 10px;font-family:'Raleway',Arial,sans-serif;font-size:11px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:#88bf81;">Centro Display</p>
       <h1 style="margin:0;font-family:'Raleway',Arial,sans-serif;font-size:26px;font-weight:300;color:#ffffff;line-height:1.3;">Aggiornamento sulla tua richiesta</h1>
     </td></tr>
 
     <tr><td style="padding:20px 40px 0;font-family:'Raleway',Arial,sans-serif;font-size:16px;font-weight:300;color:#ffffff;line-height:1.8;">
       <p style="margin:0 0 16px;">Gentile <strong style="font-weight:600;">${esc(b.nome)} ${esc(b.cognome)}</strong>,</p>
       <p style="margin:0;">siamo spiacenti di comunicarti che non ci è possibile confermare la tua visita
-      al <strong style="font-weight:600;">Laboratorio Display</strong> per la data indicata.</p>
+      al <strong style="font-weight:600;">Centro Display</strong> per la data indicata.</p>
     </td></tr>
 
     ${box(
@@ -177,7 +177,7 @@ export function buildRejectionHtml(b: {
           Prenota una nuova data
         </a>
       </p>
-      <p style="margin:0;color:#888888;">Ci scusiamo per l'inconveniente.<br><span style="color:#ffffff;font-weight:400;">Lo staff del Laboratorio Display</span></p>
+      <p style="margin:0;color:#888888;">Ci scusiamo per l'inconveniente.<br><span style="color:#ffffff;font-weight:400;">Lo staff del Centro Display</span></p>
     </td></tr>
   `);
 }
@@ -187,9 +187,9 @@ export function buildReminderHtml(b: {
   nome: string; cognome: string; istituto: string; classe: string;
   n_alunni: number; n_adulti: number; date: string; reminderDays: number;
 }): string {
-  return layout("Promemoria visita — Laboratorio Display", `
+  return layout("Promemoria visita — Centro Display", `
     <tr><td style="padding:32px 40px 8px;">
-      <p style="margin:0 0 10px;font-family:'Raleway',Arial,sans-serif;font-size:11px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:#88bf81;">Laboratorio Display</p>
+      <p style="margin:0 0 10px;font-family:'Raleway',Arial,sans-serif;font-size:11px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:#88bf81;">Centro Display</p>
       <h1 style="margin:0;font-family:'Raleway',Arial,sans-serif;font-size:26px;font-weight:300;color:#ffffff;line-height:1.3;">La tua visita si avvicina</h1>
     </td></tr>
 
@@ -197,7 +197,7 @@ export function buildReminderHtml(b: {
       <p style="margin:0 0 16px;">Gentile <strong style="font-weight:600;">${esc(b.nome)} ${esc(b.cognome)}</strong>,</p>
       <p style="margin:0;">ti ricordiamo che tra
       <strong style="font-weight:600;color:#88bf81;">${b.reminderDays} giorni</strong>
-      è in programma la visita della tua classe al <strong style="font-weight:600;">Laboratorio Display</strong>.</p>
+      è in programma la visita della tua classe al <strong style="font-weight:600;">Centro Display</strong>.</p>
     </td></tr>
 
     ${box(
@@ -209,7 +209,7 @@ export function buildReminderHtml(b: {
 
     <tr><td style="padding:0 40px 36px;font-family:'Raleway',Arial,sans-serif;font-size:16px;font-weight:300;color:#ffffff;line-height:1.8;">
       <p style="margin:0 0 16px;">Per informazioni o esigenze contattaci dal sito <a href="https://centrosteadycam.it" style="color:#88bf81;">centrosteadycam.it</a>.</p>
-      <p style="margin:0;color:#888888;">Ti aspettiamo!<br><span style="color:#ffffff;font-weight:400;">Lo staff del Laboratorio Display</span></p>
+      <p style="margin:0;color:#888888;">Ti aspettiamo!<br><span style="color:#ffffff;font-weight:400;">Lo staff del Centro Display</span></p>
     </td></tr>
   `);
 }

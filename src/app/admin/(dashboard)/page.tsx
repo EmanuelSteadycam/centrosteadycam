@@ -1,33 +1,44 @@
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
-import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { createSupabaseAdminClient, createSupabaseServerClient } from "@/lib/supabase-server";
 
 export default async function AdminDashboard() {
   const supabase = createSupabaseServerClient();
+  const supabaseAdmin = createSupabaseAdminClient();
 
-  const [{ count: totalePrenotazioni }, { count: slotAperti }, { data: prossime }] =
+  const today = new Date().toISOString().slice(0, 10);
+
+  const { data: events } = await supabase
+    .from("events")
+    .select("id, name, slug, is_active")
+    .order("created_at", { ascending: true });
+
+  const eventIds = (events ?? []).map((e) => e.id);
+
+  const [{ data: slotCounts }, { data: bookingCounts }, { data: prossime }] =
     await Promise.all([
-      supabase.from("display_bookings").select("*", { count: "exact", head: true }),
-      supabase.from("display_slots").select("*", { count: "exact", head: true }).eq("is_open", true),
+      eventIds.length
+        ? supabase.from("event_slots").select("event_id").in("event_id", eventIds).eq("is_open", true).gte("date", today)
+        : Promise.resolve({ data: [] }),
+      eventIds.length
+        ? supabaseAdmin.from("event_bookings").select("event_id").in("event_id", eventIds)
+        : Promise.resolve({ data: [] }),
       supabase
-        .from("display_slots")
+        .from("event_slots")
         .select("date, time_slot, bookings_count, max_capacity")
-        .gte("date", new Date().toISOString().slice(0, 10))
+        .eq("event_id", (events ?? []).find((e) => e.slug === "display")?.id ?? "")
+        .gte("date", today)
         .order("date", { ascending: true })
         .limit(3),
     ]);
 
+  const slotsByEvent: Record<string, number> = {};
+  const bookingsByEvent: Record<string, number> = {};
+  for (const s of slotCounts ?? []) slotsByEvent[s.event_id] = (slotsByEvent[s.event_id] ?? 0) + 1;
+  for (const b of bookingCounts ?? []) bookingsByEvent[b.event_id] = (bookingsByEvent[b.event_id] ?? 0) + 1;
+
   const sections = [
-    {
-      href: "/admin/prenotazioni",
-      label: "Prenotazioni",
-      description: "Gestisci slot disponibili e visualizza le iscrizioni al Display.",
-      color: "border-blue-400",
-      stats: [
-        { label: "Iscrizioni totali", value: totalePrenotazioni ?? 0 },
-        { label: "Slot aperti", value: slotAperti ?? 0 },
-      ],
-      built: true,
-    },
     {
       href: "/admin/blog",
       label: "Blog",
@@ -67,6 +78,47 @@ export default async function AdminDashboard() {
       <h1 className="text-xl font-semibold text-gray-800 mb-1">Dashboard</h1>
       <p className="text-sm text-gray-400 mb-8">Panoramica dell&apos;area di amministrazione.</p>
 
+      {/* Card Eventi — una riga per evento */}
+      <div className="bg-white rounded-lg shadow-sm border-l-4 border-blue-400 mb-4">
+        <div className="px-5 py-4 border-b border-gray-100 flex justify-between items-center">
+          <div>
+            <span className="text-sm font-semibold text-gray-800">Eventi</span>
+            <p className="text-xs text-gray-400 mt-0.5">Gestisci eventi, slot disponibili e iscrizioni.</p>
+          </div>
+          <Link href="/admin/eventi" className="text-gray-300 text-lg hover:text-gray-500 transition-colors">→</Link>
+        </div>
+        <div className="divide-y divide-gray-50">
+          {(events ?? []).length === 0 && (
+            <p className="px-5 py-4 text-sm text-gray-400">Nessun evento configurato.</p>
+          )}
+          {(events ?? []).map((ev) => (
+            <Link
+              key={ev.id}
+              href={`/admin/eventi/${ev.slug}`}
+              className="px-5 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-700">{ev.name}</span>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${ev.is_active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-400"}`}>
+                  {ev.is_active ? "attivo" : "inattivo"}
+                </span>
+              </div>
+              <div className="flex items-center gap-6 shrink-0 ml-4">
+                <div className="text-right">
+                  <p className="text-lg font-bold text-gray-800 leading-none">{slotsByEvent[ev.id] ?? 0}</p>
+                  <p className="text-[10px] text-gray-400 uppercase tracking-wide mt-0.5">slot aperti</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-lg font-bold text-gray-800 leading-none">{bookingsByEvent[ev.id] ?? 0}</p>
+                  <p className="text-[10px] text-gray-400 uppercase tracking-wide mt-0.5">iscrizioni</p>
+                </div>
+                <span className="text-gray-300 text-sm">›</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+
       {/* Section cards */}
       <div className="grid grid-cols-1 gap-4 mb-8">
         {sections.map((s) => (
@@ -85,16 +137,6 @@ export default async function AdminDashboard() {
                 )}
               </div>
               <p className="text-xs text-gray-400">{s.description}</p>
-              {s.stats && (
-                <div className="flex gap-4 mt-3">
-                  {s.stats.map((st) => (
-                    <div key={st.label}>
-                      <p className="text-2xl font-bold text-gray-800 leading-none">{st.value}</p>
-                      <p className="text-[10px] text-gray-400 mt-0.5 uppercase tracking-wide">{st.label}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
             <span className="text-gray-300 text-lg ml-4">→</span>
           </Link>
@@ -105,7 +147,7 @@ export default async function AdminDashboard() {
       <div className="bg-white rounded-lg shadow-sm">
         <div className="px-5 py-4 border-b border-gray-100 flex justify-between items-center">
           <h2 className="text-sm font-semibold text-gray-700">Prossime date Display</h2>
-          <Link href="/admin/prenotazioni" className="text-xs text-gray-400 hover:text-gray-600 transition-colors">
+          <Link href="/admin/eventi/display" className="text-xs text-gray-400 hover:text-gray-600 transition-colors">
             Gestisci →
           </Link>
         </div>
