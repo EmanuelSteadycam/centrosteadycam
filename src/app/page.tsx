@@ -46,10 +46,10 @@ export default async function HomePage() {
       <HeroScrollColor />
 
       {/* ── Mission strip ── */}
-      <section className="py-16 bg-white">
+      <section className="py-40 bg-white">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <div
-            className="font-title font-bold select-none mb-4 text-left"
+            className="font-title font-bold select-none mb-10 text-left"
             style={{ fontSize: "clamp(2.5rem, 6.5vw, 6rem)", color: "#444444", lineHeight: 1 }}
           >
             <GlitchTitle />

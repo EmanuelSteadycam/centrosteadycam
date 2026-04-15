@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import SiteSwitcherPill from "./SiteSwitcherPill";
+
 
 const WORDS = ["Salute", "Prevenzione", "Digitale"];
 const SHOW_MS = 2200;
@@ -93,14 +93,7 @@ export default function HeroScrollColor() {
           </h1>
         </div>
 
-        <div className="absolute top-[50px] left-6 z-10">
-          <SiteSwitcherPill
-            active={0}
-            indicatorColor="#a3d39c"
-            pillBg="rgba(160,160,160,0.45)"
-            textColor="rgba(255,255,255,0.6)"
-          />
-        </div>
+
       </div>
     </div>
   );

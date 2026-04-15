@@ -88,7 +88,7 @@ function NavCard({ label, img, href, col, row, objectPosition = "center" }: Card
         style={{ backgroundColor: "rgba(136,191,129,0.45)", transform, transition }}
       />
       <div className="absolute inset-0 z-10 flex items-end p-4 pointer-events-none">
-        <span className="text-white font-title font-semibold uppercase tracking-[0.12em] text-sm drop-shadow">
+        <span className="text-white font-title font-semibold uppercase tracking-[0.12em] drop-shadow" style={{ fontSize: "18px" }}>
           {label}
         </span>
       </div>

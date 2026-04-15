@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { createBrowserClient } from "@supabase/ssr";
 import { submitBooking } from "@/app/display/actions";
-import SiteSwitcherPill from "@/components/SiteSwitcherPill";
+
 
 // ── Slide types ───────────────────────────────────────────────────────────────
 export type SlideId =
@@ -243,16 +243,7 @@ function SlideIntro({ nav, onMenu }: { nav: (id: SlideId) => void; onMenu: () =>
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-center bg-[#111] overflow-hidden">
 
-      {/* Switcher */}
-      <div className="absolute top-[50px] left-6 z-10">
-        <SiteSwitcherPill
-          active={1}
-          indicatorColor="#a3d39c"
-          textColor="rgba(255,255,255,0.6)"
-          activeTextColor="#1d1d1f"
-          pillBg="rgba(160,160,160,0.45)"
-        />
-      </div>
+
 
       {/* Main logo — the actual "display" block-font image */}
       <motion.div
