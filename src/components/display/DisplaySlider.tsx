@@ -473,7 +473,7 @@ function SlideRoom({
         <motion.div {...fadeUp(1.0)}>
           <PillBtn
             onClick={() => nav("portfolio")}
-            dark={titleColor === "rgba(0,0,0,0.75)"}
+            dark={titleColor?.startsWith("rgba(0,0,0") ?? false}
           >
             Tutte le stanze
           </PillBtn>
@@ -1349,7 +1349,7 @@ export default function DisplaySlider() {
       : { x: d > 0 ? "-100%" : "100%", y: 0, opacity: 0 },
   };
 
-  const lightBg = current === "portfolio" || current === "partner" || current === "il-progetto" || current === "il-centro";
+  const lightBg = current === "portfolio" || current === "partner" || current === "il-progetto" || current === "il-centro" || current === "timeline";
 
   const renderSlide = () => {
     switch (current) {

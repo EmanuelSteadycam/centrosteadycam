@@ -4,19 +4,19 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const centroLinks = [
-  { label: "I Servizi",  href: "/i-servizi" },
-  { label: "Il Metodo",  href: "/il-metodo" },
-  { label: "L'Archivio", href: "/l-archivio" },
-  { label: "Staff",      href: "/staff" },
+  { label: "Il Metodo",  href: "/il-centro#il-metodo" },
+  { label: "I Servizi",  href: "/il-centro#i-servizi" },
+  { label: "L'Archivio", href: "/il-centro#l-archivio" },
+  { label: "Staff",      href: "/il-centro#staff" },
   { label: "Contatti",   href: "/contatti" },
 ];
 
-const centroPaths = centroLinks.map((l) => l.href).concat(["/il-centro"]);
+const centroPaths = ["/il-centro", "/i-servizi", "/il-metodo", "/l-archivio", "/staff", "/contatti"];
 
-const pillBg    = "rgba(160,160,160,0.45)";
-const green     = "#a3d39c";
-const textOn    = "#1d1d1f";
-const textOff   = "rgba(255,255,255,0.6)";
+const pillBg  = "rgba(40,40,40,0.72)";
+const green   = "#a3d39c";
+const textOn  = "#1d1d1f";
+const textOff = "rgba(255,255,255,0.6)";
 
 function getActiveIdx(pathname: string) {
   if (centroPaths.some((p) => pathname.startsWith(p))) return 0;
@@ -25,15 +25,16 @@ function getActiveIdx(pathname: string) {
   return -1;
 }
 
-export default function Navbar() {
-  const pathname    = usePathname();
+export default function Navbar({ visible = true }: { visible?: boolean }) {
+  const pathname = usePathname();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileOpen, setMobileOpen]     = useState(false);
   const [hoveredIdx, setHoveredIdx]     = useState<number | null>(null);
   const [ind, setInd]                   = useState({ left: 0, width: 0 });
+  const [dropHovIdx, setDropHovIdx]     = useState<number | null>(null);
 
-  const pillRef  = useRef<HTMLDivElement>(null);
-  const itemRefs = useRef<(HTMLElement | null)[]>([null, null, null]);
+  const pillRef     = useRef<HTMLDivElement>(null);
+  const itemRefs    = useRef<(HTMLElement | null)[]>([null, null, null]);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const activeIdx    = getActiveIdx(pathname);
@@ -76,33 +77,44 @@ export default function Navbar() {
 
   if (pathname?.startsWith("/display")) return null;
 
-  const itemCls = "relative z-10 whitespace-nowrap py-3 rounded-full text-[13px] font-medium select-none transition-colors duration-200 cursor-pointer text-center";
+  const itemCls = "relative z-10 flex justify-center items-center whitespace-nowrap py-3 rounded-full text-[13px] font-medium select-none transition-colors duration-200 cursor-pointer";
 
   return (
     <>
       {/* ── Desktop nav pill ── */}
       <div
         ref={pillRef}
-        className="fixed top-[50px] right-6 z-[51] hidden md:flex items-center rounded-full px-1.5 py-1.5"
-        style={{ background: pillBg }}
+        className="fixed top-[35px] right-6 z-[51] hidden md:flex items-center rounded-full"
+        style={{
+          background: pillBg,
+          padding: 2,
+          opacity: visible ? 1 : 0,
+          transform: visible ? "translateY(0)" : "translateY(-12px)",
+          transition: "opacity 0.3s ease, transform 0.3s ease",
+          pointerEvents: visible ? "auto" : "none",
+        }}
         onMouseLeave={() => setHoveredIdx(null)}
       >
         {/* Indicatore verde scorrevole */}
         {ind.width > 0 && (
           <div
             className="absolute rounded-full transition-all duration-300 ease-in-out"
-            style={{ background: green, top: 6, bottom: 6, left: ind.left, width: ind.width }}
+            style={{ background: green, top: 2, bottom: 2, left: ind.left, width: ind.width }}
           />
         )}
 
         {/* Il Centro */}
-        <div className="relative" ref={dropdownRef}>
-          <button
+        <div
+          className="relative"
+          ref={dropdownRef}
+          onMouseEnter={() => { setHoveredIdx(0); setDropdownOpen(true); }}
+          onMouseLeave={() => { setDropdownOpen(false); setDropHovIdx(null); }}
+        >
+          <Link
+            href="/il-centro"
             ref={(el) => { itemRefs.current[0] = el; }}
             className={itemCls}
             style={{ width: 112, color: (hoveredIdx === 0 || (hoveredIdx === null && activeIdx === 0)) ? textOn : textOff }}
-            onMouseEnter={() => setHoveredIdx(0)}
-            onClick={() => setDropdownOpen((v) => !v)}
           >
             Il Centro
             <svg
@@ -111,23 +123,34 @@ export default function Navbar() {
             >
               <path d="M1 1l3.5 3L8 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-          </button>
+          </Link>
+
+          {/* Bridge trasparente che copre il gap tra bottone e dropdown */}
+          {dropdownOpen && <div className="absolute top-full left-0 right-0 h-2" />}
 
           {dropdownOpen && (
             <div
-              className="absolute top-full right-0 mt-2 rounded-2xl py-2 min-w-[160px] z-50"
-              style={{ background: pillBg, backdropFilter: "blur(8px)" }}
+              className="absolute top-full left-1/2 -translate-x-1/2 mt-2 rounded-2xl px-3 py-2 z-50"
+              style={{ background: pillBg }}
             >
-              {centroLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="block px-5 py-2.5 text-[13px] font-medium whitespace-nowrap transition-colors duration-200 hover:text-white"
-                  style={{ color: pathname === link.href ? textOn : textOff }}
-                >
-                  {link.label}
-                </Link>
-              ))}
+              {centroLinks.map((link, i) => {
+                const active = dropHovIdx === i;
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="flex items-center gap-2 px-2 py-2 text-[13px] font-medium whitespace-nowrap transition-colors duration-150"
+                    style={{ color: active ? "rgba(255,255,255,0.95)" : textOff }}
+                    onMouseEnter={() => setDropHovIdx(i)}
+                  >
+                    <span
+                      className="w-1.5 h-1.5 rounded-full shrink-0 transition-all duration-150"
+                      style={{ background: active ? green : "transparent" }}
+                    />
+                    {link.label}
+                  </Link>
+                );
+              })}
             </div>
           )}
         </div>
@@ -158,7 +181,7 @@ export default function Navbar() {
 
       {/* ── Mobile hamburger ── */}
       <button
-        className="fixed top-[54px] right-6 z-[51] flex flex-col justify-center gap-[5px] p-2 md:hidden"
+        className="fixed top-[39px] right-6 z-[51] flex flex-col justify-center gap-[5px] p-2 md:hidden"
         onClick={() => setMobileOpen(true)}
         aria-label="Apri menu"
         style={{ color: "#fff" }}

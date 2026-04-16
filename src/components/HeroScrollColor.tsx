@@ -86,7 +86,6 @@ export default function HeroScrollColor() {
             className="font-title font-bold tracking-[0.04em] select-none text-white text-center"
             style={{
               fontSize: "clamp(3rem, 7vw, 7.5rem)",
-              textShadow: "0 2px 24px rgba(0,0,0,0.5)",
             }}
           >
             Centro Steadycam

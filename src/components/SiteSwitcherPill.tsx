@@ -21,6 +21,7 @@ export default function SiteSwitcherPill({
   const btnRefs = useRef<(HTMLButtonElement | null)[]>([null, null]);
   const [ind, setInd] = useState({ left: 0, width: 0 });
   const [current, setCurrent] = useState<0 | 1>(active);
+  const [hoveredIdx, setHoveredIdx] = useState<0 | 1 | null>(null);
   const router = useRouter();
 
   const measure = useCallback((idx: number) => {
@@ -40,9 +41,9 @@ export default function SiteSwitcherPill({
     return () => window.removeEventListener("resize", onResize);
   }, [current, measure]);
 
-  // Quando collapsed cambia, rimisura l'indicatore dopo la transizione
+  // Rimisura dopo che l'animazione expand/collapse è completata
   useEffect(() => {
-    const t = setTimeout(() => measure(current), 720);
+    const t = setTimeout(() => measure(current), 750);
     return () => clearTimeout(t);
   }, [collapsed, current, measure]);
 
@@ -52,20 +53,31 @@ export default function SiteSwitcherPill({
     if (i === 1 && active !== 1) setTimeout(() => router.push("/display"), 300);
   };
 
+  const handleHover = (i: 0 | 1) => { measure(i); setHoveredIdx(i); };
+  const handleLeave = () => { measure(current); setHoveredIdx(null); };
+
+  const activeForBtn = (i: 0 | 1) => hoveredIdx !== null ? hoveredIdx === i : current === i;
+
   return (
-    <div ref={pillRef} className="relative flex items-center rounded-full px-1.5 py-1.5" style={{ background: pillBg }}>
+    <div
+      ref={pillRef}
+      className="relative flex items-center rounded-full"
+      style={{ background: pillBg, padding: 2 }}
+    >
       {ind.width > 0 && (
         <div
           className="absolute rounded-full transition-all duration-300 ease-in-out"
-          style={{ background: indicatorColor, top: 6, bottom: 6, left: ind.left, width: ind.width }}
+          style={{ background: indicatorColor, top: 2, bottom: 2, left: ind.left, width: ind.width }}
         />
       )}
       {/* Centro Steadycam — sempre visibile */}
       <button
         ref={el => { btnRefs.current[0] = el; }}
         onClick={() => handleClick(0)}
+        onMouseEnter={() => handleHover(0)}
+        onMouseLeave={handleLeave}
         className="relative z-10 whitespace-nowrap px-4 py-3 rounded-full text-[13px] font-medium transition-colors duration-200 select-none"
-        style={{ color: current === 0 ? activeTextColor : textColor }}
+        style={{ color: activeForBtn(0) ? activeTextColor : textColor }}
       >
         Centro Steadycam
       </button>
@@ -83,8 +95,10 @@ export default function SiteSwitcherPill({
         <button
           ref={el => { btnRefs.current[1] = el; }}
           onClick={() => handleClick(1)}
+          onMouseEnter={() => handleHover(1)}
+          onMouseLeave={handleLeave}
           className="relative z-10 whitespace-nowrap px-4 py-3 rounded-full text-[13px] font-medium transition-colors duration-200 select-none"
-          style={{ color: current === 1 ? activeTextColor : textColor }}
+          style={{ color: activeForBtn(1) ? activeTextColor : textColor }}
         >
           Centro Display
         </button>
