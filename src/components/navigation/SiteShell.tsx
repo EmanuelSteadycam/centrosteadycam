@@ -5,20 +5,21 @@ import Navbar from "./Navbar";
 import Footer from "./Footer";
 import SiteSwitcherPill from "@/components/SiteSwitcherPill";
 
-function useScrollVisible() {
+function useScrollVisible(topOnly = false) {
   const [visible, setVisible] = useState(true);
   const lastY = useRef(0);
   useEffect(() => {
     const onScroll = () => {
       const y = window.scrollY;
       if (y < 50) setVisible(true);
+      else if (topOnly) setVisible(false);
       else if (y > lastY.current) setVisible(false);
       else setVisible(true);
       lastY.current = y;
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [topOnly]);
   return visible;
 }
 
@@ -26,8 +27,9 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAdmin   = pathname.startsWith("/admin");
   const isDisplay = pathname.startsWith("/display");
-  const isHome    = pathname === "/";
-  const visible   = useScrollVisible();
+  const isHome     = pathname === "/";
+  const isArchivio = pathname.startsWith("/archivio");
+  const visible    = useScrollVisible(isArchivio);
 
   return (
     <>

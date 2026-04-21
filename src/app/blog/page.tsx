@@ -15,23 +15,22 @@ export default async function BlogPage() {
   const { data: posts, total } = await getBlogPosts(1, 100);
 
   return (
-    <div className="min-h-screen bg-white pt-14">
-      {/* Hero */}
-      <div className="page-hero" style={{ height: 300 }}>
-        <img
-          src={`${WP}/2017/09/Steadycam-Dispaly-Storie-03.jpg`}
-          alt="Blog"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-black/50" />
-        <h1 className="page-hero-title text-7xl md:text-8xl">blog</h1>
+    <div className="min-h-screen bg-white">
+      {/* Header */}
+      <div className="max-w-[1000px] mx-auto px-4 pt-[120px] pb-8">
+        <div className="flex items-baseline justify-between border-b border-[#1e1e1e]/10 pb-6">
+          <h1 className="font-title font-semibold text-[#1e1e1e] uppercase tracking-[0.12em]"
+            style={{ fontSize: "clamp(1.2rem, 2.5vw, 2.2rem)" }}>
+            Blog
+          </h1>
+          <span className="text-sm font-title text-[#1e1e1e]/40 uppercase tracking-widest">
+            {total} articoli
+          </span>
+        </div>
       </div>
 
       {/* Grid */}
-      <div className="max-w-[1000px] mx-auto px-4 py-10">
-        <p className="text-sm font-title font-semibold text-brand-navy uppercase tracking-widest mb-6">
-          {total} articoli
-        </p>
+      <div className="max-w-[1000px] mx-auto px-4 pb-10">
         <BlogGrid posts={posts} />
       </div>
 

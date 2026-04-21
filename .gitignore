@@ -32,3 +32,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Dati grezzi locali (troppo grandi per git)
+archivio-data/
+pagine/
+scripts/approfondimenti.json

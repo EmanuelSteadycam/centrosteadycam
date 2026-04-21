@@ -8,7 +8,7 @@ const centroLinks = [
   { label: "I Servizi",  href: "/il-centro#i-servizi" },
   { label: "L'Archivio", href: "/il-centro#l-archivio" },
   { label: "Staff",      href: "/il-centro#staff" },
-  { label: "Contatti",   href: "/contatti" },
+  { label: "Contatti",   href: "/il-centro#contatti" },
 ];
 
 const centroPaths = ["/il-centro", "/i-servizi", "/il-metodo", "/l-archivio", "/staff", "/contatti"];

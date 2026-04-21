@@ -8,17 +8,17 @@ type CardData = { label: string; img: string; href: string; col: string; row: st
 
 const staticCards: CardData[] = [
   { label: "Il Centro",         img: `${WP}/Steadycam_ilCentro3-scaled.jpg`,      href: "/il-centro",          col: "1 / 3", row: "1 / 2", objectPosition: "bottom" },
-  { label: "I Servizi",         img: `${WP}/Steadycam_servizi-scaled.jpg`,         href: "/i-servizi",          col: "1 / 3", row: "2 / 3" },
-  { label: "Il Metodo",         img: `${WP}/Steadycam_metodo-scaled.jpg`,          href: "/il-metodo",          col: "1 / 3", row: "3 / 4" },
-  { label: "L'Archivio",        img: `${WP}/01Steadycam_archivio1-100-1.jpg`,     href: "/l-archivio",         col: "1 / 3", row: "4 / 5" },
-  { label: "SMCR",              img: `${WP}/Steadycam-SMCR.png`,                   href: "/smcr",               col: "1 / 3", row: "5 / 7" },
+  { label: "I Servizi",         img: `${WP}/Steadycam_servizi-scaled.jpg`,         href: "/il-centro#i-servizi",  col: "1 / 3", row: "2 / 3" },
+  { label: "Il Metodo",         img: `${WP}/Steadycam_metodo-scaled.jpg`,          href: "/il-centro#il-metodo",  col: "1 / 3", row: "3 / 4" },
+  { label: "L'Archivio",        img: `${WP}/01Steadycam_archivio1-100-1.jpg`,     href: "/il-centro#l-archivio", col: "1 / 3", row: "4 / 5" },
+  { label: "SMCR",              img: `${WP}/Steadycam-SMCR.png`,                   href: "/blog",                 col: "1 / 3", row: "5 / 7" },
   // slot latest post → col 3-5 rows 1-3, iniettato via prop
   { label: "I Progetti",        img: `${WP}/ProgettiSteadycamNew-scaled.jpg`,      href: "/i-progetti",         col: "3 / 6", row: "3 / 5" },
   { label: "ADAM",              img: `${WP}/ADAM_LOGO_SITO2.png`,                  href: "https://adam-video-platform.vercel.app/", col: "3 / 5", row: "5 / 7" },
-  { label: "Comunicare Salute", img: `${WP}/Logo-per-home@3x.png`,                href: "/comunicare-salute",  col: "6 / 7", row: "1 / 3" },
-  { label: "Staff",             img: `${WP}/2017/07/thanachot-phonket-319688.jpg`, href: "/staff",              col: "6 / 7", row: "3 / 4" },
-  { label: "Contatti",          img: `${WP}/Contatti_2-scaled.jpg`,                href: "/contatti",           col: "6 / 7", row: "4 / 5" },
-  { label: "Vincere Facile",    img: `${WP}/MOOC_iscrizione02.png`,                href: "/facile",             col: "5 / 7", row: "5 / 7" },
+  { label: "Comunicare Salute", img: `${WP}/Logo-per-home@3x.png`,                href: "/i-progetti",         col: "6 / 7", row: "1 / 3" },
+  { label: "Staff",             img: `${WP}/2017/07/thanachot-phonket-319688.jpg`, href: "/il-centro#staff",    col: "6 / 7", row: "3 / 4" },
+  { label: "Contatti",          img: `${WP}/Contatti_2-scaled.jpg`,                href: "/il-centro#contatti", col: "6 / 7", row: "4 / 5" },
+  { label: "Vincere Facile",    img: `${WP}/MOOC_iscrizione02.png`,                href: "/blog",               col: "5 / 7", row: "5 / 7" },
 ];
 
 type Direction = "top" | "right" | "bottom" | "left";

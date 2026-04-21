@@ -3,7 +3,7 @@ import NavGrid from "@/components/NavGrid";
 
 export const metadata: Metadata = {
   title: "L'Archivio",
-  description: "Archivio storico di materiali audiovisivi del Centro Steadycam: oltre 30.000 schede di programmi televisivi dal 2000 al 2013.",
+  description: "Archivio storico di materiali audiovisivi del Centro Steadycam: oltre 34.119 schede di programmi televisivi dal 2000 al 2013.",
 };
 
 const WP = "https://centrosteadycam.it/wp-content/uploads";
@@ -46,7 +46,7 @@ export default function ArchivioPage() {
           </h2>
           <p className="text-cs-text text-sm leading-relaxed mb-8">
             Centro Steadycam mette a disposizione l&apos;archivio storico di materiali audiovisivi
-            raccolti e archiviati tra il 2000 e il 2013: oltre <strong>30.000 schede</strong> di
+            raccolti e archiviati tra il 2000 e il 2013: oltre <strong>34.119 schede</strong> di
             programmi televisivi, documentari, spot pubblicitari e materiali didattici su temi
             di promozione della salute e media education.
           </p>

@@ -34,15 +34,15 @@ const staff = [
   { name: "Michele",   role: "Media Educator / Formatore",             bio: "Media educator, supervisore e formatore. Insegna all'Università Cattolica di Milano (Cremit). Dal 2000 collabora con Steadycam.", color: "#80c4d0", initial: "M" },
 ];
 
-const bodyStyle    = { fontFamily: "var(--font-raleway)", fontSize: "18px" };
-const servicesStyle = { fontFamily: "var(--font-raleway)", fontSize: "16px" };
+const bodyStyle    = { fontFamily: "var(--font-raleway)", fontSize: "clamp(14px, 1.5vw, 18px)" };
+const servicesStyle = { fontFamily: "var(--font-raleway)", fontSize: "clamp(13px, 1.3vw, 16px)" };
 
 export default function IlCentroPage() {
   return (
     <div>
       {/* ── Il Centro — testo sx, immagine dx ── */}
-      <section id="chi-siamo" className="flex" style={{ height: "100vh" }}>
-        <div className="w-[50%] bg-white flex flex-col justify-center px-12 py-16">
+      <section id="chi-siamo" className="flex overflow-hidden" style={{ height: "100vh" }}>
+        <div className="w-[50%] bg-white flex flex-col justify-center px-6 py-10 lg:px-12 lg:py-16">
           <h1 className="font-title font-semibold text-cs-charcoal uppercase tracking-[0.12em] mb-8"
             style={{ fontSize: "clamp(1.2rem, 2.5vw, 2.2rem)" }}>
             Il Centro
@@ -55,7 +55,7 @@ export default function IlCentroPage() {
               insieme stabile e in movimento rivolto all&apos;universo giovanile.
             </p>
             <p className="font-light leading-[1.85] text-[#333]" style={bodyStyle}>
-              Negli anni Steadycam cresce, costruendo una banca dati unica in Italia di oltre 30.000 record,
+              Negli anni Steadycam cresce, costruendo una banca dati unica in Italia di oltre 34.119 record,
               definendo un metodo ispirato alla media education con uno staff di professionisti del Servizio
               Pubblico e del privato sociale.
             </p>
@@ -71,11 +71,11 @@ export default function IlCentroPage() {
       </section>
 
       {/* ── Il Metodo — immagine sx, testo dx ── */}
-      <section id="il-metodo" className="relative z-10 flex scroll-mt-0" style={{ height: "100vh" }}>
+      <section id="il-metodo" className="relative z-10 flex scroll-mt-0 overflow-hidden" style={{ height: "100vh" }}>
         <div className="w-[50%] relative shrink-0">
           <img src={`${WP}/Steadycam_metodo-scaled.jpg`} alt="Il Metodo" className="absolute inset-0 w-full h-full object-cover" />
         </div>
-        <div className="w-[50%] bg-white flex flex-col justify-center px-12 py-16">
+        <div className="w-[50%] bg-white flex flex-col justify-center px-6 py-10 lg:px-12 lg:py-16">
           <h2 className="font-title font-semibold text-cs-charcoal uppercase tracking-[0.12em] mb-8"
             style={{ fontSize: "clamp(1.2rem, 2.5vw, 2.2rem)" }}>
             Il Metodo
@@ -113,8 +113,8 @@ export default function IlCentroPage() {
       </section>
 
       {/* ── I Servizi — testo sx, immagine dx ── */}
-      <section id="i-servizi" className="relative z-10 flex scroll-mt-0" style={{ height: "100vh" }}>
-        <div className="w-[50%] flex flex-col justify-center px-12 py-16" style={{ background: "#1e1e1e" }}>
+      <section id="i-servizi" className="relative z-10 flex scroll-mt-0 overflow-hidden" style={{ height: "100vh" }}>
+        <div className="w-[50%] flex flex-col justify-center px-6 py-10 lg:px-12 lg:py-16" style={{ background: "#1e1e1e" }}>
           <h2 className="font-title font-semibold text-white uppercase tracking-[0.12em] mb-8"
             style={{ fontSize: "clamp(1.2rem, 2.5vw, 2.2rem)" }}>
             I Servizi
@@ -132,7 +132,7 @@ export default function IlCentroPage() {
               </div>
             ))}
           </div>
-          <p className="font-light leading-[1.85] text-white/60 mt-6" style={servicesStyle}>
+          <p className="font-light leading-[1.85] text-white/80 mt-6" style={servicesStyle}>
             La disponibilità dei servizi è legata all&apos;attivazione di progetti sul territorio, locale,
             regionale o nazionale. Potete mandarci le vostre richieste a{" "}
             <a href="mailto:info@progettosteadycam.it" className="underline hover:text-white transition-colors">
@@ -147,11 +147,11 @@ export default function IlCentroPage() {
       </section>
 
       {/* ── L'Archivio — immagine sx, testo dx ── */}
-      <section id="l-archivio" className="relative z-10 flex scroll-mt-0" style={{ height: "100vh" }}>
+      <section id="l-archivio" className="relative z-10 flex scroll-mt-0 overflow-hidden" style={{ height: "100vh" }}>
         <div className="w-[50%] relative shrink-0">
           <img src={`${WP}/01Steadycam_archivio1-100-1.jpg`} alt="L'Archivio" className="absolute inset-0 w-full h-full object-cover" />
         </div>
-        <div className="w-[50%] bg-white flex flex-col justify-center px-12 py-16">
+        <div className="w-[50%] bg-white flex flex-col justify-center px-6 py-10 lg:px-12 lg:py-16">
           <h2 className="font-title font-semibold text-cs-charcoal uppercase tracking-[0.12em] mb-8"
             style={{ fontSize: "clamp(1.2rem, 2.5vw, 2.2rem)" }}>
             L&apos;Archivio
@@ -164,7 +164,7 @@ export default function IlCentroPage() {
               giovani stessi.
             </p>
             <p className="font-light leading-[1.85] text-[#333]" style={bodyStyle}>
-              È composto da oltre <strong>30.000 schede</strong> di programmi televisivi (servizi da
+              È composto da oltre <strong>34.119 schede</strong> di programmi televisivi (servizi da
               telegiornali, programmi di attualità, spot pubblicitari, videoclip) e film. La maggior parte
               del materiale è visionabile presso il Centro. Alcuni esempi di temi: Adolescenza, Scuola,
               Droghe, Tossicodipendenze, Gambling, Alcool, Comportamento a rischio, Informazione,
@@ -175,23 +175,27 @@ export default function IlCentroPage() {
               di più parole chiave, oppure utilizzando la ricerca avanzata che permette di individuare anche
               un programma ben preciso.
             </p>
+            <p className="font-light leading-[1.85] text-[#333]" style={bodyStyle}>
+              L&apos;archivio comprende anche oltre 200 articoli e approfondimenti tematici pubblicati dal
+              Centro tra il 2007 e il 2017, consultabili nella sezione dedicata.
+            </p>
           </div>
-          <a href="http://progettosteadycam.it/pagine/ita/ricerca.lasso" target="_blank" rel="noopener noreferrer"
+          <a href="/archivio"
             className="inline-block font-title font-medium text-xs uppercase tracking-[0.1em] border border-[#333] text-[#333] px-5 py-2.5 hover:bg-[#333] hover:text-white transition-colors duration-200 self-start">
-            Cerca nell&apos;archivio →
+            Cerca nell&apos;archivio storico →
           </a>
         </div>
       </section>
 
       {/* ── Staff — immagine sfondo intera, grid bio ── */}
-      <section id="staff" className="relative z-10 scroll-mt-0" style={{ height: "100vh" }}>
+      <section id="staff" className="relative z-10 scroll-mt-0 overflow-hidden" style={{ height: "100vh" }}>
         <img src={`${WP}/2017/07/thanachot-phonket-319688.jpg`} alt="Staff" className="absolute inset-0 w-full h-full object-cover object-top" />
-        <div className="relative z-10 h-full flex flex-col justify-center px-12 py-8">
+        <div className="relative z-10 h-full flex flex-col justify-center px-6 py-8 lg:px-12">
           <h2 className="font-title font-semibold text-white uppercase tracking-[0.12em] mb-6"
             style={{ fontSize: "clamp(1.2rem, 2.5vw, 2.2rem)" }}>
             Staff
           </h2>
-          <div className="grid grid-cols-4 gap-x-8 gap-y-5">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-5">
             {staff.map((m) => (
               <div key={m.name + m.role}>
                 <div className="flex items-center gap-2 mb-1">
@@ -206,6 +210,44 @@ export default function IlCentroPage() {
                 </div>
                 <p className="font-light text-white/70 leading-[1.7]" style={{ fontSize: "14px" }}>{m.bio}</p>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Contatti — mappa sx, info dx ── */}
+      <section id="contatti" className="relative z-10 flex scroll-mt-0 overflow-hidden" style={{ height: "100vh" }}>
+        <div className="w-[50%] relative shrink-0">
+          <iframe
+            title="Mappa Centro Steadycam"
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2843.9!2d8.033!3d44.699!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12d2b6f1a1b8a1a1%3A0x0!2sCentro+Steadycam%2C+Alba!5e0!3m2!1sit!2sit!4v1"
+            className="absolute inset-0 w-full h-full"
+            style={{ border: 0 }}
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+        </div>
+        <div className="w-[50%] bg-white flex flex-col justify-center px-6 py-10 lg:px-12 lg:py-16">
+          <h2 className="font-title font-semibold text-cs-charcoal uppercase tracking-[0.12em] mb-10"
+            style={{ fontSize: "clamp(1.2rem, 2.5vw, 2.2rem)" }}>
+            Contatti
+          </h2>
+          <div className="space-y-8">
+            {[
+              { label: "Indirizzo", value: "C.so Michele Coppino 46/A\n12051 Alba (CN)", href: "https://maps.google.com/?q=Centro+Steadycam+C.so+Michele+Coppino+46+Alba", external: true },
+              { label: "Telefono",  value: "0173 316210",                                href: "tel:+390173316210",                   external: false },
+              { label: "Email",     value: "info@progettosteadycam.it",                  href: "mailto:info@progettosteadycam.it",     external: false },
+            ].map((c) => (
+              <a key={c.label} href={c.href} target={c.external ? "_blank" : undefined} rel="noopener noreferrer" className="flex gap-4 group">
+                <div className="w-10 h-10 shrink-0 flex items-center justify-center text-white text-xs font-title font-semibold uppercase" style={{ background: "#a3d39c" }}>
+                  {c.label[0]}
+                </div>
+                <div>
+                  <p className="text-xs font-title font-semibold uppercase tracking-widest mb-0.5 text-[#999]">{c.label}</p>
+                  <p className="font-light leading-[1.7] text-[#333] whitespace-pre-line group-hover:text-cs-sage transition-colors" style={bodyStyle}>{c.value}</p>
+                </div>
+              </a>
             ))}
           </div>
         </div>
