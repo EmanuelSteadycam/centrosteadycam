@@ -1,0 +1,15 @@
+name: Supabase Keep-Alive
+
+on:
+  schedule:
+    - cron: "0 8 */3 * *"   # ogni 3 giorni alle 08:00 UTC
+  workflow_dispatch:          # consente esecuzione manuale dalla tab Actions
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping keep-alive endpoint
+        run: |
+          curl -sf -X GET "${{ secrets.APP_URL }}/api/cron/keepalive" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
