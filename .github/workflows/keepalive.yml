@@ -11,5 +11,5 @@ jobs:
     steps:
       - name: Ping keep-alive endpoint
         run: |
-          curl -v -X GET "${{ secrets.APP_URL }}/api/cron/keepalive" \
+          curl -sf -X GET "${{ secrets.APP_URL }}/api/cron/keepalive" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
