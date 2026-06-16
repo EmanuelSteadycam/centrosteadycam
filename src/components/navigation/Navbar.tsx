@@ -2,6 +2,7 @@
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import NewsletterModal from "@/components/NewsletterModal";
 
 const centroLinks = [
   { label: "Il Metodo",  href: "/il-centro#il-metodo" },
@@ -13,7 +14,7 @@ const centroLinks = [
 
 const centroPaths = ["/il-centro", "/i-servizi", "/il-metodo", "/l-archivio", "/staff", "/contatti"];
 
-const pillBg  = "rgba(40,40,40,0.72)";
+const pillBg  = "rgba(28,28,28,0.92)";
 const green   = "#a3d39c";
 const textOn  = "#1d1d1f";
 const textOff = "rgba(255,255,255,0.6)";
@@ -27,14 +28,15 @@ function getActiveIdx(pathname: string) {
 
 export default function Navbar({ visible = true }: { visible?: boolean }) {
   const pathname = usePathname();
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [mobileOpen, setMobileOpen]     = useState(false);
+  const [dropdownOpen, setDropdownOpen]       = useState(false);
+  const [mobileOpen, setMobileOpen]           = useState(false);
+  const [newsletterOpen, setNewsletterOpen]   = useState(false);
   const [hoveredIdx, setHoveredIdx]     = useState<number | null>(null);
   const [ind, setInd]                   = useState({ left: 0, width: 0 });
   const [dropHovIdx, setDropHovIdx]     = useState<number | null>(null);
 
   const pillRef     = useRef<HTMLDivElement>(null);
-  const itemRefs    = useRef<(HTMLElement | null)[]>([null, null, null]);
+  const itemRefs    = useRef<(HTMLElement | null)[]>([null, null, null, null]);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const activeIdx    = getActiveIdx(pathname);
@@ -177,7 +179,19 @@ export default function Navbar({ visible = true }: { visible?: boolean }) {
         >
           Blog
         </Link>
+
+        {/* Newsletter */}
+        <button
+          ref={(el) => { itemRefs.current[3] = el; }}
+          onClick={() => setNewsletterOpen(true)}
+          onMouseEnter={() => setHoveredIdx(3)}
+          className={itemCls}
+          style={{ width: 112, color: hoveredIdx === 3 ? textOn : textOff }}
+        >
+          Steadynews
+        </button>
       </div>
+      {newsletterOpen && <NewsletterModal onClose={() => setNewsletterOpen(false)} />}
 
       {/* ── Mobile hamburger ── */}
       <button
@@ -210,7 +224,13 @@ export default function Navbar({ visible = true }: { visible?: boolean }) {
             ))}
           </div>
           <Link href="/i-progetti" className="font-title text-3xl font-light uppercase tracking-[0.1em] text-cs-charcoal hover:text-cs-sage transition-colors mb-2">I Progetti</Link>
-          <Link href="/blog"       className="font-title text-3xl font-light uppercase tracking-[0.1em] text-cs-charcoal hover:text-cs-sage transition-colors">Blog</Link>
+          <Link href="/blog"       className="font-title text-3xl font-light uppercase tracking-[0.1em] text-cs-charcoal hover:text-cs-sage transition-colors mb-8">Blog</Link>
+          <button
+            onClick={() => { setMobileOpen(false); setNewsletterOpen(true); }}
+            className="font-title text-3xl font-light uppercase tracking-[0.1em] text-cs-charcoal hover:text-cs-sage transition-colors text-left mt-2"
+          >
+            Steadynews
+          </button>
         </nav>
       </div>
     </>

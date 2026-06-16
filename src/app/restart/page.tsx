@@ -1,161 +1,475 @@
-import type { Metadata } from "next";
-import NavGrid from "@/components/NavGrid";
+"use client";
+import Image from "next/image";
+import Link from "next/link";
+import { motion, useInView } from "framer-motion";
+import { useRef, useState, useEffect } from "react";
 
-export const metadata: Metadata = {
-  title: "Restart — Sensibilizzazione al gioco d'azzardo",
-  description: "RESTART è un progetto del Centro Steadycam dell'ASL CN2 su iniziativa della Regione Piemonte che si propone di sensibilizzare al gioco d'azzardo.",
-};
+const WP   = "https://centrosteadycam.it/wp-content/uploads";
+const RED  = "#e63329";
+const GRN  = "#3dbb4e";
+const ral  = { fontFamily: "var(--font-raleway)" };
 
-const WP = "https://centrosteadycam.it/wp-content/uploads";
-
-const steps = [
+/* ── dati fasi ─────────────────────────────────────────────── */
+const phases = [
   {
-    n: "01",
-    title: "Digital Live Talk #1",
-    subtitle: "Iscrivi la tua classe",
-    desc: "Una performance live, più pop di una conferenza, realizzata dalla Società Taxi 1729 dedicata alla matematica e alla psicologia del gioco d'azzardo. Rivolta alle classi delle scuole superiori del Piemonte.",
-    note: "Partecipazione gratuita",
-    jotformId: "70393978018365",
-    img: `${WP}/RESTART_MOBILE_DLT1_4.svg`,
+    key: "dlt1",
+    label: "Digital\nLive\nTalk",
+    num: "#1",
+    sub: "Iscrivi la tua classe al Digital Live Talk (DLT)",
+    body: [
+      `"…una performance live, più pop di una conferenza, più seria di uno show, più divertente di quanto credi".`,
+      `Il DLT è realizzato dalla Società di Informazione Scientifica Taxi 1729, che da anni si occupa del tema dell'azzardo attraverso il progetto Fate il nostro gioco ed è rivolto a studenti delle scuole superiori della Regione Piemonte.`,
+      `Scarica qui la scheda tecnica della proposta.`,
+    ],
+    btn: "+ INFO e ISCRIZIONE",
+    formUrl: "https://form.jotform.com/70393978018365",
+    pdfBtn: null,
   },
   {
-    n: "02",
-    title: "Contest",
-    subtitle: "Realizza e invia il tuo video",
-    desc: "Produci e invia un video di prevenzione: max 3 minuti, 500MB, formato .mp4, realizzato dopo il 2019, produzione propria. Deadline: 30 aprile.",
-    note: "Aperto a classi iscritte al DLT",
-    jotformId: "70393925467365",
-    img: `${WP}/RESTART_MOBILE_CONTEST_2.svg`,
+    key: "contest",
+    label: "Contest",
+    num: "Video",
+    sub: "Realizza e invia il tuo video",
+    body: [
+      `Entro il 30 aprile la classe può inviare uno o più video di prevenzione al gioco d'azzardo, ogni video (max 3 minuti, 500 MB, formato .mp4) deve essere stato autoprodotto e realizzato non prima del 2019.`,
+    ],
+    btn: "+ INFO e ISCRIZIONE",
+    formUrl: "https://form.jotform.com/70393925467365",
+    pdfBtn: null,
   },
   {
-    n: "03",
-    title: "Digital Live Talk #2",
-    subtitle: "Il finale",
-    desc: "Proiezione dei migliori video del contest, interviste e confronto finale. Accessibile alle classi che hanno inviato il video entro la scadenza.",
-    note: "17 maggio 2022",
-    jotformId: null,
-    img: `${WP}/RESTART_MOBILE_DLT2_1.svg`,
+    key: "dlt2",
+    label: "Digital\nLive\nTalk",
+    num: "#2",
+    locked: true,
+    sub: "Partecipa al DLT Finale con visione e interviste",
+    body: [
+      `"Conviene giocare d'azzardo? E se, come dicono tutti, non conviene allora perché giochiamo? Durante questo secondo DLT riprendiamo le fila del discorso iniziato nell'appuntamento precedente e cerchiamo una risposta a queste domande in modo scientifico. Sperimentiamo senza alcun pregiudizio e analizziamo i risultati degli esperimenti con una continua interazione con gli spettatori, cercando di capire perché e in che modo il destino di ogni giocatore è uno solo — ed è già scritto."`,
+      `Le classi che si iscriveranno al Contest ed invieranno il video potranno partecipare ad un secondo Digital Live Talk che si terrà il 17 maggio 2022.`,
+    ],
+    btn: "SBLOCCA",
+    formUrl: "https://form.jotform.com/70393925467365",
+    pdfBtn: null,
   },
 ];
 
-export default function RestartPage() {
+/* ── componente fase compatta (colonna laterale) ────────────── */
+function PhaseCompact({ phase }: { phase: typeof phases[0] }) {
   return (
-    <div className="min-h-screen bg-white pt-14">
-      {/* Hero */}
-      <section className="relative overflow-hidden flex items-center justify-center" style={{ minHeight: 500, background: "#1a1a2e" }}>
-        <div className="absolute inset-0 opacity-20"
-          style={{ backgroundImage: "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.2) 1px, transparent 0)", backgroundSize: "30px 30px" }}
-        />
-        <div className="relative z-10 max-w-4xl mx-auto px-4 py-24 text-center">
-          <img
-            src={`${WP}/BENVENUTI_02.svg`}
-            alt="Restart"
-            className="h-16 md:h-20 mx-auto mb-6 object-contain"
+    <div className="flex flex-col items-center justify-center h-full gap-4 px-4 text-center">
+      <div className="font-title font-black text-white uppercase leading-none text-xl tracking-tight whitespace-pre-line">
+        {phase.label}
+        <br />
+        <span style={{ color: RED }}>{phase.num}</span>
+        {phase.locked && <span className="inline-block ml-1 text-base">🔒</span>}
+      </div>
+      <button className="text-[10px] font-black uppercase tracking-widest text-black px-3 py-1.5 whitespace-nowrap"
+        style={{ background: GRN }}>
+        {phase.btn}
+      </button>
+    </div>
+  );
+}
+
+/* ── componente fase attiva (colonna principale) ─────────────── */
+function PhaseActive({ phase }: { phase: typeof phases[0] }) {
+  return (
+    <div className="flex flex-col justify-center h-full px-10 md:px-16 max-w-xl">
+      <p className="text-white/40 text-sm mb-2" style={ral}>{phase.label.replace(/\n/g, " ")} {phase.num}</p>
+      <h3 className="font-title font-black text-2xl md:text-3xl mb-6 leading-snug"
+        style={{ color: RED }}>
+        {phase.sub}
+      </h3>
+      {phase.body.map((p, i) => (
+        <p key={i} className="text-white/75 text-sm leading-relaxed mb-4" style={ral}>{p}</p>
+      ))}
+      <div className="mt-2">
+        <button className="text-xs font-black uppercase tracking-widest text-black px-5 py-2.5"
+          style={{ background: GRN }}>
+          {phase.btn}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ── linea verticale animata ─────────────────────────────────── */
+function GrowLine({ className = "" }: { className?: string }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-20% 0px" });
+  return (
+    <div ref={ref} className={`w-[3px] bg-transparent overflow-hidden ${className}`}>
+      <motion.div
+        className="w-full bg-white"
+        initial={{ height: 0 }}
+        animate={inView ? { height: "100%" } : { height: 0 }}
+        transition={{ duration: 1.2, ease: "easeInOut" }}
+        style={{ height: "100%" }}
+      />
+    </div>
+  );
+}
+
+/* ── accordion interattivo ───────────────────────────────── */
+function PhasesAccordion() {
+  const [activeIdx, setActiveIdx] = useState<number | null>(null);
+  const [formOpen, setFormOpen] = useState(false);
+
+  return (
+    <section className="relative" style={{ minHeight: "80vh" }}>
+      <div className="flex" style={{ minHeight: "80vh" }}>
+        {phases.map((p, i) => {
+          const isActive = activeIdx === i;
+          const hasActive = activeIdx !== null;
+
+          return (
+            <div
+              key={p.key}
+              className="relative overflow-hidden"
+              style={{
+                flex: isActive ? "3 1 0%" : "1 1 0%",
+                transition: "flex 0.5s cubic-bezier(0.4,0,0.2,1)",
+                borderLeft: i > 0 ? "3px solid #fff" : "none",
+                cursor: isActive ? "default" : "pointer",
+              }}
+              onClick={() => { if (!isActive) { setActiveIdx(i); setFormOpen(false); } }}
+            >
+              {/* ── X chiusura in alto a destra vicino alla linea ── */}
+              {isActive && (
+                <button
+                  className="absolute top-5 z-10 text-white hover:text-white/50 transition-colors text-xl leading-none font-black" style={{ right: 33 }}
+                  onClick={(e) => { e.stopPropagation(); setActiveIdx(null); setFormOpen(false); }}
+                  aria-label="Chiudi"
+                >
+                  ✕
+                </button>
+              )}
+
+              {/* ── pallino timeline in cima ── */}
+              <div className="absolute top-8 left-1/2 -translate-x-1/2 flex items-center justify-center"
+                style={{
+                  width: i === 2 ? 36 : 18,
+                  height: i === 2 ? 36 : 18,
+                  borderRadius: "50%",
+                  background: i === 2 ? "transparent" : "#fff",
+                  border: i === 2 ? "2.5px solid #fff" : "none",
+                  fontSize: 16,
+                }}>
+                {i === 2 && "🔒"}
+              </div>
+
+              {isActive ? (
+                /* ── pannello espanso ── */
+                <div className="flex flex-col justify-center h-full px-10 md:px-16 py-16">
+                  <p className="font-title font-black text-white uppercase leading-none whitespace-pre-line mb-4"
+                    style={{ fontSize: "clamp(1.4rem, 2.5vw, 2rem)" }}>
+                    {p.label}
+                    {" "}<span style={{ color: RED }}>{p.num}</span>
+                    {p.locked && <span className="ml-1">🔒</span>}
+                  </p>
+                  <h3 className="font-title font-black mb-6 leading-snug"
+                    style={{ color: RED, fontSize: "clamp(1.2rem, 2vw, 1.7rem)" }}>
+                    {p.sub}
+                  </h3>
+                  {p.body.map((para, j) => (
+                    <p key={j} className="text-white/75 leading-relaxed mb-4" style={{ ...ral, fontSize: "clamp(0.95rem, 1.2vw, 1.1rem)" }}>{para}</p>
+                  ))}
+                  {!formOpen ? (
+                    <div className="mt-4">
+                      <button
+                        className="text-xs font-black uppercase tracking-widest text-black px-5 py-2.5"
+                        style={{ background: GRN }}
+                        onClick={(e) => { e.stopPropagation(); setFormOpen(true); }}
+                      >
+                        {p.btn}
+                      </button>
+                    </div>
+                  ) : (
+                    <div
+                      className="mt-6 jotform-scroll"
+                      style={{ height: 520, overflowY: "scroll", overflowX: "hidden" }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <iframe
+                        src={p.formUrl}
+                        title={p.sub}
+                        className="w-full"
+                        style={{ height: 1400, border: "none", display: "block" }}
+                        scrolling="no"
+                        allowFullScreen
+                      />
+                    </div>
+                  )}
+                </div>
+              ) : !hasActive ? (
+                /* ── stato default: tutti uguali, titolo grande centrato ── */
+                <div className="flex flex-col items-center justify-center h-full gap-6 px-6 text-center">
+                  <h3 className="font-title font-black uppercase leading-none whitespace-pre-line"
+                    style={{ fontSize: "clamp(1.8rem, 3.5vw, 3.2rem)" }}>
+                    {p.label}
+                    <br />
+                    <span style={{ color: RED }}>{p.num}</span>
+                    {p.locked && <span className="ml-2">🔒</span>}
+                  </h3>
+                  <button
+                    className="text-xs font-black uppercase tracking-widest text-black px-6 py-2.5"
+                    style={{ background: GRN }}
+                    onClick={(e) => { e.stopPropagation(); setActiveIdx(i); }}
+                  >
+                    {p.btn}
+                  </button>
+                </div>
+              ) : (
+                /* ── pannello compatto (quando un altro è attivo) ── */
+                <div className="flex flex-col items-center justify-center h-full gap-4 px-3 text-center">
+                  <div className="font-title font-black text-white uppercase leading-none text-lg tracking-tight whitespace-pre-line">
+                    {p.label}
+                    <br />
+                    <span style={{ color: RED }}>{p.num}</span>
+                    {p.locked && <span className="inline-block ml-1 text-base">🔒</span>}
+                  </div>
+                  <button
+                    className="text-[10px] font-black uppercase tracking-widest text-black px-3 py-1.5 whitespace-nowrap"
+                    style={{ background: GRN }}
+                    onClick={(e) => { e.stopPropagation(); setActiveIdx(i); }}
+                  >
+                    {p.btn}
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+/* ── video autoplay/pause on scroll ─────────────────────── */
+function VideoSection() {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const cmd = entry.isIntersecting ? "playVideo" : "pauseVideo";
+        iframe.contentWindow?.postMessage(
+          JSON.stringify({ event: "command", func: cmd, args: [] }),
+          "*"
+        );
+      },
+      { threshold: 0.3 }
+    );
+
+    observer.observe(iframe);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <section className="flex items-center justify-center" style={{ marginTop: 160, paddingBottom: 60 }}>
+      <div style={{ width: "75%", maxWidth: 860 }}>
+        <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+          <iframe
+            ref={iframeRef}
+            src="https://www.youtube.com/embed/mSQl-0a64WA?autoplay=0&mute=1&enablejsapi=1"
+            title="Restart — Digital Live Talk"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            className="absolute inset-0 w-full h-full"
+            style={{ border: "none" }}
           />
-          <p className="text-white/70 text-base md:text-lg font-light max-w-2xl mx-auto mb-3 leading-relaxed">
-            RESTART è un progetto del Centro Steadycam dell&apos;ASL CN2 su iniziativa della Regione Piemonte
-            che si propone di sensibilizzare al Gioco d&apos;azzardo.
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export default function RestartPage() {
+  const heroRef  = useRef(null);
+  const introRef = useRef(null);
+  const introInView = useInView(introRef, { once: true, margin: "-10% 0px" });
+
+  return (
+    <div className="min-h-screen" style={{ background: "#000", color: "#fff" }}>
+
+      {/* ── 1. HERO ─────────────────────────────────────────── */}
+      <section ref={heroRef}
+        className="relative flex flex-col items-center justify-center text-center"
+        style={{ minHeight: "100vh" }}>
+
+        {/* Logo RESTART */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="mb-6"
+        >
+          <Image
+            src={`${WP}/RESTART_trasp_newsletter.svg`}
+            alt="RESTART"
+            width={700}
+            height={423}
+            className="mx-auto w-[62vw] max-w-[750px] min-w-[320px]"
+            unoptimized
+            priority
+          />
+        </motion.div>
+
+
+        {/* Linea progresso orizzontale */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8, duration: 0.6 }}
+          className="w-full px-10"
+          style={{ maxWidth: "min(90vw, 1100px)" }}
+        >
+          {/* Label sopra */}
+          <div className="flex justify-between mb-10 px-2">
+            {/* DLT #1 */}
+            <div className="text-left">
+              <p className="font-title font-black uppercase leading-tight" style={{ fontSize: "clamp(1rem, 2vw, 1.6rem)" }}>
+                Digital<br />Live Talk <span style={{ color: RED }}>#1</span>
+              </p>
+            </div>
+            {/* Contest Video */}
+            <div className="text-center">
+              <p className="font-title font-black uppercase leading-tight" style={{ fontSize: "clamp(1rem, 2vw, 1.6rem)" }}>
+                Contest<br /><span style={{ color: RED }}>Video</span>
+              </p>
+            </div>
+            {/* DLT #2 */}
+            <div className="text-right">
+              <p className="font-title font-black uppercase leading-tight" style={{ fontSize: "clamp(1rem, 2vw, 1.6rem)" }}>
+                Digital<br />Live Talk <span style={{ color: RED }}>#2</span>
+              </p>
+            </div>
+          </div>
+
+          {/* Linea con nodi */}
+          <div className="relative flex items-center">
+            <span className="font-title font-black text-white/40 mr-5" style={{ fontSize: "clamp(1rem, 2vw, 1.4rem)" }}>{">>"}</span>
+            <div className="flex-1 relative" style={{ paddingTop: 14, paddingBottom: 14 }}>
+              <div className="h-[3px] bg-white w-full" />
+              {/* Nodi */}
+              {[0, 50, 100].map((pct, i) => (
+                <div key={i}
+                  className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 rounded-full"
+                  style={{
+                    left: `${pct}%`,
+                    width: i === 2 ? 52 : 20,
+                    height: i === 2 ? 52 : 20,
+                    background: i === 2 ? "transparent" : "#fff",
+                    border: i === 2 ? "2.5px solid #fff" : "none",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 22,
+                  }}>
+                  {i === 2 && "🔒"}
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* ── 2. BENVENUTI + INTRO ────────────────────────────── */}
+      <section className="relative flex items-stretch" style={{ minHeight: "80vh" }}>
+        <GrowLine className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 h-full" />
+
+        {/* Sinistra — testo intro */}
+        <motion.div
+          ref={introRef}
+          initial={{ opacity: 0, x: -40 }}
+          animate={introInView ? { opacity: 1, x: 0 } : {}}
+          transition={{ duration: 0.8 }}
+          className="flex-1 flex flex-col justify-center py-24 pr-8 max-w-xl" style={{ paddingLeft: "max(30px, 6vw)" }}
+        >
+          <p className="text-xl leading-relaxed mb-5 text-white/80" style={ral}>
+            <span style={{ color: RED }}>RE</span>START è un progetto del Centro Steadycam dell&apos;ASL CN2 su iniziativa della Regione Piemonte che si propone di sensibilizzare al Gioco d&apos;azzardo.
           </p>
-          <p className="text-white/50 text-sm mb-10">Partecipazione gratuita per le classi del Piemonte</p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <p className="text-xl leading-relaxed mb-5 text-white/80" style={ral}>
+            Puoi far partecipare gratuitamente la tua classe alla{" "}
+            <span style={{ color: RED }}>prima puntata (#1)</span> del Digital Live Talk: una conferenza spettacolo on-line dinamica ed interattiva sui segreti della matematica e della psicologia del gioco d&apos;azzardo, realizzata dalla Società di Informazione Scientifica{" "}
+            <a href="https://www.taxi1729.it" target="_blank" rel="noopener noreferrer" className="underline" style={{ color: RED }}>Taxi 1729.</a>
+          </p>
+          <p className="text-xl leading-relaxed mb-5 text-white/80" style={ral}>
+            In seguito, potrai con la classe produrre un video sul gioco d&apos;azzardo che abbia come obiettivo quello di sensibilizzare i ragazzi tra i 13 e i 16 anni rispetto a questo problema.
+          </p>
+          <p className="text-xl leading-relaxed mb-8 text-white/80" style={ral}>
+            Le classi che invieranno il video potranno partecipare, sempre gratuitamente, alla{" "}
+            <span style={{ color: RED }}>seconda puntata (#2)</span> del Digital Live Talk.
+          </p>
+          <div>
             <a
-              href={`${WP}/Presentazione_Contest_Restart.pdf`}
+              href="/Presentazione_Contest_Restart.pdf"
               target="_blank"
               rel="noopener noreferrer"
-              className="btn-ghost-white"
+              className="inline-block text-xs font-black uppercase tracking-widest text-black px-6 py-3"
+              style={{ background: GRN }}
             >
               Scarica la presentazione
             </a>
-            <a
-              href={`https://www.fateilnostrogioco.it/wp-content/uploads/2021/01/Scheda_DLT-Fing.pdf`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-orange"
-            >
-              Scheda tecnica DLT
-            </a>
           </div>
-          <div className="mt-10">
-            <img
-              src={`${WP}/LOGHI_4.svg`}
-              alt="Partner Restart"
-              className="h-12 mx-auto object-contain opacity-50"
-            />
-          </div>
+        </motion.div>
+
+        {/* Destra — BENVENUTI */}
+        <motion.div
+          initial={{ opacity: 0, x: 40 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true, margin: "-20% 0px" }}
+          transition={{ duration: 0.7 }}
+          className="flex-1 flex items-center justify-center pr-16 pl-8 py-24"
+        >
+          <Image
+            src={`${WP}/BENVENUTI_02.svg`}
+            alt="Benvenuti a Restart"
+            width={900}
+            height={192}
+            className="w-full max-w-[860px]"
+            unoptimized
+          />
+        </motion.div>
+      </section>
+
+      {/* ── 4. ACCORDION FASI ───────────────────────────────── */}
+      <div style={{ marginTop: 120 }}>
+        <PhasesAccordion />
+      </div>
+
+      {/* ── 8. IMMAGINE ─────────────────────────────────────── */}
+      <VideoSection />
+
+      {/* ── 9. LOGHI ────────────────────────────────────────── */}
+      <section className="py-20 text-center">
+        <Image
+          src={`${WP}/LOGHI_4.svg`}
+          alt="Partner"
+          width={500}
+          height={90}
+          className="mx-auto mb-16 opacity-90"
+          unoptimized
+        />
+        <div className="text-white/50 text-sm leading-relaxed" style={ral}>
+          <p className="font-semibold text-white/80 mb-1">INFO:</p>
+          <p>Centro Steadycam — SERD Alba</p>
+          <p>0173 316210</p>
+          <a href="mailto:info@progettosteadycam.it" className="underline" style={{ color: RED }}>
+            info@progettosteadycam.it
+          </a>
         </div>
       </section>
 
-      {/* 3 steps */}
-      <section className="py-16" style={{ background: "#f5f5f5" }}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="font-title font-light text-cs-charcoal text-2xl uppercase tracking-[0.06em] text-center mb-12">
-            Come funziona
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {steps.map((step) => (
-              <div key={step.n} className="bg-white shadow-sm overflow-hidden">
-                {/* Step header */}
-                <div className="p-6 flex items-start gap-4" style={{ background: "#3f424a" }}>
-                  <span className="text-5xl font-title font-light text-white/20 leading-none">{step.n}</span>
-                  <div>
-                    <p className="text-white/50 text-xs font-title uppercase tracking-widest mb-1">Fase {step.n}</p>
-                    <h3 className="text-white font-title font-semibold text-lg">{step.title}</h3>
-                    <p className="text-white/60 text-xs mt-0.5">{step.subtitle}</p>
-                  </div>
-                </div>
+      {/* Back */}
+      <div className="text-center pb-10">
+        <Link href="/i-progetti"
+          className="text-xs font-title uppercase tracking-[0.14em] text-white/20 hover:text-white/60 transition-colors">
+          ← I progetti
+        </Link>
+      </div>
 
-                {/* SVG icon */}
-                <div className="p-6 border-b border-gray-100 flex justify-center" style={{ background: "#fafafa" }}>
-                  <img src={step.img} alt={step.title} className="h-24 object-contain" />
-                </div>
-
-                {/* Content */}
-                <div className="p-6">
-                  <p className="text-cs-text text-sm leading-relaxed mb-4">{step.desc}</p>
-                  <p className="text-xs font-title uppercase tracking-wider mb-5" style={{ color: "#a3d39c" }}>
-                    {step.note}
-                  </p>
-                  {step.jotformId ? (
-                    <a
-                      href={`#form-${step.n}`}
-                      className="btn-orange text-xs"
-                    >
-                      + Info e iscrizione
-                    </a>
-                  ) : (
-                    <span className="text-xs font-title uppercase tracking-wider px-4 py-2 border border-gray-200 text-gray-400 cursor-not-allowed">
-                      🔒 Sblocca dopo il contest
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* JotForm embeds */}
-      <section className="py-16 bg-white">
-        <div className="max-w-3xl mx-auto px-4 space-y-16">
-          {steps.filter((s) => s.jotformId).map((step) => (
-            <div key={step.n} id={`form-${step.n}`}>
-              <h3 className="font-title font-light text-cs-charcoal text-xl uppercase tracking-[0.06em] mb-6 text-center">
-                {step.title} — Iscrizione
-              </h3>
-              <iframe
-                src={`https://form.jotform.com/${step.jotformId}`}
-                title={`Iscrizione ${step.title}`}
-                width="100%"
-                height="600"
-                style={{ border: "none" }}
-                scrolling="yes"
-              />
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <NavGrid />
     </div>
   );
 }

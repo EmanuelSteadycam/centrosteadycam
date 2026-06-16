@@ -98,6 +98,59 @@ function formatDate(date: string): string {
   });
 }
 
+// ── notifica admin nuova iscrizione newsletter ────────────────────────────
+export async function sendNewsletterNotification(subscriber: {
+  nome: string;
+  email: string;
+}) {
+  const adminEmail = process.env.MAILUP_ADMIN_EMAIL ?? "steadycam01@gmail.com";
+  const now = new Date().toLocaleString("it-IT", { timeZone: "Europe/Rome" });
+  await sendMail({
+    to:      adminEmail,
+    subject: `Steadynews — nuova iscrizione: ${subscriber.nome}`,
+    htmlBody: `<p style="font-family:sans-serif;font-size:15px;">
+      Nuova iscrizione alla Steadynews:<br><br>
+      <strong>Nome:</strong> ${subscriber.nome}<br>
+      <strong>Email:</strong> ${subscriber.email}<br>
+      <strong>Data:</strong> ${now}
+    </p>`,
+  });
+}
+
+// ── aggiungi contatto al gruppo Newsletter ────────────────────────────────
+export async function addToNewsletterGroup(recipient: {
+  email: string;
+  nome: string;
+}): Promise<number | null> {
+  const token   = await getToken();
+  const groupId = Number(process.env.MAILUP_NEWSLETTER_GROUP_ID ?? "0");
+
+  if (!groupId) throw new Error("MAILUP_NEWSLETTER_GROUP_ID non configurato in .env.local");
+
+  const res = await fetch(`${API_BASE}/Group/${groupId}/Recipient`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({
+      Email:  recipient.email,
+      Name:   recipient.nome,
+      Fields: [
+        { Description: "FirstName", Id: 1, Value: recipient.nome },
+      ],
+    }),
+  });
+
+  console.log(`[MailUp addToNewsletterGroup] status:${res.status}`);
+
+  if (res.ok) {
+    const body = await res.json();
+    return typeof body === "number" ? body : (body?.idRecipient ?? null);
+  }
+
+  const err = await res.text();
+  console.error(`[MailUp addToNewsletterGroup] failed:${res.status} — ${err}`);
+  throw new Error(`MailUp newsletter failed: ${res.status}`);
+}
+
 // ── aggiungi contatto al gruppo Display — ritorna idRecipient ─────────────
 export async function addToDisplayGroup(recipient: {
   email: string; nome: string; cognome: string; istituto: string;

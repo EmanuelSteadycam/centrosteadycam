@@ -48,7 +48,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
             active={isDisplay ? 1 : 0}
             collapsed={!isHome && !isDisplay}
             indicatorColor="#a3d39c"
-            pillBg="rgba(40,40,40,0.72)"
+            pillBg="rgba(28,28,28,0.92)"
             textColor="rgba(255,255,255,0.6)"
             activeTextColor="#1d1d1f"
           />

@@ -85,7 +85,7 @@ function BlogCard({ post, variant }: { post: BlogPost; variant: Variant }) {
       {img ? (
         <img
           src={img}
-          alt={post.title.rendered}
+          alt={post.title}
           className="absolute inset-0 w-full h-full object-cover transition-transform duration-500"
           style={{ transform: hovered ? "scale(1.07)" : "scale(1)" }}
         />
