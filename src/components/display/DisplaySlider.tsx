@@ -622,7 +622,12 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
       setSubmitting(false);
       return;
     }
-    if (emailError) console.warn("DEBUG email error:", emailError);
+    // Segna lo slot come prenotato nello stato locale
+    if (selectedSlot) {
+      setSlots(prev => prev.map(s =>
+        s.id === selectedSlot.id ? { ...s, bookings_count: s.bookings_count + 1 } : s
+      ));
+    }
     setScreen("success");
     setSubmitting(false);
   };

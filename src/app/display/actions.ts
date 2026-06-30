@@ -41,35 +41,30 @@ export async function submitBooking(data: {
     await supabase.rpc("increment_event_slot_bookings", { p_slot_id: data.slot_id });
   }
 
-  // Fetch slot date for the confirmation email (only if slot exists)
-  const { data: slot } = data.slot_id
-    ? await supabase.from("event_slots").select("date").eq("id", data.slot_id).single()
-    : { data: null };
+  // Email e MailUp in background — non bloccano la risposta al client
+  void (async () => {
+    const { data: slot } = data.slot_id
+      ? await supabase.from("event_slots").select("date").eq("id", data.slot_id).single()
+      : { data: null };
 
-  // Check if confirmation email is enabled
-  const { data: setting } = await supabase
-    .from("event_settings")
-    .select("value")
-    .eq("event_id", event.id)
-    .eq("key", "confirmation_email_enabled")
-    .single();
+    const { data: setting } = await supabase
+      .from("event_settings")
+      .select("value")
+      .eq("event_id", event.id)
+      .eq("key", "confirmation_email_enabled")
+      .single();
 
-  const emailEnabled = setting?.value === "true";
+    if (!slot || setting?.value !== "true") return;
 
-  if (slot && emailEnabled) {
-    let mailupId: number | null = null;
     try {
-      mailupId = await addToDisplayGroup({
+      const mailupId = await addToDisplayGroup({
         email: data.email,
         nome: data.nome,
         cognome: data.cognome,
         istituto: data.istituto,
       });
       if (mailupId && bookingId) {
-        await supabase
-          .from("event_bookings")
-          .update({ mailup_id: mailupId })
-          .eq("id", bookingId);
+        await supabase.from("event_bookings").update({ mailup_id: mailupId }).eq("id", bookingId);
       }
     } catch (err) {
       console.error("MailUp addToGroup failed:", err);
@@ -87,11 +82,9 @@ export async function submitBooking(data: {
         date: slot.date,
       });
     } catch (mailErr) {
-      const msg = mailErr instanceof Error ? mailErr.message : String(mailErr);
-      console.error("MailUp confirmation email failed:", msg);
-      return { error: null, emailError: msg };
+      console.error("MailUp confirmation email failed:", mailErr);
     }
-  }
+  })();
 
   return { error: null, emailError: null };
 }
