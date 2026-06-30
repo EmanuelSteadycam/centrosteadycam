@@ -1,0 +1,9 @@
+node_modules
+.next
+archivio-data
+pagine
+scripts/approfondimenti.json
+mailup-templates
+.DS_Store
+*.pem
+coverage
