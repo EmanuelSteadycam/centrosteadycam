@@ -1,6 +1,32 @@
 "use server";
 import { createSupabaseAdminClient } from "@/lib/supabase-server";
 import { sendConfirmationEmail, addToDisplayGroup } from "@/lib/mailup";
+import { SupabaseClient } from "@supabase/supabase-js";
+
+async function checkAndEnableWaitlist(supabase: SupabaseClient, eventId: string) {
+  const { data: maxSetting } = await supabase
+    .from("event_settings")
+    .select("value")
+    .eq("event_id", eventId)
+    .eq("key", "max_bookings")
+    .single();
+
+  if (!maxSetting?.value) return;
+  const maxBookings = parseInt(maxSetting.value);
+  if (isNaN(maxBookings) || maxBookings < 1) return;
+
+  const { count } = await supabase
+    .from("event_bookings")
+    .select("*", { count: "exact", head: true })
+    .eq("event_id", eventId)
+    .neq("tipo_visita", "lista_attesa");
+
+  if ((count ?? 0) >= maxBookings) {
+    await supabase
+      .from("event_settings")
+      .upsert({ event_id: eventId, key: "waitlist_enabled", value: "true" });
+  }
+}
 
 export async function submitBooking(data: {
   slot_id: string | null;
@@ -39,6 +65,11 @@ export async function submitBooking(data: {
 
   if (data.slot_id) {
     await supabase.rpc("increment_event_slot_bookings", { p_slot_id: data.slot_id });
+  }
+
+  // Controlla se il cap è raggiunto e imposta waitlist automaticamente
+  if (data.tipo_visita !== "lista_attesa") {
+    await checkAndEnableWaitlist(supabase, event.id);
   }
 
   // Email e MailUp in background — non bloccano la risposta al client

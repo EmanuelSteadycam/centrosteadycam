@@ -577,22 +577,14 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
             .order("date", { ascending: true }),
           supabase
             .from("event_settings")
-            .select("key, value")
+            .select("value")
             .eq("event_id", event.id)
-            .in("key", ["waitlist_enabled", "max_bookings"]),
-          supabase
-            .from("event_bookings")
-            .select("*", { count: "exact", head: true })
-            .eq("event_id", event.id)
-            .neq("tipo_visita", "lista_attesa"),
-        ]).then(([{ data: slotData }, { data: settings }, { count }]) => {
+            .eq("key", "waitlist_enabled")
+            .single(),
+        ]).then(([{ data: slotData }, { data: setting }]) => {
           setSlots(slotData ?? []);
           setSloading(false);
-          const get = (key: string) => settings?.find(s => s.key === key)?.value;
-          const manualWaitlist = get("waitlist_enabled") === "true";
-          const maxBookings = get("max_bookings") ? parseInt(get("max_bookings")!) : null;
-          const capReached = maxBookings !== null && (count ?? 0) >= maxBookings;
-          setIsWaitlist(manualWaitlist || capReached);
+          setIsWaitlist(setting?.value === "true");
         });
       });
   // eslint-disable-next-line react-hooks/exhaustive-deps

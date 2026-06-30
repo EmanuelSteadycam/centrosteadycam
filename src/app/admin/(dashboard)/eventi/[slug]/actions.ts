@@ -33,6 +33,21 @@ export async function setMaxBookings(eventSlug: string, max: number | null) {
   await supabase
     .from("event_settings")
     .upsert({ event_id: eventId, key: "max_bookings", value: max !== null ? String(max) : "" });
+
+  // Se il cap è già raggiunto, abilita subito la lista d'attesa
+  if (max !== null) {
+    const { count } = await supabase
+      .from("event_bookings")
+      .select("*", { count: "exact", head: true })
+      .eq("event_id", eventId)
+      .neq("tipo_visita", "lista_attesa");
+    if ((count ?? 0) >= max) {
+      await supabase
+        .from("event_settings")
+        .upsert({ event_id: eventId, key: "waitlist_enabled", value: "true" });
+    }
+  }
+
   revalidatePath(`/admin/eventi/${eventSlug}`);
 }
 
