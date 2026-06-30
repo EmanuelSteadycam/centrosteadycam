@@ -25,7 +25,7 @@ export type SlideId =
 const WP = "https://centrosteadycam.it/wp-content/uploads";
 
 // ── Animation helpers ─────────────────────────────────────────────────────────
-const BASE_DELAY = 0.6; // attende la fine della transizione di pagina (0.55s)
+const BASE_DELAY = 1.05; // attende la fine della transizione di pagina (1.0s)
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 22 },
@@ -341,7 +341,7 @@ function SlidePortfolio({ nav, onMenu: _onMenu }: { nav: (id: SlideId) => void; 
     { id: "timeline", img: `${WP}/2017/09/Steadycam-Dispaly-Isole_02.jpg`,        label: "Timeline" },
     { id: "making",   img: `${WP}/2017/09/Steadycam-Display-making03.jpg`,         label: "Making"   },
     { id: "gaming",   img: `${WP}/2017/09/Steadycam-Dispaly-Gaming_Big_Right.jpg`, label: "Gaming"   },
-    { id: "storie",   img: `${WP}/2017/09/Steadycam-Dispaly-Storie-03.jpg`,        label: "Storie"   },
+    { id: "storie",   img: `${WP}/2017/09/Steadycam-Dispaly-Storie-04.jpg`,        label: "Storie"   },
     { id: "corpo",    img: `${WP}/2017/09/Steadycam-Dispaly-Corpo-Big.jpg`,        label: "Corpo"    },
     { id: "intro",    img: `${WP}/revslider/photography/photography_thumb6.jpg`,    label: ""         },
   ];
@@ -434,38 +434,38 @@ function SlideRoom({
         priority
         unoptimized
       />
-      <div className="absolute inset-0" style={{ background: overlay }} />
+      <motion.div
+        className={`absolute top-0 bottom-0 w-[50%] ${isRight ? "right-0" : "left-0"}`}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6, delay: BASE_DELAY }}
+        style={{ background: overlay }}
+      />
 
-      {isRight && (
-        <div
-          className="absolute right-0 top-0 bottom-0 w-[50%] hidden md:block"
-          style={{ background: "rgba(0,0,0,0.2)" }}
-        />
-      )}
-
+      <div className={`relative z-10 w-full h-full flex items-center ${isRight ? "justify-end" : ""}`}>
       <div
-        className={`relative z-10 w-full max-w-5xl mx-auto px-10 md:px-20 ${isRight ? "text-right flex flex-col items-end" : ""}`}
+        className={`${isRight ? "w-[50%] px-12 text-right flex flex-col items-end" : "max-w-5xl mx-auto px-10 md:px-20"}`}
       >
-        <motion.h1
+        <motion.p
           {...titleAnim}
-          className="text-5xl md:text-[72px] font-medium tracking-[0.15em] uppercase mb-3"
-          style={{ color: titleColor, fontFamily: "var(--font-raleway)" }}
+          className="uppercase tracking-[0.22em] mb-3"
+          style={{ fontSize: "24px", fontWeight: 600, color: titleColor, fontFamily: "var(--font-raleway)" }}
         >
           {title}
-        </motion.h1>
+        </motion.p>
 
         <motion.p
           {...fadeIn(0.6)}
-          className="text-[13px] font-semibold tracking-[0.22em] uppercase mb-6"
-          style={{ color: subtitleColor, fontFamily: "var(--font-raleway)" }}
+          className="font-semibold tracking-[0.12em] uppercase mb-6"
+          style={{ fontSize: "18px", color: subtitleColor, fontFamily: "var(--font-raleway)" }}
         >
           {subtitle}
         </motion.p>
 
         <motion.p
           {...fadeUp(0.8)}
-          className="text-sm md:text-[15px] font-light leading-[1.85] mb-8 max-w-[480px] tracking-[0.04em]"
-          style={{ color: textColor, fontFamily: "var(--font-raleway)" }}
+          className="font-light leading-[1.85] mb-8 max-w-[480px] tracking-[0.04em]"
+          style={{ fontSize: "16px", color: textColor, fontFamily: "var(--font-raleway)" }}
         >
           {description}
         </motion.p>
@@ -478,6 +478,7 @@ function SlideRoom({
             Tutte le stanze
           </PillBtn>
         </motion.div>
+      </div>
       </div>
     </div>
   );
@@ -1075,8 +1076,12 @@ function SlideCentro() {
           className="h-full flex flex-col justify-center px-12 py-16 overflow-y-auto"
           style={{ maxWidth: "70%" }}
         >
+          <p className="uppercase tracking-[0.22em] mb-6"
+            style={{ fontSize: "24px", fontWeight: 600, fontFamily: "var(--font-raleway)", color: "#aaa" }}>
+            Il Centro Display
+          </p>
           <p className="text-[#444] font-light leading-[1.85] mb-5"
-            style={{ fontSize: "22px", fontFamily: "var(--font-raleway)" }}>
+            style={{ fontSize: "16px", fontFamily: "var(--font-raleway)" }}>
             Il Centro Display è un Laboratorio multimediale permanente: un luogo fisico, fatto di stanze,
             oggetti, tecnologie e persone, che può essere visitato e diventare meta di un viaggio di
             istruzione per Scuole e Centri Estivi. All&apos;interno di Display i ragazzi partecipano ad un
@@ -1085,13 +1090,13 @@ function SlideCentro() {
             e le tecnologie digitali.
           </p>
           <p className="text-[#444] font-light leading-[1.85] mb-5"
-            style={{ fontSize: "22px", fontFamily: "var(--font-raleway)" }}>
+            style={{ fontSize: "16px", fontFamily: "var(--font-raleway)" }}>
             Un tempo importante viene dedicato, al termine di ogni attività, alla riflessione e al confronto
             sulle esperienze vissute, condividendo emozioni, idee e domande, con l&apos;obiettivo di attivare
             uno &ldquo;sguardo critico&rdquo; sui comportamenti e sulle relazioni mediate dalle nuove tecnologie.
           </p>
           <p className="text-[#444] font-light leading-[1.85]"
-            style={{ fontSize: "22px", fontFamily: "var(--font-raleway)" }}>
+            style={{ fontSize: "16px", fontFamily: "var(--font-raleway)" }}>
             Il Centro è parte del Progetto Display, promosso dalla Città di Bra, dall&apos;ASL CN2 e realizzato
             con il contributo della Fondazione CRC, nell&apos;ambito del bando Prevenzione e Promozione della
             Salute. Il progetto prevede anche interventi educativi rivolti ai ragazzi, serate informative per
@@ -1110,58 +1115,108 @@ function SlideProgetto({ nav: _nav, onMenu }: { nav: (id: SlideId) => void; onMe
     {
       label: "PREMESSA",
       color: "rgba(139,199,157,0.6)",
-      text: "La dipendenza da nuove tecnologie, tra le 'dipendenze senza sostanze', è una modalità disadattiva nell'utilizzo delle stesse che va ben oltre le necessità lavorative e/o di svago. L'uomo, per sua naturale caratteristica evolutiva, ha la capacità di adeguarsi ai più radicali cambiamenti socio-ambientali, ma la rivoluzione tecnologica che lo ha investito è avvenuta con una velocità tale da superare ogni capacità di adattamento.",
+      paragraphs: [
+        "La dipendenza da nuove tecnologie, tra le \"dipendenze senza sostanze\" è una modalità disadattiva nell'utilizzo delle stesse che va ben oltre le necessità lavorative e/o di svago diventando il vero e unico scopo di vita. Tale perdita di controllo determina un totale isolamento sociale e la perdita di qualsiasi progettualità che escluda l'utilizzo della tecnologia. Si parla di dipendenza perché il substrato biologico ricalca in maniera quasi sovrapponibile quello coinvolto nella più tradizionale dipendenza da sostanze psicotrope. L'uomo, per sua naturale caratteristica evolutiva, ha la capacità di adeguarsi ai più radicali cambiamenti socio-ambientali, ma la rivoluzione tecnologica che lo ha investito è avvenuta con una velocità tale da superare ogni capacità di adattamento. L'utilizzo estensivo e compulsivo della tecnologia può determinare significativi mutamenti nell'architettura e nell'organizzazione delle cellule cerebrali e tali cambiamenti sono in grado di modificare la modalità di percepire e di elaborare le informazioni, pensare, progettare e rielaborare sentimenti ed emozioni. Nonostante l'indiscutibile utilità delle nuove tecnologie, esse possiedono un'intrinseca e subdola capacità di indurre alterazioni patologiche nella vita degli utilizzatori. Tale aspetto è al centro dell'attenzione della comunità scientifica internazionale che si sta interrogando sugli opportuni provvedimenti da predisporre al fine di evitare l'epidemia 2.0 (Khazaal, Grant, Chamberlain).",
+        "Dal 2000 il Centro Steadycam dell'ASL CN2, ha avviato in ambito sanitario, educativo e didattico, a livello locale, regionale e nazionale, riflessioni ed interventi su promozione della salute e media education. Nel corso delle centinaia di contatti con insegnanti, genitori, operatori sociali e sanitari, lo staff ha raccolto la domanda crescente d'intervento nell'ambito della prevenzione delle dipendenze da nuove tecnologie.",
+      ],
     },
     {
       label: "OBIETTIVI",
       color: "rgba(255,92,94,0.5)",
-      text: "Dal 2000 il Centro Steadycam dell'ASL CN2, ha avviato in ambito sanitario, educativo e didattico, a livello locale, regionale e nazionale, riflessioni ed interventi su promozione della salute e media education. Il Progetto Display nasce dall'esigenza di creare uno spazio fisico dedicato all'educazione ai media.",
+      paragraphs: [
+        "Il progetto si propone di raggiungere alcuni obiettivi principali, strettamente intrecciati e complementari tra loro:",
+        "- offrire conoscenze e competenze ai ragazzi in età scolare per un uso consapevole e non problematico dei nuovi media digitali;",
+        "- integrare la didattica scolastica e le esperienze educative e pedagogiche formalizzate, con le risorse e le potenzialità operative dei Servizi socio-sanitari, come \"buona pratica\" di promozione della salute e di prevenzione efficace;",
+        "- attivare un circolo virtuoso di informazione e sensibilizzazione che, a partire dalla visita esperienziale al Centro del progetto, stimoli la diffusione di nuove prassi e opportunità di utilizzo dei media digitali in modo più consapevole e coinvolgente;",
+        "- permettere al mondo degli adulti che accompagnano il percorso di crescita dei ragazzi (insegnanti, genitori, operatori, volontari) di utilizzare e intendere i formati mediali e i contesti comunicativi digitali non solo come meri strumenti operativi, ma come veri e propri dispositivi di lettura delle trasformazioni in atto nelle utenze giovanili trasformandoli inoltre in opportunità per far evolvere la propria \"offerta educativa\" in modo più efficace e funzionale ai bisogni.",
+      ],
     },
     {
       label: "ATTIVITÀ PREVISTE",
       color: "rgba(221,174,74,0.5)",
-      text: "Percorsi didattico-esperienziali attraverso 5 stanze tematiche: Timeline, Storie, Gaming, Making, Corpo. Ogni stanza prevede attività hands-on, momenti di gioco e sfida, e una fase di riflessione guidata dagli educatori del Centro.",
+      paragraphs: [
+        "L'idea è di dare vita a un Centro multimediale, denominato \"Display\", inteso come luogo fisico fruibile, che possa offrire ai ragazzi in età evolutiva, una serie di servizi e opportunità di sperimentazione con e sul tema dei nuovi media. Il Centro sarà articolato in:",
+        "1. \"Spazio visita\" e meta dei \"viaggi di istruzione\" delle diverse scuole e/o di gite dei diversi Centri estivi. Qui, ai visitatori, sarà proposto un percorso didattico-esperienziale che darà loro la possibilità di interagire con installazioni, attività virtuali e interattive. L'esperienza mediale permetterà inoltre uno scambio comunicativo tra i partecipanti creando quindi l'occasione per condividere idee ed opinioni tra i presenti, stimolando la presa di coscienza e attivando uno \"sguardo critico\" sui comportamenti e sulle relazioni mediate dalle nuove tecnologie.",
+        "2. Il Centro progetterà inoltre una serie di \"Interventi laboratoriali sull'uso critico e consapevole dei media digitali\", che potranno essere realizzati direttamente dagli operatori del Centro anche sul territorio, in particolare nelle scuole localizzate in ambito montano (Alta Langa), che farebbero fatica a raggiungere il Centro stesso.",
+        "3. Lo staff di operatori che gestirà il Centro offrirà inoltre percorsi ad hoc di formazione e supervisione a operatori ed insegnanti del territorio in modo che poi questi moltiplicatori possano realizzare attività nelle classi e nei gruppi informali.",
+        "4. Si prevede inoltre la raccolta di informazioni tra i visitatori finalizzata all'avvio di una ricerca su uso e abuso dei nuovi media, in collaborazione con Asl piemontesi e Università. Il Centro Display è ubicato in Alba, presso i locali dell'ASL CN2 Alba-Bra di Corso M. Coppino 46 e farà capo allo staff degli operatori del servizio pubblico e del privato sociale che gestiscono attualmente il Progetto Steadycam (Dipartimento dipendenze patologiche).",
+      ],
     },
     {
       label: "DESTINATARI",
       color: "rgba(67,185,220,0.5)",
-      text: "Il Centro Display è rivolto principalmente a scuole secondarie di primo grado del territorio dell'ASL CN2, ai loro insegnanti e alle famiglie. Le visite sono possibili per una classe alla volta (max 28-30 ragazzi).",
+      paragraphs: [
+        "Le attività connesse al Centro Display si rivolgono principalmente a tutte le scuole e a gruppi di ragazzi (9-13 anni corrispondenti alle classi quarta-quinta elementare e prima-seconda-terza media) del territorio dell'ASL CN2. Ulteriori destinatari sono da individuarsi negli operatori sanitari e sociali, negli insegnanti e nei genitori.",
+        "Per l'anno scolastico 2023-2024 le attività sono limitate agli studenti delle Scuole Secondarie di I° grado.",
+      ],
     },
   ];
 
+  const rects = [
+    { color: "#88BF81" },
+    { color: "#f26c68" },
+    { color: "#d4a853" },
+    { color: "#43b9dc" },
+  ];
+
   return (
-    <div className="relative w-full h-full flex items-start overflow-hidden">
-      <Image src={`${WP}/Il_centro2-1.jpg`} alt="Il Progetto" fill className="object-cover" unoptimized />
-      <div className="absolute inset-0 bg-white/65" />
-      <div className="relative z-10 w-full max-w-4xl mx-auto px-10 pt-16 md:pt-24">
-        <motion.div {...fadeUp(0.15)} className="flex flex-wrap gap-x-8 gap-y-2 mb-8">
-          {tabs.map((t, i) => (
-            <button
-              key={t.label}
-              onClick={() => setTab(i)}
-              className="relative text-[11px] font-bold tracking-[0.12em] uppercase pb-2 transition-colors"
-              style={{ color: "#444", fontFamily: "var(--font-raleway)" }}
-            >
-              {t.label}
-              <div
-                className="absolute bottom-0 left-0 right-0 h-[3px] rounded-full transition-all duration-300"
-                style={{ background: tab === i ? t.color : "transparent" }}
-              />
-            </button>
-          ))}
-        </motion.div>
-        <motion.div key={tab} {...fadeIn(0)} className="max-w-3xl">
-          <p
-            className="text-[#444] text-sm md:text-[15px] font-light leading-[1.9] tracking-[0.04em]"
-            style={{ fontFamily: "var(--font-raleway)" }}
-          >
-            {tabs[tab].text}
+    <div className="relative w-full h-full flex overflow-hidden bg-white">
+
+      {/* LEFT — white, text slides up */}
+      <div className="flex-1 relative overflow-hidden">
+        <motion.div
+          initial={{ y: 60, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.65, delay: 0.55, ease: "easeOut" }}
+          className="h-full flex flex-col justify-start px-12 pt-28 pb-8 overflow-y-auto"
+          style={{ maxWidth: "70%" }}
+        >
+          <p className="uppercase tracking-[0.22em] mb-6"
+            style={{ fontSize: "24px", fontWeight: 600, fontFamily: "var(--font-raleway)", color: "#aaa" }}>
+            Il Progetto
           </p>
-        </motion.div>
-        <motion.div {...fadeUp(0.35)} className="mt-10">
-          <PillBtn dark onClick={onMenu}>Menu</PillBtn>
+          <div className="flex flex-wrap gap-x-8 gap-y-2 mb-8" style={{ flexShrink: 0 }}>
+            {tabs.map((t, i) => (
+              <button
+                key={t.label}
+                onClick={() => setTab(i)}
+                className="relative text-[11px] font-bold tracking-[0.12em] uppercase pb-2 transition-colors"
+                style={{ color: "#444", fontFamily: "var(--font-raleway)" }}
+              >
+                {t.label}
+                <div
+                  className="absolute bottom-0 left-0 right-0 h-[3px] rounded-full transition-all duration-300"
+                  style={{ background: tab === i ? t.color : "transparent" }}
+                />
+              </button>
+            ))}
+          </div>
+          <motion.div key={tab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }} className="max-w-3xl overflow-y-auto" style={{ maxHeight: "55vh" }}>
+            {tabs[tab].paragraphs.map((p, i) => (
+              <p key={i}
+                className="text-[#444] font-light leading-[1.9] tracking-[0.04em] mb-4"
+                style={{ fontSize: "16px", fontFamily: "var(--font-raleway)" }}
+              >
+                {p}
+              </p>
+            ))}
+          </motion.div>
         </motion.div>
       </div>
+
+      {/* RIGHT — 2×2 colored rectangles, full height */}
+      <div className="w-[28%] shrink-0 h-full grid grid-cols-2 grid-rows-2 gap-[2px]">
+        {rects.map((r, i) => (
+          <motion.div
+            key={i}
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            transition={{ duration: 0.55, delay: 0.05 + i * 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
+            style={{ background: r.color }}
+          />
+        ))}
+      </div>
+
     </div>
   );
 }
@@ -1341,12 +1396,12 @@ export default function DisplaySlider() {
 
   const variants = {
     enter: (d: number) => transAxis === "y"
-      ? { y: d > 0 ? "100%" : "-100%", x: 0, opacity: 0 }
-      : { x: d > 0 ? "100%" : "-100%", y: 0, opacity: 0 },
-    center: { x: 0, y: 0, opacity: 1 },
+      ? { y: d > 0 ? "100%" : "-100%", x: 0 }
+      : { x: d > 0 ? "100%" : "-100%", y: 0 },
+    center: { x: 0, y: 0 },
     exit: (d: number) => transAxis === "y"
-      ? { y: d > 0 ? "-100%" : "100%", x: 0, opacity: 0 }
-      : { x: d > 0 ? "-100%" : "100%", y: 0, opacity: 0 },
+      ? { y: d > 0 ? "-100%" : "100%", x: 0 }
+      : { x: d > 0 ? "-100%" : "100%", y: 0 },
   };
 
   const lightBg = current === "portfolio" || current === "partner" || current === "il-progetto" || current === "il-centro" || current === "timeline";
@@ -1366,27 +1421,31 @@ export default function DisplaySlider() {
       );
       case "storie":    return (
         <SlideRoom key="storie" nav={nav}
-          title="Storie" subtitle="In Galleria"
+          title="Storie" subtitle="In Galleria" align="right"
+          overlay="rgba(0,0,0,0.5)"
           bgImage={`${WP}/2017/09/Steadycam-Dispaly-Storie-03.jpg`}
-          description="Ogni immagine racconta molte storie: la nostra, quella di chi vi è ritratto, quella di chi la guarda. Quante storie si possono raccontare mettendo insieme più immagini? Ciò che solo pochi anni fa era lungo e macchinoso, ora con le app si può fare in un'ora." />
+          description="Ogni immagine racconta molte storie: la nostra, quella di chi vi è ritratto, quella di chi la guarda. Quante storie si possono raccontare mettendo insieme più immagini? Ciò che solo pochi anni fa era lungo e macchinoso, ora con le app si può fare in un'ora: montare insieme più immagini, registrare una storia, costruire un video collettivo. Per fare digital storytelling e usare le tecnologie in modo attivo e creativo." />
       );
       case "gaming":    return (
         <SlideRoom key="gaming" nav={nav}
-          title="Gaming" subtitle="Emozionale"
+          title="Gaming" subtitle="Emozionale" align="right"
+          overlay="rgba(0,0,0,0.5)"
           bgImage={`${WP}/2017/09/Steadycam-Dispaly-Gaming_Big_Right.jpg`} bgPosition="right center"
-          description="I videogiochi sono un mondo, in cui a volte perdersi, a volte entrare e uscire velocemente. In questa stanza si gioca davvero: su console e tablet, provando generi diversi e mettendoli a confronto, per poi interrogarsi sulle emozioni che suscitano." />
+          description="I videogiochi sono un mondo, in cui a volte perdersi, a volte entrare e uscire velocemente. In questa stanza si gioca davvero: su console e tablet, provando generi diversi e mettendoli a confronto, per poi interrogarsi sulle emozioni che suscitano, sul piacere che provocano e sui rischi a cui possono portare. Per i ragazzi di terza media il gioco entra nella realtà virtuale, con l'utilizzo dei caschi VR." />
       );
       case "making":    return (
         <SlideRoom key="making" nav={nav}
           title="Making" subtitle="Chi è Siri?" align="right"
+          overlay="rgba(0,0,0,0.5)"
           bgImage={`${WP}/2017/09/Steadycam-Display-making03.jpg`}
-          description="La stanza giusta per mettere le mani dentro alla tecnologia: aprire un dispositivo, smontarne e rimontarne i componenti, sentirne il peso, l'odore, la dimensione. Per scoprire che il digitale non è immateriale." />
+          description="La stanza giusta per mettere le mani dentro alla tecnologia: aprire un dispositivo, smontarne e rimontarne i componenti, sentirne il peso, l'odore, la dimensione. Per scoprire che il digitale non è immateriale, ma è fatto di viti e fili, plastica e metallo, economia e industria. E che tutto questo influenza ciò che facciamo tutti i giorni con la tecnologia." />
       );
       case "corpo":     return (
         <SlideRoom key="corpo" nav={nav}
           title="Corpo" subtitle="Il Nostro" align="right"
+          overlay="rgba(0,0,0,0.5)"
           bgImage={`${WP}/2017/09/Steadycam-Dispaly-Corpo-Big.jpg`}
-          description="Una stanza dove dimenticare i dispositivi digitali e riscoprire la tecnologia più evoluta che abbiamo: il nostro corpo. Un viaggio guidato da esercizi, musiche e giochi per esplorare i propri movimenti, il respiro, lo spazio che occupiamo." />
+          description="Una stanza dove dimenticare i dispositivi digitali e riscoprire la tecnologia più evoluta che abbiamo: il nostro corpo. Un viaggio guidato da esercizi, musiche e giochi per esplorare i propri movimenti, il respiro, lo spazio che occupiamo, i segnali che i nostri gesti e sguardi comunicano agli altri." />
       );
       case "booking":   return <SlideBooking key="booking" nav={nav} />;
       case "il-centro": return <SlideCentro key="il-centro" />;
@@ -1413,7 +1472,7 @@ export default function DisplaySlider() {
       />
 
       {/* Slides */}
-      <AnimatePresence initial={false} custom={dir} mode="wait">
+      <AnimatePresence initial={false} custom={dir} mode="sync">
         <motion.div
           key={current}
           custom={dir}
@@ -1421,7 +1480,7 @@ export default function DisplaySlider() {
           initial="enter"
           animate="center"
           exit="exit"
-          transition={{ duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
+          transition={{ duration: 1.0, ease: [0.25, 0.46, 0.45, 0.94] }}
           className="absolute inset-0"
         >
           {renderSlide()}
@@ -1445,7 +1504,7 @@ export default function DisplaySlider() {
       {current !== "intro" && history.length > 0 && (
         <button
           onClick={back}
-          className="absolute top-5 left-6 z-[150] text-[13px] tracking-[0.15em] uppercase transition-opacity duration-200 opacity-50 hover:opacity-100"
+          className="absolute bottom-8 left-6 z-[150] text-[13px] tracking-[0.15em] uppercase transition-opacity duration-200 opacity-50 hover:opacity-100"
           style={{
             fontFamily: "var(--font-raleway)",
             fontWeight: 400,
