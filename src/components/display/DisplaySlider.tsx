@@ -567,24 +567,28 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
       .single()
       .then(({ data: event }) => {
         if (!event) { setSloading(false); return; }
-        supabase
-          .from("event_slots")
-          .select("id, date, time_slot, bookings_count, max_capacity")
-          .eq("event_id", event.id)
-          .eq("is_open", true)
-          .gte("date", today)
-          .order("date", { ascending: true })
-          .then(({ data }) => {
-            setSlots(data ?? []);
-            setSloading(false);
-          });
-        supabase
-          .from("event_settings")
-          .select("value")
-          .eq("event_id", event.id)
-          .eq("key", "waitlist_enabled")
-          .single()
-          .then(({ data }) => setIsWaitlist(data?.value === "true"));
+        Promise.all([
+          supabase
+            .from("event_slots")
+            .select("id, date, time_slot, bookings_count, max_capacity")
+            .eq("event_id", event.id)
+            .eq("is_open", true)
+            .gte("date", today)
+            .order("date", { ascending: true }),
+          supabase
+            .from("event_settings")
+            .select("value")
+            .eq("event_id", event.id)
+            .eq("key", "waitlist_enabled")
+            .single(),
+        ]).then(([{ data: slotData }, { data: setting }]) => {
+          const loaded = slotData ?? [];
+          setSlots(loaded);
+          setSloading(false);
+          const manualWaitlist = setting?.value === "true";
+          const allFull = loaded.length > 0 && loaded.every(s => s.bookings_count >= s.max_capacity);
+          setIsWaitlist(manualWaitlist || allFull);
+        });
       });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
