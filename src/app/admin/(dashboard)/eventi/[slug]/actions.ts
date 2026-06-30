@@ -9,7 +9,7 @@ async function getEventId(slug: string): Promise<string | null> {
   return data?.id ?? null;
 }
 
-export async function addSlot(eventSlug: string, date: string, timeSlot: string, timeStart?: string, timeEnd?: string) {
+export async function addSlot(eventSlug: string, date: string, timeSlot: string, timeStart?: string, timeEnd?: string, maxCapacity = 1) {
   const supabase = createSupabaseAdminClient();
   const eventId = await getEventId(eventSlug);
   if (!eventId) return;
@@ -19,10 +19,16 @@ export async function addSlot(eventSlug: string, date: string, timeSlot: string,
     time_slot: timeSlot,
     time_start: timeStart || null,
     time_end: timeEnd || null,
-    max_capacity: 1,
+    max_capacity: maxCapacity,
     bookings_count: 0,
     is_open: true,
   });
+  revalidatePath(`/admin/eventi/${eventSlug}`);
+}
+
+export async function updateSlotCapacity(id: string, maxCapacity: number, eventSlug: string) {
+  const supabase = createSupabaseAdminClient();
+  await supabase.from("event_slots").update({ max_capacity: maxCapacity }).eq("id", id);
   revalidatePath(`/admin/eventi/${eventSlug}`);
 }
 
