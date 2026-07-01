@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   description: "Il Centro Steadycam dell'ASL CN2 di Alba: storia, metodo, servizi, archivio e staff.",
 };
 
-const WP = "/wp-content/uploads";
+const WP = "/media";
 
 const services = [
   {

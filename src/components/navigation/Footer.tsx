@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-const WP = "/wp-content/uploads";
+const WP = "/media";
 
 export default function Footer() {
   return (

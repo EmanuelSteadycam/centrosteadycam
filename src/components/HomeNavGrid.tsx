@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useState, useRef, useCallback } from "react";
 
-const WP = "/wp-content/uploads";
+const WP = "/media";
 
 type CardData = { label: string; img: string; href: string; col: string; row: string; objectPosition?: string };
 

@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: "Il team del Centro Steadycam: educatori, psicologi, media designer e formatori.",
 };
 
-const WP = "/wp-content/uploads";
+const WP = "/media";
 
 const staff = [
   {

@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-const WP = "/wp-content/uploads";
+const WP = "/media";
 
 const cards = [
   { label: "il centro",        img: `${WP}/Steadycam_ilCentro3-scaled.jpg`,      href: "/il-centro" },

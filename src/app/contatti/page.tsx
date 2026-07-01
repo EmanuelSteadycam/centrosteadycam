@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: "Contatta il Centro Steadycam: C.so Michele Coppino 46/A, 12051 Alba (CN). Tel. 0173 316210.",
 };
 
-const WP = "/wp-content/uploads";
+const WP = "/media";
 
 export default function ContattiPage() {
   return (

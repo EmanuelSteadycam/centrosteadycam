@@ -35,7 +35,7 @@ export function GlitchTitle() {
   );
 }
 
-const IMG = "/signalhome2.jpg";
+const IMG = "/media/signalhome2.jpg";
 const SCROLL_PX = 600;
 
 export default function HeroScrollColor() {
