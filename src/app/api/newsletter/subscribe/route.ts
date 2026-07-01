@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { addToNewsletterGroup, sendNewsletterNotification } from "@/lib/mailup";
+import { addToNewsletterGroup, sendNewsletterNotification } from "@/lib/brevo";
 
 export async function POST(req: NextRequest) {
   const { nome, email } = await req.json();

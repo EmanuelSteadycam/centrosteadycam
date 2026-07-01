@@ -1,6 +1,6 @@
 "use server";
 import { createSupabaseAdminClient } from "@/lib/supabase-server";
-import { sendConfirmationEmail, addToDisplayGroup } from "@/lib/mailup";
+import { sendConfirmationEmail, addToDisplayGroup } from "@/lib/brevo";
 import { SupabaseClient } from "@supabase/supabase-js";
 
 async function checkAndEnableWaitlist(supabase: SupabaseClient, eventId: string) {

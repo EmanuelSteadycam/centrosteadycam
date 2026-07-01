@@ -1,7 +1,7 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { createSupabaseAdminClient } from "@/lib/supabase-server";
-import { sendApprovalEmail, sendRejectionEmail, removeFromDisplayGroup } from "@/lib/mailup";
+import { sendApprovalEmail, sendRejectionEmail, removeFromDisplayGroup } from "@/lib/brevo";
 
 async function getEventId(slug: string): Promise<string | null> {
   const supabase = createSupabaseAdminClient();

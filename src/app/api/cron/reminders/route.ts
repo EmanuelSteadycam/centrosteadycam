@@ -1,5 +1,5 @@
 import { createSupabaseAdminClient } from "@/lib/supabase-server";
-import { sendReminderEmail } from "@/lib/mailup";
+import { sendReminderEmail } from "@/lib/brevo";
 
 export async function GET(request: Request) {
   // Verify Vercel cron secret
