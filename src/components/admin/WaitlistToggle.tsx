@@ -1,10 +1,12 @@
 "use client";
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { setWaitlistEnabled } from "@/app/admin/(dashboard)/eventi/[slug]/actions";
 
 export default function WaitlistToggle({ enabled, eventSlug }: { enabled: boolean; eventSlug: string }) {
   const [active, setActive] = useState(enabled);
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => { setActive(enabled); }, [enabled]);
 
   const toggle = () => {
     const next = !active;
