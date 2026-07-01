@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: "I progetti del Centro Steadycam: Display, Restart, Comunicare Salute e altri.",
 };
 
-const WP = "https://centrosteadycam.it/wp-content/uploads";
+const WP = "/wp-content/uploads";
 
 /* ── Progetti principali ─────────────────────────────────────────────────── */
 const major = [

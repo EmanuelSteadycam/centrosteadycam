@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: "Consulenza, formazione e interventi del Centro Steadycam per scuole, educatori e operatori socio-sanitari.",
 };
 
-const WP = "https://centrosteadycam.it/wp-content/uploads";
+const WP = "/wp-content/uploads";
 
 const services = [
   {

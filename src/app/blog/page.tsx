@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   description: "Notizie, riflessioni e aggiornamenti dal Centro Steadycam sull'educazione digitale e promozione della salute.",
 };
 
-const WP = "https://centrosteadycam.it/wp-content/uploads";
+const WP = "/wp-content/uploads";
 
 export default async function BlogPage() {
   const { data: posts, total } = await getBlogPosts(1, 100);

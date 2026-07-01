@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-const WP = "https://centrosteadycam.it/wp-content/uploads";
+const WP = "/wp-content/uploads";
 
 export default function Footer() {
   return (

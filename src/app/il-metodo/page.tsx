@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: "Il metodo di lavoro del Centro Steadycam: media education, promozione della salute e approccio laboratoriale.",
 };
 
-const WP = "https://centrosteadycam.it/wp-content/uploads";
+const WP = "/wp-content/uploads";
 
 export default function IlMetodoPage() {
   return (

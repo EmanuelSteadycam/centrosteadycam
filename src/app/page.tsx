@@ -17,7 +17,7 @@ export default async function HomePage() {
       const post = latestRes.value.data[0];
       if (post) latestPost = {
         title: post.title,
-        img:   post.featured_image_url ?? `https://centrosteadycam.it/wp-content/uploads/Steadynews03.png`,
+        img:   post.featured_image_url ?? `/Steadynews03.png`,
         href:  `/blog/${post.slug}`,
       };
     }
@@ -25,7 +25,7 @@ export default async function HomePage() {
       const post = smcrRes.value;
       smcrPost = {
         title: post.title,
-        img:   post.featured_image_url ?? `https://centrosteadycam.it/wp-content/uploads/Steadycam-SMCR.png`,
+        img:   post.featured_image_url ?? `/Steadycam-SMCR.png`,
         href:  `/blog/${post.slug}`,
       };
     }
@@ -33,7 +33,7 @@ export default async function HomePage() {
       const post = vincereRes.value;
       vincereFacilePost = {
         title: post.title,
-        img:   post.featured_image_url ?? `https://centrosteadycam.it/wp-content/uploads/MOOC_iscrizione02.png`,
+        img:   post.featured_image_url ?? `/MOOC_iscrizione02.png`,
         href:  `/blog/${post.slug}`,
       };
     }

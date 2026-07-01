@@ -4,7 +4,7 @@ import Link from "next/link";
 import { motion, useInView } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
 
-const WP   = "https://centrosteadycam.it/wp-content/uploads";
+const WP = "/wp-content/uploads";
 const RED  = "#e63329";
 const GRN  = "#3dbb4e";
 const ral  = { fontFamily: "var(--font-raleway)" };

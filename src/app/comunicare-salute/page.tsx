@@ -406,7 +406,7 @@ function VideoSection() {
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start end", "end end"] });
   const y = useTransform(scrollYProgress, [0, 0.25, 1], ["30vh", "0vh", "0vh"]);
   const violet = "#6565EF";
-  const WP = "https://centrosteadycam.it/wp-content/uploads";
+  const WP = "/wp-content/uploads";
   const allMemes = [
     ...Array.from({ length: 16 }, (_, i) => `${WP}/CS-meme-alcol${i + 1}.jpg`),
     ...Array.from({ length: 17 }, (_, i) => `${WP}/CS-meme-tabacco${i + 1}.jpg`),

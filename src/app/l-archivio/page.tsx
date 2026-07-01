@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: "Archivio storico di materiali audiovisivi del Centro Steadycam: oltre 34.119 schede di programmi televisivi dal 2000 al 2013.",
 };
 
-const WP = "https://centrosteadycam.it/wp-content/uploads";
+const WP = "/wp-content/uploads";
 
 const topics = [
   "Adolescenza", "Scuola", "Droghe", "Azzardo", "Alcol",

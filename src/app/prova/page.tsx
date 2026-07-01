@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 
-const IMG = "https://centrosteadycam.it/wp-content/uploads/signalhome2.jpg";
+const IMG = "/signalhome2.jpg";
 const SCROLL_PX = 600;
 
 export default function ProvaPage() {

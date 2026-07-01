@@ -1,5 +1,6 @@
-const BANNER = "http://centrosteadycam.it/wp-content/uploads/01Banner-Centro-Steadycam2.png";
-const LOGO   = "https://centrosteadycam.it/wp-content/uploads/Logo_Display21_6x3.5.png";
+const SITE   = process.env.NEXT_PUBLIC_SITE_URL ?? "https://centrosteadycam.vercel.app";
+const BANNER = `${SITE}/01Banner-Centro-Steadycam2.png`;
+const LOGO   = `${SITE}/Logo_Display21_6x3.5.png`;
 
 function esc(s: string) {
   return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");

@@ -22,7 +22,7 @@ export type SlideId =
   | "partner"
   | "contatti";
 
-const WP = "https://centrosteadycam.it/wp-content/uploads";
+const WP = "/wp-content/uploads";
 
 // ── Animation helpers ─────────────────────────────────────────────────────────
 const BASE_DELAY = 1.05; // attende la fine della transizione di pagina (1.0s)
