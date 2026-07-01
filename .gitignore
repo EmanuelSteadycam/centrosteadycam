@@ -37,3 +37,11 @@ next-env.d.ts
 archivio-data/
 pagine/
 scripts/approfondimenti.json
+.env*
+public/wp-content/
+public/signalhome2.jpg
+public/01Banner-Centro-Steadycam2.png
+public/Logo_Display21_6x3.5.png
+public/MOOC_iscrizione02.png
+public/Steadycam-SMCR.png
+public/Steadynews03.png
