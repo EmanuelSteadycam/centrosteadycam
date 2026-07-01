@@ -63,6 +63,16 @@ export async function deleteSlot(id: string, eventSlug: string) {
   revalidatePath(`/admin/eventi/${eventSlug}`);
 }
 
+export async function setOpensAt(eventSlug: string, opensAt: string | null) {
+  const supabase = createSupabaseAdminClient();
+  const eventId = await getEventId(eventSlug);
+  if (!eventId) return;
+  await supabase
+    .from("event_settings")
+    .upsert({ event_id: eventId, key: "opens_at", value: opensAt ?? "" });
+  revalidatePath(`/admin/eventi/${eventSlug}`);
+}
+
 export async function setWaitlistEnabled(eventSlug: string, enabled: boolean) {
   const supabase = createSupabaseAdminClient();
   const eventId = await getEventId(eventSlug);

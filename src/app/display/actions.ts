@@ -60,11 +60,20 @@ export async function submitBooking(data: {
     .select("id")
     .single();
 
-  if (error) return { error: error.message };
+  if (error) {
+    if (error.message.includes("cap_reached"))
+      return { error: "Le iscrizioni sono esaurite. Iscriviti alla lista d'attesa." };
+    return { error: error.message };
+  }
   const bookingId = inserted?.id;
 
   if (data.slot_id) {
-    await supabase.rpc("increment_event_slot_bookings", { p_slot_id: data.slot_id });
+    const { data: slotAvailable } = await supabase.rpc("increment_event_slot_bookings", { p_slot_id: data.slot_id });
+    if (!slotAvailable) {
+      // Slot pieno nel frattempo — annulla la prenotazione appena inserita
+      await supabase.from("event_bookings").delete().eq("id", bookingId);
+      return { error: "La data selezionata è appena stata prenotata da qualcun altro. Scegli un'altra data." };
+    }
   }
 
   // Controlla se il cap è raggiunto e imposta waitlist automaticamente

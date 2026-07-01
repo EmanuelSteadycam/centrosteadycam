@@ -542,6 +542,8 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
   const [sloading, setSloading] = useState(true);
   const [selectedSlot, setSelectedSlot] = useState<AvailableSlot | null>(null);
   const [isWaitlist, setIsWaitlist] = useState(false);
+  const [opensAt, setOpensAt] = useState<Date | null>(null);
+  const [now, setNow] = useState<Date | null>(null);
   const [formStep, setFormStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
@@ -557,6 +559,13 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
     { label: "Partecipanti" },
     { label: "Dati scuola e insegnante" },
   ];
+
+  // Countdown clock
+  useEffect(() => {
+    setNow(new Date());
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
 
   useEffect(() => {
     const today = new Date().toISOString().slice(0, 10);
@@ -577,14 +586,16 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
             .order("date", { ascending: true }),
           supabase
             .from("event_settings")
-            .select("value")
+            .select("key, value")
             .eq("event_id", event.id)
-            .eq("key", "waitlist_enabled")
-            .single(),
-        ]).then(([{ data: slotData }, { data: setting }]) => {
+            .in("key", ["waitlist_enabled", "opens_at"]),
+        ]).then(([{ data: slotData }, { data: settings }]) => {
           setSlots(slotData ?? []);
           setSloading(false);
-          setIsWaitlist(setting?.value === "true");
+          const get = (k: string) => settings?.find(s => s.key === k)?.value;
+          setIsWaitlist(get("waitlist_enabled") === "true");
+          const oa = get("opens_at");
+          if (oa) setOpensAt(new Date(oa));
         });
       });
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -638,6 +649,65 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
       <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.88)" }} />
     </>
   );
+
+  // ── Countdown: iscrizioni non ancora aperte ──────────────────────────────
+  if (now && opensAt && now < opensAt) {
+    const diff = opensAt.getTime() - now.getTime();
+    const days    = Math.floor(diff / 86400000);
+    const hours   = Math.floor((diff % 86400000) / 3600000);
+    const minutes = Math.floor((diff % 3600000) / 60000);
+    const seconds = Math.floor((diff % 60000) / 1000);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const openLabel = opensAt.toLocaleString("it-IT", {
+      day: "numeric", month: "long", year: "numeric",
+      hour: "2-digit", minute: "2-digit",
+    });
+    return (
+      <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+        {BG}
+        <motion.div {...fadeUp(0)} className="relative z-10 text-center px-8 max-w-lg">
+          <motion.p {...fadeUp(0.05)} className="text-[#88BF81] text-xl font-bold uppercase tracking-[0.2em] mb-4"
+            style={{ fontFamily: "var(--font-raleway)" }}>
+            Display Techno
+          </motion.p>
+          <motion.h2 {...fadeUp(0.1)} className="font-bold uppercase tracking-[0.08em] mb-3"
+            style={{ fontFamily: "var(--font-raleway)", color: "#ffffff", fontSize: "28px" }}>
+            Le iscrizioni aprono il
+          </motion.h2>
+          <motion.p {...fadeUp(0.15)} className="mb-10 capitalize"
+            style={{ fontFamily: "var(--font-raleway)", color: "#88BF81", fontSize: "20px", fontWeight: 600 }}>
+            {openLabel}
+          </motion.p>
+          <motion.div {...fadeUp(0.2)} className="flex gap-6 justify-center mb-10">
+            {[
+              { label: "giorni", value: days },
+              { label: "ore",    value: hours },
+              { label: "min",    value: minutes },
+              { label: "sec",    value: seconds },
+            ].map(({ label, value }) => (
+              <div key={label} className="flex flex-col items-center">
+                <span className="font-bold tabular-nums"
+                  style={{ fontFamily: "var(--font-raleway)", color: "#ffffff", fontSize: "52px", lineHeight: 1 }}>
+                  {pad(value)}
+                </span>
+                <span className="text-xs uppercase tracking-widest mt-1"
+                  style={{ fontFamily: "var(--font-raleway)", color: "rgba(255,255,255,0.4)" }}>
+                  {label}
+                </span>
+              </div>
+            ))}
+          </motion.div>
+          <motion.div {...fadeUp(0.25)}>
+            <button onClick={() => nav("intro")}
+              className="px-6 py-2.5 text-sm tracking-wider uppercase border border-white/40 rounded-full hover:border-white transition-all"
+              style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>
+              ← Home
+            </button>
+          </motion.div>
+        </motion.div>
+      </div>
+    );
+  }
 
   // ── Intro / istruzioni ───────────────────────────────────────────────────
   if (screen === "intro") {
