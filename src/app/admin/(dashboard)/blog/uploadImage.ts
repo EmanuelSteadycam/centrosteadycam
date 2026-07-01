@@ -1,12 +1,17 @@
 "use server";
-import { createSupabaseAdminClient } from "@/lib/supabase-server";
+import { put, del } from "@vercel/blob";
+
+const BLOB_BASE = "https://ziaarm9b5sovaafa.public.blob.vercel-storage.com";
 
 export async function deleteBlogImage(url: string): Promise<void> {
-  if (!url.includes("/blog-images/")) return; // non è una nostra immagine
-  const fileName = url.split("/blog-images/").pop();
-  if (!fileName) return;
-  const supabase = createSupabaseAdminClient();
-  await supabase.storage.from("blog-images").remove([fileName]);
+  if (!url.includes("/media/blog/")) return;
+  // Converte il path relativo nell'URL Blob completo
+  const blobUrl = url.startsWith("http") ? url : `${BLOB_BASE}${url}`;
+  try {
+    await del(blobUrl);
+  } catch {
+    // ignora se già cancellato
+  }
 }
 
 export async function uploadBlogImage(formData: FormData): Promise<{ url?: string; error?: string }> {
@@ -14,19 +19,15 @@ export async function uploadBlogImage(formData: FormData): Promise<{ url?: strin
   if (!file) return { error: "Nessun file" };
 
   const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
-  const allowed = ["jpg", "jpeg", "png", "webp", "gif"];
-  if (!allowed.includes(ext)) return { error: "Formato non supportato (jpg, png, webp, gif)" };
+  const allowed = ["jpg", "jpeg", "png", "webp", "gif", "mp4", "mov", "webm"];
+  if (!allowed.includes(ext)) return { error: "Formato non supportato" };
 
   const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-  const buffer = Buffer.from(await file.arrayBuffer());
+  const blob = await put(`media/blog/${fileName}`, file, {
+    access: "public",
+    addRandomSuffix: false,
+  });
 
-  const supabase = createSupabaseAdminClient();
-  const { error } = await supabase.storage
-    .from("blog-images")
-    .upload(fileName, buffer, { contentType: file.type, upsert: false });
-
-  if (error) return { error: error.message };
-
-  const { data } = supabase.storage.from("blog-images").getPublicUrl(fileName);
-  return { url: data.publicUrl };
+  // Restituiamo il path relativo → servito via rewrite /media/
+  return { url: `/media/blog/${fileName}` };
 }
