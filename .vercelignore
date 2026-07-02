@@ -1,7 +1,7 @@
 node_modules
 .next
 archivio-data
-pagine
+/pagine
 scripts/approfondimenti.json
 mailup-templates
 .DS_Store

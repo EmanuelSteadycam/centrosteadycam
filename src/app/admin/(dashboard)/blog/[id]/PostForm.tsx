@@ -1,7 +1,7 @@
 "use client";
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { createPost, updatePost, sendBlogNewsletter } from "../actions";
+import { createPost, updatePost, sendBlogNewsletter, getBrevoLists } from "../actions";
 import { uploadBlogImage, deleteBlogImage } from "../uploadImage";
 import RichTextEditor from "@/components/admin/RichTextEditor";
 
@@ -31,6 +31,12 @@ export default function PostForm({ post }: { post: Post }) {
   const [error, setError] = useState<string | null>(null);
   const [newsletterState, setNewsletterState] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [newsletterMsg, setNewsletterMsg] = useState<string | null>(null);
+  const [brevoLists, setBrevoLists] = useState<{ id: number; name: string }[]>([]);
+  const [selectedListId, setSelectedListId] = useState<number>(3);
+
+  useEffect(() => {
+    if (post) getBrevoLists().then(setBrevoLists);
+  }, [post]);
 
   const [title, setTitle] = useState(post?.title ?? "");
   const [slug, setSlug] = useState(post?.slug ?? "");
@@ -180,14 +186,27 @@ export default function PostForm({ post }: { post: Post }) {
                   {newsletterMsg}
                 </span>
               )}
+              {brevoLists.length > 0 && (
+                <select
+                  value={selectedListId}
+                  onChange={(e) => setSelectedListId(Number(e.target.value))}
+                  disabled={newsletterState === "sending" || newsletterState === "sent"}
+                  className="border border-gray-200 rounded px-2 py-2 text-xs text-gray-700 focus:outline-none focus:border-gray-400 disabled:opacity-40"
+                >
+                  {brevoLists.map((l) => (
+                    <option key={l.id} value={l.id}>{l.name}</option>
+                  ))}
+                </select>
+              )}
               <button
                 type="button"
                 disabled={newsletterState === "sending" || newsletterState === "sent"}
                 onClick={async () => {
-                  if (!confirm("Inviare la newsletter a tutti gli iscritti STEADYNEWS?")) return;
+                  const listName = brevoLists.find((l) => l.id === selectedListId)?.name ?? `lista ${selectedListId}`;
+                  if (!confirm(`Inviare la newsletter agli iscritti di "${listName}"?`)) return;
                   setNewsletterState("sending");
                   setNewsletterMsg(null);
-                  const res = await sendBlogNewsletter(post.id);
+                  const res = await sendBlogNewsletter(post.id, selectedListId);
                   if (res.error) {
                     setNewsletterState("error");
                     setNewsletterMsg(res.error);

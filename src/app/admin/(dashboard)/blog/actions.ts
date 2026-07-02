@@ -63,7 +63,19 @@ export async function deletePost(id: number, slug: string): Promise<{ error: str
   return { error: null };
 }
 
-export async function sendBlogNewsletter(id: number): Promise<{ error: string | null; campaignId?: number }> {
+export async function getBrevoLists(): Promise<{ id: number; name: string }[]> {
+  const res = await fetch("https://api.brevo.com/v3/contacts/lists?limit=50&offset=0", {
+    headers: { "api-key": process.env.BREVO_API_KEY! },
+    cache: "no-store",
+  });
+  if (!res.ok) return [];
+  const data = await res.json();
+  return (data.lists ?? [])
+    .map((l: { id: number; name: string }) => ({ id: l.id, name: l.name }))
+    .sort((a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name));
+}
+
+export async function sendBlogNewsletter(id: number, listId: number): Promise<{ error: string | null; campaignId?: number }> {
   const supabase = createSupabaseAdminClient();
   const { data: post, error } = await supabase
     .from("posts")
@@ -74,7 +86,7 @@ export async function sendBlogNewsletter(id: number): Promise<{ error: string | 
   if (error || !post) return { error: "Articolo non trovato" };
   if (post.status !== "publish") return { error: "Pubblica prima l'articolo" };
 
-  const { campaignId } = await sendNewsletterCampaign(post);
+  const { campaignId } = await sendNewsletterCampaign(post, listId);
   return { error: null, campaignId };
 }
 

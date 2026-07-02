@@ -168,7 +168,7 @@ export async function sendNewsletterCampaign(post: {
   slug: string;
   excerpt: string | null;
   featured_image_url: string | null;
-}): Promise<{ campaignId: number }> {
+}, listId: number = NEWSLETTER_LIST_ID): Promise<{ campaignId: number }> {
   const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://centrosteadycam.vercel.app";
   const BANNER = `${SITE}/media/01Banner-Centro-Steadycam2.png`;
   const postUrl = `${SITE}/blog/${post.slug}`;
@@ -190,6 +190,7 @@ export async function sendNewsletterCampaign(post: {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>${post.title}</title>
+<style>@import url('https://fonts.googleapis.com/css2?family=Lato:wght@700&display=swap');</style>
 </head>
 <body style="margin:0;padding:0;background-color:#ffffff;">
 <table class="nl-container" width="100%" border="0" cellpadding="0" cellspacing="0" style="background-color:#fff">
@@ -212,8 +213,8 @@ export async function sendNewsletterCampaign(post: {
   <table align="center" width="100%" border="0" cellpadding="0" cellspacing="0">
   <tbody><tr><td>
     <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="max-width:600px;background-color:#fff;margin:0 auto">
-    <tbody><tr><td style="padding:20px 10px 10px">
-      <p style="margin:0;font-family:Lato,Tahoma,Verdana,sans-serif;font-size:30px;font-weight:700;color:#555;line-height:1.2">${post.title}</p>
+    <tbody><tr><td style="padding:20px 10px 10px;font-family:'Lato',Arial,sans-serif;font-size:30px;font-weight:700;color:#555555;line-height:1.2">
+      <span style="font-family:'Lato',Arial,sans-serif;font-size:30px;font-weight:700;color:#555555;line-height:1.2">${post.title}</span>
     </td></tr></tbody>
     </table>
   </td></tr></tbody>
@@ -303,7 +304,7 @@ export async function sendNewsletterCampaign(post: {
     sender: SENDER,
     type: "classic",
     htmlContent: html,
-    recipients: { listIds: [NEWSLETTER_LIST_ID] },
+    recipients: { listIds: [listId] },
   });
 
   await brevoPost(`/emailCampaigns/${campaign.id}/sendNow`, {});
