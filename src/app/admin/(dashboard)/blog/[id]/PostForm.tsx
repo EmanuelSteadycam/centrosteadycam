@@ -1,7 +1,7 @@
 "use client";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { createPost, updatePost } from "../actions";
+import { createPost, updatePost, sendBlogNewsletter } from "../actions";
 import { uploadBlogImage, deleteBlogImage } from "../uploadImage";
 import RichTextEditor from "@/components/admin/RichTextEditor";
 
@@ -29,6 +29,8 @@ export default function PostForm({ post }: { post: Post }) {
   const [isPending, startTransition] = useTransition();
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [newsletterState, setNewsletterState] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [newsletterMsg, setNewsletterMsg] = useState<string | null>(null);
 
   const [title, setTitle] = useState(post?.title ?? "");
   const [slug, setSlug] = useState(post?.slug ?? "");
@@ -170,7 +172,37 @@ export default function PostForm({ post }: { post: Post }) {
             className="border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
           />
         </div>
-        <div className="ml-auto flex gap-3">
+        <div className="ml-auto flex gap-3 items-center">
+          {post && (
+            <div className="flex items-center gap-2">
+              {newsletterMsg && (
+                <span className={`text-xs ${newsletterState === "sent" ? "text-green-600" : "text-red-500"}`}>
+                  {newsletterMsg}
+                </span>
+              )}
+              <button
+                type="button"
+                disabled={newsletterState === "sending" || newsletterState === "sent"}
+                onClick={async () => {
+                  if (!confirm("Inviare la newsletter a tutti gli iscritti STEADYNEWS?")) return;
+                  setNewsletterState("sending");
+                  setNewsletterMsg(null);
+                  const res = await sendBlogNewsletter(post.id);
+                  if (res.error) {
+                    setNewsletterState("error");
+                    setNewsletterMsg(res.error);
+                  } else {
+                    setNewsletterState("sent");
+                    setNewsletterMsg(`Inviata (campagna #${res.campaignId})`);
+                  }
+                }}
+                className="text-sm px-4 py-2 rounded border transition-colors disabled:opacity-40
+                  border-green-600 text-green-700 hover:bg-green-50 disabled:border-gray-200 disabled:text-gray-400"
+              >
+                {newsletterState === "sending" ? "Invio…" : newsletterState === "sent" ? "Inviata ✓" : "Invia Newsletter"}
+              </button>
+            </div>
+          )}
           <button
             type="button"
             onClick={() => router.push("/admin/blog")}

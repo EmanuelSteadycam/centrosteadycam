@@ -2,6 +2,7 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseAdminClient } from "@/lib/supabase-server";
 import { BLOG_CATEGORY_ID } from "@/lib/blog";
+import { sendNewsletterCampaign } from "@/lib/brevo";
 
 type PostData = {
   title: string;
@@ -60,6 +61,21 @@ export async function deletePost(id: number, slug: string): Promise<{ error: str
   revalidatePath(`/blog/${slug}`);
   revalidatePath("/admin/blog");
   return { error: null };
+}
+
+export async function sendBlogNewsletter(id: number): Promise<{ error: string | null; campaignId?: number }> {
+  const supabase = createSupabaseAdminClient();
+  const { data: post, error } = await supabase
+    .from("posts")
+    .select("title, slug, excerpt, featured_image_url, status")
+    .eq("id", id)
+    .single();
+
+  if (error || !post) return { error: "Articolo non trovato" };
+  if (post.status !== "publish") return { error: "Pubblica prima l'articolo" };
+
+  const { campaignId } = await sendNewsletterCampaign(post);
+  return { error: null, campaignId };
 }
 
 export async function togglePostStatus(id: number, slug: string, currentStatus: string): Promise<{ error: string | null }> {
