@@ -139,7 +139,7 @@ function BlogCard({ post, variant }: { post: BlogPost; variant: Variant }) {
 
 export default function BlogGrid({ posts }: { posts: BlogPost[] }) {
   return (
-    <div className="grid grid-cols-1 min-[480px]:grid-cols-3 gap-[10px] [grid-auto-rows:220px] min-[480px]:[grid-auto-rows:237px]">
+    <div className="grid grid-cols-1 min-[480px]:grid-cols-3 gap-[6px] [grid-auto-rows:220px] min-[480px]:[grid-auto-rows:237px]">
       {posts.map((post, i) => (
         <BlogCard key={post.id} post={post} variant={getVariant(i)} />
       ))}
