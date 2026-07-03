@@ -24,7 +24,8 @@ const major = [
     title: "Rete senza Fili",
     years: "2016 — 2021",
     desc: "Progetto regionale sulla dipendenza da smartphone e dai social media, rivolto a studenti, genitori e insegnanti.",
-    href: "#",
+    href: "https://www.retesenzafili.it/",
+    external: true,
     img: `${WP}/Steadycam-RetesenzaFili-evento-finale-scaled-e1758011411350-1024x543.png`,
     bg: "#1a3a5c",
     span: "col-span-1",
@@ -138,6 +139,8 @@ export default function IProgettiPage() {
             <Link
               key={p.title}
               href={p.href}
+              target={"external" in p && p.external ? "_blank" : undefined}
+              rel={"external" in p && p.external ? "noopener noreferrer" : undefined}
               className={`group relative overflow-hidden ${p.span} h-[280px] flex flex-col justify-end p-6`}
               style={{ background: p.bg }}
             >
@@ -161,10 +164,10 @@ export default function IProgettiPage() {
               ) : (
                 <>
                   <div
-                    className="absolute inset-0 opacity-20 bg-center bg-cover transition-opacity duration-500 group-hover:opacity-30"
+                    className="absolute inset-0 bg-center bg-cover transition-transform duration-500 group-hover:scale-105"
                     style={{ backgroundImage: `url(${p.img})` }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
                   <div className="relative z-10">
                     <span className="text-white/40 text-xs font-title uppercase tracking-[0.14em] mb-1 block"
                       style={{ fontFamily: "var(--font-raleway)" }}>

@@ -22,28 +22,40 @@ const services = [
   },
 ];
 
-
 const staff = [
-  { name: "Valentino", role: "Coordinatore / Educatore Professionale", bio: "Attraverso l'esperienza del volontariato e del Servizio Civile matura l'idea di diventare Educatore Professionale. Dal 2011 coordina le attività del Centro Steadycam.", color: "#a3d39c", initial: "V" },
-  { name: "Carmen",    role: "Psicologa Psicoterapeuta",               bio: "Psicologa psicoterapeuta specializzata in psicoterapie espressive. Si occupa del disagio adolescenziale presso lo spazio di ascolto giovani dell'ASL CN 2.", color: "#88bfe0", initial: "C" },
-  { name: "Emanuel",   role: "Media Designer / Videomaker",            bio: "Da oltre venti anni crea e produce formati video su differenti piattaforme. Videomaker, Media designer, esperto in editing video e crossmedialità.", color: "#f4a261", initial: "E" },
-  { name: "Gianna",    role: "Assistente Sociale / Docente",           bio: "Laureata in Servizio Sociale (Trieste). Dipendente del SerD ASL CN2, docente all'Università del Piemonte Orientale.", color: "#e07b8a", initial: "G" },
-  { name: "Stefano",   role: "Educatore Professionale",                bio: "Educatore professionale. Dal 2002 al Ser.D dell'AslCn2. Si occupa di clinica, formazione, supervisione e promozione della salute con adolescenti e giovani adulti.", color: "#7bbfa3", initial: "S" },
-  { name: "Beppe",     role: "Media Educator / Comunicatore",          bio: "Laureato in Scienze della Comunicazione (Torino). Entrato in Steadycam nel 2007. Dal 2010 conduce serate informative per genitori e insegnanti.", color: "#b07fd4", initial: "B" },
-  { name: "Valentina", role: "Psicologa Psicoterapeuta",               bio: "Psicologa psicoterapeuta, specializzazione in psicoterapia sistemico-relazionale. Si occupa del GAP con approccio individuale, di coppia e familiare.", color: "#f4c96e", initial: "V" },
-  { name: "Michele",   role: "Media Educator / Formatore",             bio: "Media educator, supervisore e formatore. Insegna all'Università Cattolica di Milano (Cremit). Dal 2000 collabora con Steadycam.", color: "#80c4d0", initial: "M" },
+  { name: "Valentino", role: "Coordinatore / Educatore Professionale", bio: "Attraverso l'esperienza del volontariato e del Servizio Civile matura l'idea di diventare Educatore Professionale. Ha lavorato prima come operatore di territorio e di strada. Ha fondato ed è stato presidente di una cooperativa sociale. Dal 2011 coordina le attività del Centro Steadycam. Si occupa degli aspetti progettuali e organizzativi e della realizzazione di interventi sulla saggezza digitale e sulla promozione della salute. Ha una spiccata predilezione per P. K. Dick e Bruce Springsteen.", color: "#a3d39c", initial: "V" },
+  { name: "Carmen",    role: "Psicologa Psicoterapeuta",               bio: "Psicologa psicoterapeuta, specializzata in psicoterapie espressive, conduce corsi di formazione agli operatori e agli insegnanti. Nell'ambito delle dipendenze patologiche si è occupata di clinica e di supervisione agli operatori del settore. Dai primi anni 2000 si occupa del disagio adolescenziale presso lo spazio di ascolto giovani dell'ASL CN2 e co-conduce gruppi per il sostegno genitoriale.", color: "#88bfe0", initial: "C" },
+  { name: "Emanuel",   role: "Media Designer / Videomaker",            bio: "Da oltre venti anni crea e produce formati video su differenti piattaforme. Videomaker, Media designer, esperto in editing video e in crossmedialità, progetta e conduce percorsi produttivi in ambito didattico e socio-pedagogico. Dai suoi trascorsi come VJ ha mantenuto il gusto dell'esplorazione e della sperimentazione di ogni novità tecnologica e digitale, per mixare formati differenti, trasformando in opportunità creativa ciò che a prima vista è solo commerciale.", color: "#f4a261", initial: "E" },
+  { name: "Stefano",   role: "Educatore Professionale",                bio: "Educatore professionale. Doveva insegnare Storia, poi si è appassionato alle storie che sono diventate il suo lavoro. Ha svolto attività educative in ambiti territoriali, semiresidenziali e residenziali, pubblici e privati. Dal 2002 al Ser.D dell'AslCn2, dove si occupa di clinica, formazione, supervisione e promozione della salute in particolare con adolescenti e giovani.", color: "#7bbfa3", initial: "S" },
+  { name: "Beppe",     role: "Media Educator / Comunicatore",          bio: "Laureato in Scienze della Comunicazione presso l'Università di Torino, entra a far parte di Steadycam nel 2007. Appassionato di cinema, videogiochi fantasy, storia medievale e cioccolato, progetta e gestisce interventi educativi e percorsi di formazione su media e promozione della salute. Dal 2010 conduce serate informative per genitori e insegnanti sull'utilizzo critico e consapevole delle tecnologie digitali. All'interno del Centro Display conduce i laboratori sul gaming.", color: "#b07fd4", initial: "B" },
+  { name: "Michele",   role: "Media Educator / Formatore",             bio: "Media educator, supervisore e formatore, progetta e conduce percorsi sull'analisi dei media e sul loro utilizzo in ambito pedagogico, sociale, culturale e aziendale. Insegna Tecnologie dell'istruzione e dell'apprendimento e Peer&Media Education all'Università Cattolica di Milano, ove è membro del Cremit. Dal 2000 collabora con Steadycam, a cui deve molto, sul piano umano e non solo professionale. È sempre più convinto che saper guardare sia una virtù etica e che la creatività sia una dimensione di cittadinanza.", color: "#80c4d0", initial: "M" },
 ];
 
-const bodyStyle    = { fontFamily: "var(--font-raleway)", fontSize: "clamp(14px, 1.5vw, 18px)" };
+const bodyStyle     = { fontFamily: "var(--font-raleway)", fontSize: "clamp(13px, 1.3vw, 16px)" };
 const servicesStyle = { fontFamily: "var(--font-raleway)", fontSize: "clamp(13px, 1.3vw, 16px)" };
+
+const mobileTitle = "absolute bottom-0 left-0 right-0 px-6 py-5 md:hidden";
+const mobileTitleGradient = "absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent md:hidden pointer-events-none";
 
 export default function IlCentroPage() {
   return (
     <div>
-      {/* ── Il Centro — testo sx, immagine dx ── */}
-      <section id="chi-siamo" className="flex overflow-hidden" style={{ height: "100vh" }}>
-        <div className="w-[50%] bg-white flex flex-col justify-center px-6 py-10 lg:px-12 lg:py-16">
-          <h1 className="font-title font-semibold text-cs-charcoal uppercase tracking-[0.12em] mb-8"
+      {/* ── Il Centro — immagine prima su mobile, testo dx su desktop ── */}
+      <section id="chi-siamo" className="flex flex-col md:flex-row md:min-h-screen">
+        {/* Immagine — prima su mobile, destra su desktop */}
+        <div className="w-full md:w-[50%] relative shrink-0 h-[60vw] md:h-auto md:order-2">
+          <img src={`${WP}/Steadycam_ilCentro3-scaled.jpg`} alt="Il Centro" className="absolute inset-0 w-full h-full object-cover" />
+          <div className={mobileTitleGradient} />
+          <div className={mobileTitle}>
+            <h1 className="font-title font-semibold text-white uppercase tracking-[0.12em]"
+              style={{ fontSize: "clamp(1.4rem, 6vw, 2rem)" }}>
+              Il Centro
+            </h1>
+          </div>
+        </div>
+        {/* Testo — sinistra su desktop */}
+        <div className="w-full md:w-[50%] bg-white flex flex-col justify-center px-6 pt-8 pb-6 lg:px-12 lg:py-16 md:order-1">
+          <h1 className="hidden md:block font-title font-semibold text-cs-charcoal uppercase tracking-[0.12em] mb-8"
             style={{ fontSize: "clamp(1.2rem, 2.5vw, 2.2rem)" }}>
             Il Centro
           </h1>
@@ -65,18 +77,24 @@ export default function IlCentroPage() {
             </p>
           </div>
         </div>
-        <div className="w-[50%] relative shrink-0">
-          <img src={`${WP}/Steadycam_ilCentro3-scaled.jpg`} alt="Il Centro" className="absolute inset-0 w-full h-full object-cover" />
-        </div>
       </section>
 
-      {/* ── Il Metodo — immagine sx, testo dx ── */}
-      <section id="il-metodo" className="relative z-10 flex scroll-mt-0 overflow-hidden" style={{ height: "100vh" }}>
-        <div className="w-[50%] relative shrink-0">
+      {/* ── Il Metodo — immagine prima su mobile, sinistra su desktop ── */}
+      <section id="il-metodo" className="relative z-10 flex flex-col md:flex-row scroll-mt-0 md:min-h-screen">
+        {/* Immagine — prima su mobile, sinistra su desktop */}
+        <div className="w-full md:w-[50%] relative shrink-0 h-[60vw] md:h-auto">
           <img src={`${WP}/Steadycam_metodo-scaled.jpg`} alt="Il Metodo" className="absolute inset-0 w-full h-full object-cover" />
+          <div className={mobileTitleGradient} />
+          <div className={mobileTitle}>
+            <h2 className="font-title font-semibold text-white uppercase tracking-[0.12em]"
+              style={{ fontSize: "clamp(1.4rem, 6vw, 2rem)" }}>
+              Il Metodo
+            </h2>
+          </div>
         </div>
-        <div className="w-[50%] bg-white flex flex-col justify-center px-6 py-10 lg:px-12 lg:py-16">
-          <h2 className="font-title font-semibold text-cs-charcoal uppercase tracking-[0.12em] mb-8"
+        {/* Testo */}
+        <div className="w-full md:w-[50%] bg-white flex flex-col justify-center px-6 py-10 lg:px-12 lg:py-16">
+          <h2 className="hidden md:block font-title font-semibold text-cs-charcoal uppercase tracking-[0.12em] mb-8"
             style={{ fontSize: "clamp(1.2rem, 2.5vw, 2.2rem)" }}>
             Il Metodo
           </h2>
@@ -112,10 +130,22 @@ export default function IlCentroPage() {
         </div>
       </section>
 
-      {/* ── I Servizi — testo sx, immagine dx ── */}
-      <section id="i-servizi" className="relative z-10 flex scroll-mt-0 overflow-hidden" style={{ height: "100vh" }}>
-        <div className="w-[50%] flex flex-col justify-center px-6 py-10 lg:px-12 lg:py-16" style={{ background: "#1e1e1e" }}>
-          <h2 className="font-title font-semibold text-white uppercase tracking-[0.12em] mb-8"
+      {/* ── I Servizi — immagine prima su mobile, destra su desktop ── */}
+      <section id="i-servizi" className="relative z-10 flex flex-col md:flex-row scroll-mt-0 md:min-h-screen">
+        {/* Immagine — prima su mobile, destra su desktop */}
+        <div className="w-full md:w-[50%] relative shrink-0 h-[60vw] md:h-auto md:order-2">
+          <img src={`${WP}/Steadycam_servizi-scaled.jpg`} alt="I Servizi" className="absolute inset-0 w-full h-full object-cover" />
+          <div className={mobileTitleGradient} />
+          <div className={mobileTitle}>
+            <h2 className="font-title font-semibold text-white uppercase tracking-[0.12em]"
+              style={{ fontSize: "clamp(1.4rem, 6vw, 2rem)" }}>
+              I Servizi
+            </h2>
+          </div>
+        </div>
+        {/* Testo */}
+        <div className="w-full md:w-[50%] flex flex-col justify-center px-6 py-10 lg:px-12 lg:py-16 md:order-1" style={{ background: "#1e1e1e" }}>
+          <h2 className="hidden md:block font-title font-semibold text-white uppercase tracking-[0.12em] mb-8"
             style={{ fontSize: "clamp(1.2rem, 2.5vw, 2.2rem)" }}>
             I Servizi
           </h2>
@@ -141,18 +171,24 @@ export default function IlCentroPage() {
             {" "}— valuteremo insieme la fattibilità dell&apos;intervento.
           </p>
         </div>
-        <div className="w-[50%] relative shrink-0">
-          <img src={`${WP}/Steadycam_servizi-scaled.jpg`} alt="I Servizi" className="absolute inset-0 w-full h-full object-cover" />
-        </div>
       </section>
 
-      {/* ── L'Archivio — immagine sx, testo dx ── */}
-      <section id="l-archivio" className="relative z-10 flex scroll-mt-0 overflow-hidden" style={{ height: "100vh" }}>
-        <div className="w-[50%] relative shrink-0">
+      {/* ── L'Archivio — immagine prima su mobile, sinistra su desktop ── */}
+      <section id="l-archivio" className="relative z-10 flex flex-col md:flex-row scroll-mt-0 md:min-h-screen">
+        {/* Immagine — prima su mobile, sinistra su desktop */}
+        <div className="w-full md:w-[50%] relative shrink-0 h-[60vw] md:h-auto">
           <img src={`${WP}/01Steadycam_archivio1-100-1.jpg`} alt="L'Archivio" className="absolute inset-0 w-full h-full object-cover" />
+          <div className={mobileTitleGradient} />
+          <div className={mobileTitle}>
+            <h2 className="font-title font-semibold text-white uppercase tracking-[0.12em]"
+              style={{ fontSize: "clamp(1.4rem, 6vw, 2rem)" }}>
+              L&apos;Archivio
+            </h2>
+          </div>
         </div>
-        <div className="w-[50%] bg-white flex flex-col justify-center px-6 py-10 lg:px-12 lg:py-16">
-          <h2 className="font-title font-semibold text-cs-charcoal uppercase tracking-[0.12em] mb-8"
+        {/* Testo */}
+        <div className="w-full md:w-[50%] bg-white flex flex-col justify-center px-6 py-10 lg:px-12 lg:py-16">
+          <h2 className="hidden md:block font-title font-semibold text-cs-charcoal uppercase tracking-[0.12em] mb-8"
             style={{ fontSize: "clamp(1.2rem, 2.5vw, 2.2rem)" }}>
             L&apos;Archivio
           </h2>
@@ -181,21 +217,21 @@ export default function IlCentroPage() {
             </p>
           </div>
           <a href="/archivio"
-            className="inline-block font-title font-medium text-xs uppercase tracking-[0.1em] border border-[#333] text-[#333] px-5 py-2.5 hover:bg-[#333] hover:text-white transition-colors duration-200 self-start">
+            className="inline-block font-title font-medium text-xs uppercase tracking-[0.1em] border border-[#ede9f5] bg-[#ede9f5] text-[#7068a8] px-5 py-2.5 hover:bg-[#5b4d8a] hover:border-[#5b4d8a] hover:text-white transition-colors duration-200 self-start">
             Cerca nell&apos;archivio storico →
           </a>
         </div>
       </section>
 
       {/* ── Staff — immagine sfondo intera, grid bio ── */}
-      <section id="staff" className="relative z-10 scroll-mt-0 overflow-hidden" style={{ height: "100vh" }}>
+      <section id="staff" className="relative z-10 scroll-mt-0 md:min-h-screen">
         <img src={`${WP}/2017/07/thanachot-phonket-319688.jpg`} alt="Staff" className="absolute inset-0 w-full h-full object-cover object-top" />
-        <div className="relative z-10 h-full flex flex-col justify-center px-6 py-8 lg:px-12">
+        <div className="relative z-10 flex flex-col justify-center px-6 py-12 lg:px-12">
           <h2 className="font-title font-semibold text-white uppercase tracking-[0.12em] mb-6"
             style={{ fontSize: "clamp(1.2rem, 2.5vw, 2.2rem)" }}>
             Staff
           </h2>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-6">
             {staff.map((m) => (
               <div key={m.name + m.role}>
                 <div className="flex items-center gap-2 mb-1">
@@ -215,9 +251,10 @@ export default function IlCentroPage() {
         </div>
       </section>
 
-      {/* ── Contatti — mappa sx, info dx ── */}
-      <section id="contatti" className="relative z-10 flex scroll-mt-0 overflow-hidden" style={{ height: "100vh" }}>
-        <div className="w-[50%] relative shrink-0">
+      {/* ── Contatti — mappa prima su mobile, sinistra su desktop ── */}
+      <section id="contatti" className="relative z-10 flex flex-col md:flex-row scroll-mt-0 md:min-h-screen">
+        {/* Mappa */}
+        <div className="w-full md:w-[50%] relative shrink-0 h-[60vw] md:h-auto">
           <iframe
             title="Mappa Centro Steadycam"
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2843.9!2d8.033!3d44.699!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12d2b6f1a1b8a1a1%3A0x0!2sCentro+Steadycam%2C+Alba!5e0!3m2!1sit!2sit!4v1"
@@ -227,9 +264,17 @@ export default function IlCentroPage() {
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
           />
+          <div className="absolute bottom-0 left-0 right-0 px-6 py-5 md:hidden pointer-events-none"
+            style={{ background: "linear-gradient(to top, rgba(0,0,0,0.6), transparent)" }}>
+            <h2 className="font-title font-semibold text-white uppercase tracking-[0.12em]"
+              style={{ fontSize: "clamp(1.4rem, 6vw, 2rem)" }}>
+              Contatti
+            </h2>
+          </div>
         </div>
-        <div className="w-[50%] bg-white flex flex-col justify-center px-6 py-10 lg:px-12 lg:py-16">
-          <h2 className="font-title font-semibold text-cs-charcoal uppercase tracking-[0.12em] mb-10"
+        {/* Info */}
+        <div className="w-full md:w-[50%] bg-white flex flex-col justify-center px-6 py-10 lg:px-12 lg:py-16">
+          <h2 className="hidden md:block font-title font-semibold text-cs-charcoal uppercase tracking-[0.12em] mb-10"
             style={{ fontSize: "clamp(1.2rem, 2.5vw, 2.2rem)" }}>
             Contatti
           </h2>
