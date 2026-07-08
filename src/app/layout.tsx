@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Montserrat, Open_Sans, Roboto, Poppins } from "next/font/google";
+import { Montserrat, Open_Sans, Roboto, Poppins, Oswald } from "next/font/google";
 import "./globals.css";
 import SiteShell from "@/components/navigation/SiteShell";
 
@@ -24,6 +24,13 @@ const roboto = Roboto({
   display: "swap",
 });
 
+const oswald = Oswald({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-oswald",
+  display: "swap",
+});
+
 const poppins = Poppins({
   subsets: ["latin"],
   weight: ["400", "700"],
@@ -45,7 +52,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="it">
-      <body className={`${montserrat.variable} ${openSans.variable} ${roboto.variable} ${poppins.variable}`}>
+      <body className={`${montserrat.variable} ${openSans.variable} ${roboto.variable} ${poppins.variable} ${oswald.variable}`}>
         <SiteShell>{children}</SiteShell>
       </body>
     </html>
