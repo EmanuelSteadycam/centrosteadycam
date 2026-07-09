@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Montserrat, Open_Sans, Roboto, Poppins, Oswald } from "next/font/google";
+import { Montserrat, Open_Sans, Roboto, Poppins, Oswald, DM_Serif_Display } from "next/font/google";
 import "./globals.css";
 import SiteShell from "@/components/navigation/SiteShell";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
   variable: "--font-montserrat",
   display: "swap",
 });
@@ -38,6 +38,14 @@ const poppins = Poppins({
   display: "swap",
 });
 
+const dmSerifDisplay = DM_Serif_Display({
+  subsets: ["latin"],
+  weight: ["400"],
+  style: ["normal", "italic"],
+  variable: "--font-dm-serif",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: {
     default: "Centro Steadycam — Dove la tecnologia promuove salute",
@@ -52,7 +60,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="it">
-      <body className={`${montserrat.variable} ${openSans.variable} ${roboto.variable} ${poppins.variable} ${oswald.variable}`}>
+      <body className={`${montserrat.variable} ${openSans.variable} ${roboto.variable} ${poppins.variable} ${oswald.variable} ${dmSerifDisplay.variable}`}>
         <SiteShell>{children}</SiteShell>
       </body>
     </html>
