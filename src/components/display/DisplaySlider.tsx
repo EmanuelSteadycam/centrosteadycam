@@ -674,9 +674,9 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
             style={{ fontFamily: "var(--font-raleway)", color: "#ffffff", fontSize: "28px" }}>
             Le iscrizioni aprono il
           </motion.h2>
-          <motion.p {...fadeUp(0.15)} className="mb-10 capitalize"
+          <motion.p {...fadeUp(0.15)} className="mb-10"
             style={{ fontFamily: "var(--font-raleway)", color: "#88BF81", fontSize: "20px", fontWeight: 600 }}>
-            {openLabel}
+            {openLabel.replace(" alle ", " dalle ore ")}
           </motion.p>
           <motion.div {...fadeUp(0.2)} className="flex gap-6 justify-center mb-10">
             {[
