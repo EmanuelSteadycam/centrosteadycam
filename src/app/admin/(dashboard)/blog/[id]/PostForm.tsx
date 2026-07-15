@@ -257,7 +257,16 @@ export default function PostForm({ post }: { post: Post }) {
 
       <div className="bg-white rounded-lg shadow-sm p-5">
         <label className="block text-xs font-medium text-gray-600 mb-2">Contenuto</label>
-        <RichTextEditor value={content} onChange={setContent} />
+        <RichTextEditor
+          value={content}
+          onChange={setContent}
+          onUploadFile={async (file) => {
+            const fd = new FormData();
+            fd.append("file", file);
+            const result = await uploadBlogFile(fd);
+            return result.url ?? null;
+          }}
+        />
       </div>
 
       <div className="bg-white rounded-lg shadow-sm p-5 flex flex-wrap items-end gap-4">

@@ -3,7 +3,7 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Youtube from "@tiptap/extension-youtube";
 import { Node, mergeAttributes } from "@tiptap/core";
-import { useEffect, useReducer } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 
 const ButtonGroup = Node.create({
   name: "buttonGroup",
@@ -45,11 +45,15 @@ const BTN_ACTIVE = "bg-gray-200 font-semibold";
 export default function RichTextEditor({
   value,
   onChange,
+  onUploadFile,
 }: {
   value: string;
   onChange: (html: string) => void;
+  onUploadFile?: (file: File) => Promise<string | null>;
 }) {
   const [, forceUpdate] = useReducer((x: number) => x + 1, 0);
+  const [uploadingAttach, setUploadingAttach] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const editor = useEditor({
     extensions: [
@@ -168,6 +172,39 @@ export default function RichTextEditor({
           }} className={BTN}>
             🟢 Pulsanti
           </button>
+          {onUploadFile && (
+            <>
+              <span className="w-px bg-gray-200 mx-1 self-stretch" />
+              <button
+                type="button"
+                disabled={uploadingAttach}
+                onClick={() => fileInputRef.current?.click()}
+                className={BTN}
+              >
+                {uploadingAttach ? "Caricamento…" : "📎 Allega"}
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file || !onUploadFile) return;
+                  setUploadingAttach(true);
+                  const url = await onUploadFile(file);
+                  setUploadingAttach(false);
+                  e.target.value = "";
+                  if (!url) return;
+                  const label = window.prompt("Testo del pulsante:", "Scarica");
+                  if (!label?.trim()) return;
+                  editor.chain().focus().insertContent({
+                    type: "buttonGroup",
+                    attrs: { b1label: label.trim(), b1href: url, b2label: null, b2href: null },
+                  }).run();
+                }}
+              />
+            </>
+          )}
           <span className="w-px bg-gray-200 mx-1 self-stretch" />
           <button type="button" onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} className={BTN}>↩</button>
           <button type="button" onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} className={BTN}>↪</button>
