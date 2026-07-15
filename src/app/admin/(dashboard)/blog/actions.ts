@@ -84,7 +84,6 @@ export async function sendBlogNewsletter(id: number, listId: number): Promise<{ 
     .single();
 
   if (error || !post) return { error: "Articolo non trovato" };
-  if (post.status !== "publish") return { error: "Pubblica prima l'articolo" };
 
   const { campaignId } = await sendNewsletterCampaign(post, listId);
   return { error: null, campaignId };

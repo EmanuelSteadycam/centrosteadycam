@@ -29,10 +29,11 @@ export default function PostForm({ post }: { post: Post }) {
   const [isPending, startTransition] = useTransition();
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [saveMsg, setSaveMsg] = useState<string | null>(null);
   const [newsletterState, setNewsletterState] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [newsletterMsg, setNewsletterMsg] = useState<string | null>(null);
   const [brevoLists, setBrevoLists] = useState<{ id: number; name: string }[]>([]);
-  const [selectedListId, setSelectedListId] = useState<number>(3);
+  const [selectedListId, setSelectedListId] = useState<number>(15);
 
   useEffect(() => {
     if (post) getBrevoLists().then(setBrevoLists);
@@ -43,7 +44,6 @@ export default function PostForm({ post }: { post: Post }) {
   const [excerpt, setExcerpt] = useState(post?.excerpt ?? "");
   const [content, setContent] = useState(post?.content ?? "");
   const [featuredImageUrl, setFeaturedImageUrl] = useState(post?.featured_image_url ?? "");
-  const [status, setStatus] = useState(post?.status ?? "draft");
   const [date, setDate] = useState(
     post?.date ? post.date.slice(0, 10) : new Date().toISOString().slice(0, 10)
   );
@@ -53,25 +53,30 @@ export default function PostForm({ post }: { post: Post }) {
     if (!post) setSlug(generateSlug(v));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSave = (targetStatus: "draft" | "publish") => {
     setError(null);
+    setSaveMsg(null);
     if (!title.trim()) { setError("Il titolo è obbligatorio"); return; }
     if (!slug.trim()) { setError("Lo slug è obbligatorio"); return; }
 
     startTransition(async () => {
-      const formData = { title, slug, excerpt, content, featured_image_url: featuredImageUrl, status, date };
-      const result = post
-        ? await updatePost(post.id, formData)
-        : await createPost(formData);
+      const formData = { title, slug, excerpt, content, featured_image_url: featuredImageUrl, status: targetStatus, date };
 
-      if (result.error) { setError(result.error); return; }
-      router.push("/admin/blog");
+      if (post) {
+        const result = await updatePost(post.id, formData);
+        if (result.error) { setError(result.error); return; }
+        setSaveMsg(targetStatus === "publish" ? "Pubblicato ✓" : "Bozza salvata ✓");
+        setTimeout(() => setSaveMsg(null), 3000);
+      } else {
+        const result = await createPost(formData);
+        if (result.error) { setError(result.error); return; }
+        router.push(`/admin/blog/${result.id}`);
+      }
     });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 max-w-3xl">
+    <form onSubmit={(e) => e.preventDefault()} className="space-y-4 max-w-3xl">
       {error && (
         <div className="bg-red-50 text-red-700 text-sm px-4 py-3 rounded">{error}</div>
       )}
@@ -159,17 +164,6 @@ export default function PostForm({ post }: { post: Post }) {
 
       <div className="bg-white rounded-lg shadow-sm p-5 flex flex-wrap items-end gap-4">
         <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1">Stato</label>
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            className="border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
-          >
-            <option value="draft">Bozza</option>
-            <option value="publish">Pubblicato</option>
-          </select>
-        </div>
-        <div>
           <label className="block text-xs font-medium text-gray-600 mb-1">Data</label>
           <input
             type="date"
@@ -178,49 +172,65 @@ export default function PostForm({ post }: { post: Post }) {
             className="border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
           />
         </div>
-        <div className="ml-auto flex gap-3 items-center">
-          {post && (
-            <div className="flex items-center gap-2">
-              {newsletterMsg && (
-                <span className={`text-xs ${newsletterState === "sent" ? "text-green-600" : "text-red-500"}`}>
-                  {newsletterMsg}
-                </span>
-              )}
-              {brevoLists.length > 0 && (
-                <select
-                  value={selectedListId}
-                  onChange={(e) => setSelectedListId(Number(e.target.value))}
-                  disabled={newsletterState === "sending" || newsletterState === "sent"}
-                  className="border border-gray-200 rounded px-2 py-2 text-xs text-gray-700 focus:outline-none focus:border-gray-400 disabled:opacity-40"
-                >
-                  {brevoLists.map((l) => (
-                    <option key={l.id} value={l.id}>{l.name}</option>
-                  ))}
-                </select>
-              )}
-              <button
-                type="button"
+
+        {post && (
+          <div className="flex items-center gap-2">
+            {newsletterMsg && (
+              <span className={`text-xs ${newsletterState === "sent" ? "text-green-600" : "text-red-500"}`}>
+                {newsletterMsg}
+              </span>
+            )}
+            {brevoLists.length > 0 && (
+              <select
+                value={selectedListId}
+                onChange={(e) => setSelectedListId(Number(e.target.value))}
                 disabled={newsletterState === "sending" || newsletterState === "sent"}
-                onClick={async () => {
-                  const listName = brevoLists.find((l) => l.id === selectedListId)?.name ?? `lista ${selectedListId}`;
-                  if (!confirm(`Inviare la newsletter agli iscritti di "${listName}"?`)) return;
-                  setNewsletterState("sending");
-                  setNewsletterMsg(null);
-                  const res = await sendBlogNewsletter(post.id, selectedListId);
-                  if (res.error) {
-                    setNewsletterState("error");
-                    setNewsletterMsg(res.error);
-                  } else {
-                    setNewsletterState("sent");
-                    setNewsletterMsg(`Inviata (campagna #${res.campaignId})`);
-                  }
-                }}
-                className="text-sm px-4 py-2 rounded border transition-colors disabled:opacity-40
-                  border-green-600 text-green-700 hover:bg-green-50 disabled:border-gray-200 disabled:text-gray-400"
+                className="border border-gray-200 rounded px-2 py-2 text-xs text-gray-700 focus:outline-none focus:border-gray-400 disabled:opacity-40"
               >
-                {newsletterState === "sending" ? "Invio…" : newsletterState === "sent" ? "Inviata ✓" : "Invia Newsletter"}
-              </button>
-            </div>
+                {brevoLists.map((l) => (
+                  <option key={l.id} value={l.id}>{l.name}</option>
+                ))}
+              </select>
+            )}
+            <button
+              type="button"
+              disabled={newsletterState === "sending" || newsletterState === "sent"}
+              onClick={async () => {
+                const listName = brevoLists.find((l) => l.id === selectedListId)?.name ?? `lista ${selectedListId}`;
+                if (!confirm(`Inviare la newsletter agli iscritti di "${listName}"?`)) return;
+                setNewsletterState("sending");
+                setNewsletterMsg(null);
+                const res = await sendBlogNewsletter(post.id, selectedListId);
+                if (res.error) {
+                  setNewsletterState("error");
+                  setNewsletterMsg(res.error);
+                } else {
+                  setNewsletterState("sent");
+                  setNewsletterMsg(`Inviata (campagna #${res.campaignId})`);
+                }
+              }}
+              className="text-sm px-4 py-2 rounded border transition-colors disabled:opacity-40
+                border-green-600 text-green-700 hover:bg-green-50 disabled:border-gray-200 disabled:text-gray-400"
+            >
+              {newsletterState === "sending" ? "Invio…" : newsletterState === "sent" ? "Inviata ✓" : "Invia Newsletter"}
+            </button>
+          </div>
+        )}
+
+        <div className="ml-auto flex gap-3 items-center">
+          {saveMsg && <span className="text-xs text-green-600 font-medium">{saveMsg}</span>}
+          {post && slug && (
+            <a
+              href={`/blog/${slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-blue-600 hover:text-blue-800 px-4 py-2 border border-blue-200 rounded transition-colors hover:bg-blue-50 flex items-center gap-1.5"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+              Anteprima
+            </a>
           )}
           <button
             type="button"
@@ -230,11 +240,20 @@ export default function PostForm({ post }: { post: Post }) {
             Annulla
           </button>
           <button
-            type="submit"
+            type="button"
             disabled={isPending}
+            onClick={() => handleSave("draft")}
+            className="text-sm px-4 py-2 rounded border transition-colors disabled:opacity-40 border-gray-400 text-gray-700 hover:bg-gray-50"
+          >
+            {isPending ? "…" : "Salva bozza"}
+          </button>
+          <button
+            type="button"
+            disabled={isPending}
+            onClick={() => handleSave("publish")}
             className="text-sm bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700 transition-colors disabled:opacity-40"
           >
-            {isPending ? "Salvataggio…" : post ? "Salva modifiche" : "Crea articolo"}
+            {isPending ? "…" : "Pubblica"}
           </button>
         </div>
       </div>
