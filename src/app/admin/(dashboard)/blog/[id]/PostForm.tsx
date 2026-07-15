@@ -12,6 +12,7 @@ type Post = {
   excerpt: string | null;
   content: string | null;
   featured_image_url: string | null;
+  author_name: string | null;
   status: string;
   date: string;
 } | null;
