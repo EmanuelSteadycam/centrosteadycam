@@ -169,7 +169,7 @@ export async function sendNewsletterCampaign(post: {
   excerpt: string | null;
   featured_image_url: string | null;
 }, listId: number = NEWSLETTER_LIST_ID): Promise<{ campaignId: number }> {
-  const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://centrosteadycam.vercel.app";
+  const SITE = process.env.SITE_URL ?? "https://centrosteadycam.it";
   const BANNER = `${SITE}/media/01Banner-Centro-Steadycam2.png`;
   const postUrl = `${SITE}/blog/${post.slug}`;
 
