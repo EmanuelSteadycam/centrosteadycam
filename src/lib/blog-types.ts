@@ -27,5 +27,6 @@ export function formatBlogDateShort(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("it-IT", {
     day: "numeric",
     month: "short",
+    year: "numeric",
   });
 }
