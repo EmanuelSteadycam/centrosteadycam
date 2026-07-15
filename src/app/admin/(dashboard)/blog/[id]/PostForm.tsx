@@ -44,6 +44,7 @@ export default function PostForm({ post }: { post: Post }) {
   const [excerpt, setExcerpt] = useState(post?.excerpt ?? "");
   const [content, setContent] = useState(post?.content ?? "");
   const [featuredImageUrl, setFeaturedImageUrl] = useState(post?.featured_image_url ?? "");
+  const [authorName, setAuthorName] = useState(post?.author_name ?? "Staff Steadycam");
   const [date, setDate] = useState(
     post?.date ? post.date.slice(0, 10) : new Date().toISOString().slice(0, 10)
   );
@@ -60,7 +61,7 @@ export default function PostForm({ post }: { post: Post }) {
     if (!slug.trim()) { setError("Lo slug è obbligatorio"); return; }
 
     startTransition(async () => {
-      const formData = { title, slug, excerpt, content, featured_image_url: featuredImageUrl, status: targetStatus, date };
+      const formData = { title, slug, excerpt, content, featured_image_url: featuredImageUrl, author_name: authorName, status: targetStatus, date };
 
       if (post) {
         const result = await updatePost(post.id, formData);
@@ -163,6 +164,18 @@ export default function PostForm({ post }: { post: Post }) {
       </div>
 
       <div className="bg-white rounded-lg shadow-sm p-5 flex flex-wrap items-end gap-4">
+        <div>
+          <label className="block text-xs font-medium text-gray-600 mb-1">Autore</label>
+          <select
+            value={authorName}
+            onChange={(e) => setAuthorName(e.target.value)}
+            className="border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
+          >
+            {["Staff Steadycam","Beppe","Emanuel","Valentino","Christian","Sara","Martina","Stefano","Carmen"].map((a) => (
+              <option key={a} value={a}>{a}</option>
+            ))}
+          </select>
+        </div>
         <div>
           <label className="block text-xs font-medium text-gray-600 mb-1">Data</label>
           <input

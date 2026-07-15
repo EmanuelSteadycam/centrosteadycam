@@ -10,6 +10,7 @@ type PostData = {
   excerpt: string;
   content: string;
   featured_image_url: string;
+  author_name: string;
   status: string;
   date: string;
 };

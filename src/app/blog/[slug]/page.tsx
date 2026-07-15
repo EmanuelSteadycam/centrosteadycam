@@ -57,7 +57,7 @@ export default async function BlogPostPage({ params }: Props) {
                 {post.title}
               </h1>
               <p className="text-sm text-gray-500 mb-6">
-                Staff Steadycam
+                {post.author_name || "Staff Steadycam"}
                 <span className="mx-2 text-gray-300">|</span>
                 {formatBlogDate(post.date)}
               </p>

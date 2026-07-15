@@ -8,6 +8,7 @@ export type BlogPost = {
   excerpt: string | null;
   featured_image_url: string | null;
   featured_image_alt: string | null;
+  author_name: string | null;
   date: string;
   modified: string | null;
   categories: number[];
