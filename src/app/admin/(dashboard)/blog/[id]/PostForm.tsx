@@ -29,12 +29,6 @@ export default function PostForm({ post }: { post: Post }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [uploading, setUploading] = useState(false);
-  const [uploadingFile, setUploadingFile] = useState(false);
-  const [uploadedFiles, setUploadedFiles] = useState<{ name: string; url: string }[]>([]);
-  const [existingFiles, setExistingFiles] = useState<{ name: string; url: string; size: number }[]>([]);
-  const [showExisting, setShowExisting] = useState(false);
-  const [loadingExisting, setLoadingExisting] = useState(false);
-  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
   const [newsletterState, setNewsletterState] = useState<"idle" | "sending" | "sent" | "error">("idle");
@@ -164,95 +158,6 @@ export default function PostForm({ post }: { post: Post }) {
           )}
         </div>
 
-        <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1">Allegati scaricabili</label>
-          <div className="flex flex-col gap-2">
-            {uploadedFiles.map((f) => (
-              <div key={f.url} className="flex items-center gap-2 text-xs">
-                <span className="text-gray-600 truncate max-w-[200px]" title={f.name}>{f.name}</span>
-                <code className="flex-1 bg-gray-50 border border-gray-200 rounded px-2 py-1 text-gray-500 truncate">{f.url}</code>
-                <button
-                  type="button"
-                  onClick={() => {
-                    navigator.clipboard.writeText(f.url);
-                    setCopiedUrl(f.url);
-                    setTimeout(() => setCopiedUrl(null), 2000);
-                  }}
-                  className="shrink-0 px-2 py-1 rounded border border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors"
-                >
-                  {copiedUrl === f.url ? "Copiato ✓" : "Copia URL"}
-                </button>
-              </div>
-            ))}
-            <div className="flex gap-2">
-              <label className={`cursor-pointer self-start text-xs px-3 py-2 rounded border transition-colors ${uploadingFile ? "border-gray-200 text-gray-300" : "border-gray-300 text-gray-600 hover:border-gray-500 hover:text-gray-800"}`}>
-                {uploadingFile ? "Caricamento…" : "+ Carica file (PDF, PNG, …)"}
-                <input
-                  type="file"
-                  className="hidden"
-                  disabled={uploadingFile}
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-                    setUploadingFile(true);
-                    const fd = new FormData();
-                    fd.append("file", file);
-                    const result = await uploadBlogFile(fd);
-                    setUploadingFile(false);
-                    if (result.error) { alert(result.error); return; }
-                    if (result.url && result.name) {
-                      setUploadedFiles((prev) => [...prev, { name: result.name!, url: result.url! }]);
-                    }
-                    e.target.value = "";
-                  }}
-                />
-              </label>
-              <button
-                type="button"
-                onClick={async () => {
-                  if (!showExisting && existingFiles.length === 0) {
-                    setLoadingExisting(true);
-                    const files = await listBlogFiles();
-                    setExistingFiles(files);
-                    setLoadingExisting(false);
-                  }
-                  setShowExisting((v) => !v);
-                }}
-                className="text-xs px-3 py-2 rounded border border-gray-300 text-gray-600 hover:border-gray-500 hover:text-gray-800 transition-colors"
-              >
-                {loadingExisting ? "Caricamento…" : showExisting ? "Nascondi archivio" : "Scegli da archivio"}
-              </button>
-            </div>
-
-            {showExisting && (
-              <div className="mt-2 border border-gray-200 rounded overflow-hidden">
-                {existingFiles.length === 0 ? (
-                  <p className="text-xs text-gray-400 p-3">Nessun file caricato in precedenza.</p>
-                ) : (
-                  <div className="max-h-48 overflow-y-auto divide-y divide-gray-100">
-                    {existingFiles.map((f) => (
-                      <div key={f.url} className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50">
-                        <span className="text-xs text-gray-600 flex-1 truncate" title={f.name}>{f.name}</span>
-                        <span className="text-[10px] text-gray-400 shrink-0">{(f.size / 1024).toFixed(0)} KB</span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            navigator.clipboard.writeText(f.url);
-                            setCopiedUrl(f.url);
-                            setTimeout(() => setCopiedUrl(null), 2000);
-                          }}
-                          className="shrink-0 text-xs px-2 py-1 rounded border border-gray-300 text-gray-600 hover:bg-gray-100 transition-colors"
-                        >
-                          {copiedUrl === f.url ? "Copiato ✓" : "Copia URL"}
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
       </div>
 
       <div className="bg-white rounded-lg shadow-sm p-5">
@@ -266,6 +171,7 @@ export default function PostForm({ post }: { post: Post }) {
             const result = await uploadBlogFile(fd);
             return result.url ?? null;
           }}
+          onListFiles={listBlogFiles}
         />
       </div>
 
