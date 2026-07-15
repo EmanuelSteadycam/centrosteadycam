@@ -1,5 +1,5 @@
 "use server";
-import { put, del } from "@vercel/blob";
+import { put, del, list } from "@vercel/blob";
 
 export async function uploadBlogFile(formData: FormData): Promise<{ url?: string; name?: string; error?: string }> {
   const file = formData.get("file") as File | null;
@@ -22,6 +22,15 @@ export async function uploadBlogFile(formData: FormData): Promise<{ url?: string
 }
 
 const BLOB_BASE = "https://ziaarm9b5sovaafa.public.blob.vercel-storage.com";
+
+export async function listBlogFiles(): Promise<{ name: string; url: string; size: number }[]> {
+  const { blobs } = await list({ prefix: "media/blog/allegati/" });
+  return blobs.map((b) => ({
+    name: b.pathname.replace("media/blog/allegati/", "").replace(/^\d+-/, ""),
+    url: b.url,
+    size: b.size,
+  })).sort((a, b) => a.name.localeCompare(b.name));
+}
 
 export async function deleteBlogImage(url: string): Promise<void> {
   if (!url.includes("/media/blog/")) return;

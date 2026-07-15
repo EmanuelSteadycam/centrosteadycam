@@ -2,7 +2,7 @@
 import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createPost, updatePost, sendBlogNewsletter, getBrevoLists } from "../actions";
-import { uploadBlogImage, deleteBlogImage, uploadBlogFile } from "../uploadImage";
+import { uploadBlogImage, deleteBlogImage, uploadBlogFile, listBlogFiles } from "../uploadImage";
 import RichTextEditor from "@/components/admin/RichTextEditor";
 
 type Post = {
@@ -31,6 +31,9 @@ export default function PostForm({ post }: { post: Post }) {
   const [uploading, setUploading] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<{ name: string; url: string }[]>([]);
+  const [existingFiles, setExistingFiles] = useState<{ name: string; url: string; size: number }[]>([]);
+  const [showExisting, setShowExisting] = useState(false);
+  const [loadingExisting, setLoadingExisting] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
@@ -181,28 +184,73 @@ export default function PostForm({ post }: { post: Post }) {
                 </button>
               </div>
             ))}
-            <label className={`cursor-pointer self-start text-xs px-3 py-2 rounded border transition-colors ${uploadingFile ? "border-gray-200 text-gray-300" : "border-gray-300 text-gray-600 hover:border-gray-500 hover:text-gray-800"}`}>
-              {uploadingFile ? "Caricamento…" : "+ Carica file (PDF, PNG, …)"}
-              <input
-                type="file"
-                className="hidden"
-                disabled={uploadingFile}
-                onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-                  setUploadingFile(true);
-                  const fd = new FormData();
-                  fd.append("file", file);
-                  const result = await uploadBlogFile(fd);
-                  setUploadingFile(false);
-                  if (result.error) { alert(result.error); return; }
-                  if (result.url && result.name) {
-                    setUploadedFiles((prev) => [...prev, { name: result.name!, url: result.url! }]);
+            <div className="flex gap-2">
+              <label className={`cursor-pointer self-start text-xs px-3 py-2 rounded border transition-colors ${uploadingFile ? "border-gray-200 text-gray-300" : "border-gray-300 text-gray-600 hover:border-gray-500 hover:text-gray-800"}`}>
+                {uploadingFile ? "Caricamento…" : "+ Carica file (PDF, PNG, …)"}
+                <input
+                  type="file"
+                  className="hidden"
+                  disabled={uploadingFile}
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    setUploadingFile(true);
+                    const fd = new FormData();
+                    fd.append("file", file);
+                    const result = await uploadBlogFile(fd);
+                    setUploadingFile(false);
+                    if (result.error) { alert(result.error); return; }
+                    if (result.url && result.name) {
+                      setUploadedFiles((prev) => [...prev, { name: result.name!, url: result.url! }]);
+                    }
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!showExisting && existingFiles.length === 0) {
+                    setLoadingExisting(true);
+                    const files = await listBlogFiles();
+                    setExistingFiles(files);
+                    setLoadingExisting(false);
                   }
-                  e.target.value = "";
+                  setShowExisting((v) => !v);
                 }}
-              />
-            </label>
+                className="text-xs px-3 py-2 rounded border border-gray-300 text-gray-600 hover:border-gray-500 hover:text-gray-800 transition-colors"
+              >
+                {loadingExisting ? "Caricamento…" : showExisting ? "Nascondi archivio" : "Scegli da archivio"}
+              </button>
+            </div>
+
+            {showExisting && (
+              <div className="mt-2 border border-gray-200 rounded overflow-hidden">
+                {existingFiles.length === 0 ? (
+                  <p className="text-xs text-gray-400 p-3">Nessun file caricato in precedenza.</p>
+                ) : (
+                  <div className="max-h-48 overflow-y-auto divide-y divide-gray-100">
+                    {existingFiles.map((f) => (
+                      <div key={f.url} className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50">
+                        <span className="text-xs text-gray-600 flex-1 truncate" title={f.name}>{f.name}</span>
+                        <span className="text-[10px] text-gray-400 shrink-0">{(f.size / 1024).toFixed(0)} KB</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(f.url);
+                            setCopiedUrl(f.url);
+                            setTimeout(() => setCopiedUrl(null), 2000);
+                          }}
+                          className="shrink-0 text-xs px-2 py-1 rounded border border-gray-300 text-gray-600 hover:bg-gray-100 transition-colors"
+                        >
+                          {copiedUrl === f.url ? "Copiato ✓" : "Copia URL"}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
