@@ -24,9 +24,9 @@ export function formatBlogDate(dateStr: string) {
 }
 
 export function formatBlogDateShort(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString("it-IT", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+  const d = new Date(dateStr);
+  const day = d.getDate();
+  const month = d.toLocaleDateString("it-IT", { month: "short" }).replace(".", "").toUpperCase();
+  const year = String(d.getFullYear()).slice(-2);
+  return `${day} ${month} ${year}`;
 }
