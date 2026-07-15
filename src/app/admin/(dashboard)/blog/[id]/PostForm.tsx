@@ -2,7 +2,7 @@
 import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createPost, updatePost, sendBlogNewsletter, getBrevoLists } from "../actions";
-import { uploadBlogImage, deleteBlogImage } from "../uploadImage";
+import { uploadBlogImage, deleteBlogImage, uploadBlogFile } from "../uploadImage";
 import RichTextEditor from "@/components/admin/RichTextEditor";
 
 type Post = {
@@ -29,6 +29,9 @@ export default function PostForm({ post }: { post: Post }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [uploading, setUploading] = useState(false);
+  const [uploadingFile, setUploadingFile] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<{ name: string; url: string }[]>([]);
+  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
   const [newsletterState, setNewsletterState] = useState<"idle" | "sending" | "sent" | "error">("idle");
@@ -156,6 +159,51 @@ export default function PostForm({ post }: { post: Post }) {
               >×</button>
             </div>
           )}
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-gray-600 mb-1">Allegati scaricabili</label>
+          <div className="flex flex-col gap-2">
+            {uploadedFiles.map((f) => (
+              <div key={f.url} className="flex items-center gap-2 text-xs">
+                <span className="text-gray-600 truncate max-w-[200px]" title={f.name}>{f.name}</span>
+                <code className="flex-1 bg-gray-50 border border-gray-200 rounded px-2 py-1 text-gray-500 truncate">{f.url}</code>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(f.url);
+                    setCopiedUrl(f.url);
+                    setTimeout(() => setCopiedUrl(null), 2000);
+                  }}
+                  className="shrink-0 px-2 py-1 rounded border border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors"
+                >
+                  {copiedUrl === f.url ? "Copiato ✓" : "Copia URL"}
+                </button>
+              </div>
+            ))}
+            <label className={`cursor-pointer self-start text-xs px-3 py-2 rounded border transition-colors ${uploadingFile ? "border-gray-200 text-gray-300" : "border-gray-300 text-gray-600 hover:border-gray-500 hover:text-gray-800"}`}>
+              {uploadingFile ? "Caricamento…" : "+ Carica file (PDF, PNG, …)"}
+              <input
+                type="file"
+                className="hidden"
+                disabled={uploadingFile}
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  setUploadingFile(true);
+                  const fd = new FormData();
+                  fd.append("file", file);
+                  const result = await uploadBlogFile(fd);
+                  setUploadingFile(false);
+                  if (result.error) { alert(result.error); return; }
+                  if (result.url && result.name) {
+                    setUploadedFiles((prev) => [...prev, { name: result.name!, url: result.url! }]);
+                  }
+                  e.target.value = "";
+                }}
+              />
+            </label>
+          </div>
         </div>
       </div>
 

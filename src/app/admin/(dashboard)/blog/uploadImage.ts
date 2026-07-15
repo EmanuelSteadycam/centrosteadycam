@@ -1,6 +1,26 @@
 "use server";
 import { put, del } from "@vercel/blob";
 
+export async function uploadBlogFile(formData: FormData): Promise<{ url?: string; name?: string; error?: string }> {
+  const file = formData.get("file") as File | null;
+  if (!file) return { error: "Nessun file" };
+
+  const ext = file.name.split(".").pop()?.toLowerCase() ?? "bin";
+  const baseName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+  const fileName = `${Date.now()}-${baseName}`;
+  const BLOB_BASE = "https://ziaarm9b5sovaafa.public.blob.vercel-storage.com";
+
+  await put(`media/blog/allegati/${fileName}`, file, {
+    access: "public",
+    addRandomSuffix: false,
+  });
+
+  return {
+    url: `${BLOB_BASE}/media/blog/allegati/${fileName}`,
+    name: file.name,
+  };
+}
+
 const BLOB_BASE = "https://ziaarm9b5sovaafa.public.blob.vercel-storage.com";
 
 export async function deleteBlogImage(url: string): Promise<void> {
