@@ -174,9 +174,16 @@ export async function sendRejectionEmail(booking: {
   });
 }
 
-// ── Rimuovi contatto da lista newsletter ─────────────────────────────────────
-export async function deleteSubscriberFromList(email: string, listId = NEWSLETTER_LIST_ID): Promise<void> {
-  await brevoPost(`/contacts/lists/${listId}/contacts/remove`, { emails: [email] });
+// ── Elimina contatto definitivamente da Brevo ─────────────────────────────────
+export async function deleteSubscriberFromList(email: string): Promise<void> {
+  const res = await fetch(`${BASE}/contacts/${encodeURIComponent(email)}`, {
+    method: "DELETE",
+    headers: { "api-key": API_KEY },
+  });
+  if (!res.ok && res.status !== 404) {
+    const err = await res.text();
+    throw new Error(`Brevo DELETE contact: ${res.status} — ${err}`);
+  }
 }
 
 // ── Ultimi iscritti newsletter ────────────────────────────────────────────────
