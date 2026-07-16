@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Montserrat, Open_Sans, Roboto, Poppins, Oswald, DM_Serif_Display } from "next/font/google";
 import "./globals.css";
 import SiteShell from "@/components/navigation/SiteShell";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -62,6 +64,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="it">
       <body className={`${montserrat.variable} ${openSans.variable} ${roboto.variable} ${poppins.variable} ${oswald.variable} ${dmSerifDisplay.variable}`}>
         <SiteShell>{children}</SiteShell>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
