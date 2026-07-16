@@ -56,6 +56,9 @@ export default function CampaignsWidget({ campaigns }: { campaigns: BrevoStat[] 
                   {c.sentDate && (
                     <span>{new Date(c.sentDate).toLocaleDateString("it-IT", { day: "numeric", month: "short", year: "2-digit" })}</span>
                   )}
+                  {c.status === "in_review" && (
+                    <span className="text-amber-500">dati disponibili al termine della revisione Brevo</span>
+                  )}
                   {c.sent > 0 && (
                     <>
                       <span className="text-gray-600 font-medium">{c.sent.toLocaleString("it-IT")} inviati</span>
