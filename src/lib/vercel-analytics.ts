@@ -38,18 +38,18 @@ export async function getVercelAnalytics(days = 30): Promise<VercelAnalyticsSumm
     vaGet("/v1/query/web-analytics/visits/aggregate", { ...p, by: "route", limit: "10" }),
   ]);
 
-  const totalViews: number = countData?.data?.visits ?? 0;
+  const totalViews: number = countData?.data?.pageviews ?? 0;
   const totalVisitors: number = countData?.data?.visitors ?? 0;
 
   const byDay: VercelAnalyticsSummary["byDay"] = (byDayData?.data ?? []).map((row: Record<string, unknown>) => ({
-    timestamp: String(row.timestamp ?? row.day ?? ""),
-    views: Number(row.visits ?? row.pageviews ?? row.count ?? 0),
-    visitors: Number(row.visitors ?? row.uniqueVisitors ?? 0),
+    timestamp: String(row.timestamp ?? ""),
+    views: Number(row.pageviews ?? 0),
+    visitors: Number(row.visitors ?? 0),
   }));
 
   const topPages: VercelAnalyticsSummary["topPages"] = (topPagesData?.data ?? []).map((row: Record<string, unknown>) => ({
-    route: String(row.route ?? row.requestPath ?? row.path ?? ""),
-    views: Number(row.visits ?? row.pageviews ?? row.count ?? 0),
+    route: String(row.route ?? ""),
+    views: Number(row.pageviews ?? 0),
   }));
 
   return { totalViews, totalVisitors, byDay, topPages };
