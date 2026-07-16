@@ -4,6 +4,7 @@ import Link from "next/link";
 import { createSupabaseAdminClient, createSupabaseServerClient } from "@/lib/supabase-server";
 import { getLatestSubscribers, getBrevoRecentCampaigns } from "@/lib/brevo";
 import SubscribersWidget from "@/components/admin/SubscribersWidget";
+import CampaignsWidget from "@/components/admin/CampaignsWidget";
 
 export default async function AdminDashboard() {
   const supabase = createSupabaseServerClient();
@@ -148,49 +149,7 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Campagne Brevo */}
-      <div className="bg-white rounded-lg shadow-sm mb-4">
-        <div className="px-5 py-4 border-b border-gray-100">
-          <span className="text-sm font-semibold text-gray-800">Campagne Newsletter</span>
-          <p className="text-xs text-gray-400 mt-0.5">Ultimi invii Brevo — aggiornati in tempo reale.</p>
-        </div>
-        <div className="divide-y divide-gray-50">
-          {campaigns.length === 0 && (
-            <p className="px-5 py-4 text-sm text-gray-400">Nessuna campagna trovata.</p>
-          )}
-          {campaigns.map((c) => (
-            <div key={c.id} className="px-5 py-3">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-sm text-gray-700 font-medium truncate max-w-[60%]">{c.subject}</span>
-                <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
-                  c.status === "sent" ? "bg-green-100 text-green-700"
-                  : c.status === "in_review" ? "bg-amber-100 text-amber-700"
-                  : c.status === "draft" ? "bg-gray-100 text-gray-500"
-                  : "bg-blue-100 text-blue-700"
-                }`}>
-                  {c.status === "sent" ? "inviata"
-                    : c.status === "in_review" ? "in revisione"
-                    : c.status === "draft" ? "bozza"
-                    : c.status}
-                </span>
-              </div>
-              <div className="flex items-center gap-4 text-xs text-gray-400">
-                {c.sentDate && (
-                  <span>{new Date(c.sentDate).toLocaleDateString("it-IT", { day: "numeric", month: "short", year: "2-digit" })}</span>
-                )}
-                {c.sent > 0 && <>
-                  <span className="text-gray-700 font-medium">{c.sent.toLocaleString("it-IT")} inviati</span>
-                  <span>📬 {c.openRate.toFixed(1)}%</span>
-                  <span>🖱 {c.clickRate.toFixed(1)}%</span>
-                  {c.unsubscribed > 0 && <span className="text-red-400">−{c.unsubscribed} disiscritti</span>}
-                  {(c.hardBounces + c.softBounces) > 0 && (
-                    <span className="text-orange-400">{c.hardBounces + c.softBounces} bounce</span>
-                  )}
-                </>}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <CampaignsWidget campaigns={campaigns} />
 
       {/* Ultimi iscritti Steadynews */}
       <SubscribersWidget initialSubscribers={subscribers} />
