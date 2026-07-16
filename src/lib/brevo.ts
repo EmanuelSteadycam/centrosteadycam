@@ -366,7 +366,44 @@ export async function sendNewsletterCampaign(post: {
   return { campaignId: campaign.id, isTest: false };
 }
 
-// ── 4. Promemoria prima della visita ─────────────────────────────────────────
+// ── 4. Report campagne ───────────────────────────────────────────────────────
+export type BrevoStat = {
+  id: number;
+  name: string;
+  subject: string;
+  status: string;
+  sentDate: string | null;
+  sent: number;
+  openRate: number;
+  clickRate: number;
+  hardBounces: number;
+  softBounces: number;
+  unsubscribed: number;
+  spamReports: number;
+};
+
+export async function getBrevoRecentCampaigns(limit = 5): Promise<BrevoStat[]> {
+  const data = await brevoGet(`/emailCampaigns?limit=${limit}&sort=desc&type=classic`);
+  return (data.campaigns ?? []).map((c: any) => {
+    const s = c.statistics?.globalStats ?? {};
+    return {
+      id: c.id,
+      name: c.name,
+      subject: c.subject,
+      status: c.status,
+      sentDate: c.sentDate ?? null,
+      sent: s.sent ?? 0,
+      openRate: s.openRate ?? 0,
+      clickRate: s.clickRate ?? 0,
+      hardBounces: s.hardBounces ?? 0,
+      softBounces: s.softBounces ?? 0,
+      unsubscribed: s.unsubscribed ?? 0,
+      spamReports: s.spamReports ?? 0,
+    };
+  });
+}
+
+// ── 5. Promemoria prima della visita ─────────────────────────────────────────
 export async function sendReminderEmail(booking: {
   nome: string; cognome: string; email: string; istituto: string;
   classe: string; n_alunni: number; n_adulti: number; date: string;
