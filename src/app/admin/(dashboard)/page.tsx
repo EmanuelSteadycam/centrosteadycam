@@ -3,8 +3,10 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { createSupabaseAdminClient, createSupabaseServerClient } from "@/lib/supabase-server";
 import { getLatestSubscribers, getBrevoRecentCampaigns } from "@/lib/brevo";
+import { getVercelAnalytics } from "@/lib/vercel-analytics";
 import SubscribersWidget from "@/components/admin/SubscribersWidget";
 import CampaignsWidget from "@/components/admin/CampaignsWidget";
+import AnalyticsWidget from "@/components/admin/AnalyticsWidget";
 
 export default async function AdminDashboard() {
   const supabase = createSupabaseServerClient();
@@ -37,6 +39,15 @@ export default async function AdminDashboard() {
       getLatestSubscribers(20).catch(() => []),
       getBrevoRecentCampaigns(5).catch(() => []),
     ]);
+
+  const ANALYTICS_DAYS = 30;
+  let analyticsData = null;
+  let analyticsError: string | undefined;
+  try {
+    analyticsData = await getVercelAnalytics(ANALYTICS_DAYS);
+  } catch (e: unknown) {
+    analyticsError = e instanceof Error ? e.message : "Errore sconosciuto";
+  }
 
   const slotsByEvent: Record<string, number> = {};
   const bookingsByEvent: Record<string, number> = {};
@@ -147,6 +158,9 @@ export default async function AdminDashboard() {
           </Link>
         ))}
       </div>
+
+      {/* Analytics sito */}
+      <AnalyticsWidget data={analyticsData} error={analyticsError} days={ANALYTICS_DAYS} />
 
       {/* Campagne Brevo */}
       <CampaignsWidget campaigns={campaigns} />
