@@ -385,20 +385,39 @@ export type BrevoStat = {
 export async function getBrevoRecentCampaigns(limit = 5): Promise<BrevoStat[]> {
   const data = await brevoGet(`/emailCampaigns?limit=${limit}&sort=desc&type=classic`);
   return (data.campaigns ?? []).map((c: any) => {
-    const s = c.statistics?.globalStats ?? {};
+    const g = c.statistics?.globalStats ?? {};
+    // Per campagne in revisione globalStats è tutto zero — usa campaignStats
+    const cs: any[] = c.statistics?.campaignStats ?? [];
+    const agg = cs.reduce((acc: any, row: any) => ({
+      sent: acc.sent + (row.sent ?? 0),
+      delivered: acc.delivered + (row.delivered ?? 0),
+      uniqueViews: acc.uniqueViews + (row.uniqueViews ?? 0),
+      uniqueClicks: acc.uniqueClicks + (row.uniqueClicks ?? 0),
+      hardBounces: acc.hardBounces + (row.hardBounces ?? 0),
+      softBounces: acc.softBounces + (row.softBounces ?? 0),
+      unsubscriptions: acc.unsubscriptions + (row.unsubscriptions ?? 0),
+      complaints: acc.complaints + (row.complaints ?? 0),
+    }), { sent: 0, delivered: 0, uniqueViews: 0, uniqueClicks: 0, hardBounces: 0, softBounces: 0, unsubscriptions: 0, complaints: 0 });
+
+    const src = (g.sent ?? 0) > 0 ? g : agg;
+    const sent = src.sent ?? 0;
+    const delivered = src.delivered ?? sent;
+    const openRate = delivered > 0 ? ((src.uniqueViews ?? 0) / delivered) * 100 : 0;
+    const clickRate = sent > 0 ? ((src.uniqueClicks ?? 0) / sent) * 100 : 0;
+
     return {
       id: c.id,
       name: c.name,
       subject: c.subject,
       status: c.status,
-      sentDate: c.sentDate ?? null,
-      sent: s.sent ?? 0,
-      openRate: s.openRate ?? 0,
-      clickRate: s.clickRate ?? 0,
-      hardBounces: s.hardBounces ?? 0,
-      softBounces: s.softBounces ?? 0,
-      unsubscribed: s.unsubscribed ?? 0,
-      spamReports: s.spamReports ?? 0,
+      sentDate: c.sentDate ?? c.scheduledAt ?? c.createdAt ?? null,
+      sent,
+      openRate,
+      clickRate,
+      hardBounces: src.hardBounces ?? 0,
+      softBounces: src.softBounces ?? 0,
+      unsubscribed: src.unsubscriptions ?? src.unsubscribed ?? 0,
+      spamReports: src.complaints ?? src.spamReports ?? 0,
     };
   });
 }
