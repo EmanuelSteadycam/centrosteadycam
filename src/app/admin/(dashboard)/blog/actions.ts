@@ -76,7 +76,7 @@ export async function getBrevoLists(): Promise<{ id: number; name: string }[]> {
     .sort((a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name));
 }
 
-export async function sendBlogNewsletter(id: number, listId: number): Promise<{ error: string | null; campaignId?: number }> {
+export async function sendBlogNewsletter(id: number, listId: number): Promise<{ error: string | null; campaignId?: number | null }> {
   const supabase = createSupabaseAdminClient();
   const { data: post, error } = await supabase
     .from("posts")

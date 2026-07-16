@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { createSupabaseAdminClient, createSupabaseServerClient } from "@/lib/supabase-server";
+import { getLatestSubscribers } from "@/lib/brevo";
 
 export default async function AdminDashboard() {
   const supabase = createSupabaseServerClient();
@@ -16,7 +17,7 @@ export default async function AdminDashboard() {
 
   const eventIds = (events ?? []).map((e) => e.id);
 
-  const [{ data: slotCounts }, { data: bookingCounts }, { data: prossime }] =
+  const [{ data: slotCounts }, { data: bookingCounts }, { data: prossime }, subscribers] =
     await Promise.all([
       eventIds.length
         ? supabase.from("event_slots").select("event_id").in("event_id", eventIds).eq("is_open", true).gte("date", today)
@@ -31,6 +32,7 @@ export default async function AdminDashboard() {
         .gte("date", today)
         .order("date", { ascending: true })
         .limit(3),
+      getLatestSubscribers(20).catch(() => []),
     ]);
 
   const slotsByEvent: Record<string, number> = {};
@@ -141,6 +143,35 @@ export default async function AdminDashboard() {
             <span className="text-gray-300 text-lg ml-4">→</span>
           </Link>
         ))}
+      </div>
+
+      {/* Ultimi iscritti Steadynews */}
+      <div className="bg-white rounded-lg shadow-sm border-l-4 border-teal-400 mb-4">
+        <div className="px-5 py-4 border-b border-gray-100 flex justify-between items-center">
+          <div>
+            <span className="text-sm font-semibold text-gray-800">Ultimi iscritti Steadynews</span>
+            <p className="text-xs text-gray-400 mt-0.5">Ultimi 20 iscritti alla newsletter.</p>
+          </div>
+        </div>
+        <div className="divide-y divide-gray-50">
+          {subscribers.length === 0 ? (
+            <p className="px-5 py-4 text-sm text-gray-400">Nessun iscritto trovato.</p>
+          ) : (
+            subscribers.map((s) => (
+              <div key={s.email} className="px-5 py-2.5 flex items-center justify-between">
+                <div className="flex items-center gap-3 min-w-0">
+                  {s.nome && <span className="text-sm text-gray-700 shrink-0">{s.nome}</span>}
+                  <span className="text-sm text-gray-400 truncate">{s.email}</span>
+                </div>
+                {s.createdAt && (
+                  <span className="text-xs text-gray-300 shrink-0 ml-4">
+                    {new Date(s.createdAt).toLocaleDateString("it-IT", { day: "numeric", month: "short", year: "2-digit" })}
+                  </span>
+                )}
+              </div>
+            ))
+          )}
+        </div>
       </div>
 
       {/* Prossime date */}

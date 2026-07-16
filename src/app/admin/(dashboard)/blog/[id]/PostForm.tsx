@@ -231,7 +231,7 @@ export default function PostForm({ post }: { post: Post }) {
                   setNewsletterMsg(res.error);
                 } else {
                   setNewsletterState("sent");
-                  setNewsletterMsg(`Inviata (campagna #${res.campaignId})`);
+                  setNewsletterMsg(res.campaignId ? `Inviata (campagna #${res.campaignId})` : "Test inviato");
                 }
               }}
               className="text-sm px-4 py-2 rounded border transition-colors disabled:opacity-40

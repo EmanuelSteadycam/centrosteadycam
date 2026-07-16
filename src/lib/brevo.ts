@@ -10,6 +10,18 @@ const BASE = "https://api.brevo.com/v3";
 const SENDER = { name: "Centro Steadycam", email: "info@centrosteadycam.it" };
 const DISPLAY_LIST_ID = 12;
 const NEWSLETTER_LIST_ID = 3;
+const TEST_LIST_ID = 15;
+
+async function brevoGet(path: string) {
+  const res = await fetch(BASE + path, {
+    headers: { "api-key": API_KEY },
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Brevo GET ${path}: ${res.status} — ${err}`);
+  }
+  return res.json();
+}
 
 async function brevoPost(path: string, body: object) {
   const res = await fetch(BASE + path, {
@@ -162,13 +174,27 @@ export async function sendRejectionEmail(booking: {
   });
 }
 
+// ── Ultimi iscritti newsletter ────────────────────────────────────────────────
+export async function getLatestSubscribers(limit = 20): Promise<Array<{
+  email: string;
+  nome: string;
+  createdAt: string;
+}>> {
+  const data = await brevoGet(`/contacts?listId=${NEWSLETTER_LIST_ID}&limit=${limit}&sort=desc`);
+  return (data.contacts ?? []).map((c: { email: string; attributes?: { FIRSTNAME?: string }; createdAt?: string }) => ({
+    email: c.email,
+    nome: c.attributes?.FIRSTNAME ?? "",
+    createdAt: c.createdAt ?? "",
+  }));
+}
+
 // ── 5. Campagna newsletter da articolo del blog ──────────────────────────────
 export async function sendNewsletterCampaign(post: {
   title: string;
   slug: string;
   excerpt: string | null;
   featured_image_url: string | null;
-}, listId: number = NEWSLETTER_LIST_ID): Promise<{ campaignId: number }> {
+}, listId: number = NEWSLETTER_LIST_ID): Promise<{ campaignId: number | null; isTest: boolean }> {
   const SITE = process.env.SITE_URL ?? "https://centrosteadycam.it";
   const BANNER = `${SITE}/media/01Banner-Centro-Steadycam2.png`;
   const postUrl = `${SITE}/blog/${post.slug}`;
@@ -214,7 +240,7 @@ export async function sendNewsletterCampaign(post: {
   <tbody><tr><td>
     <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="max-width:600px;background-color:#fff;margin:0 auto">
     <tbody><tr><td style="padding:20px 10px 10px;font-family:'Lato',Arial,sans-serif;font-size:30px;font-weight:700;color:#555555;line-height:1.2">
-      <span style="font-family:'Lato',Arial,sans-serif;font-size:30px;font-weight:700;color:#555555;line-height:1.2">${post.title}</span>
+      <span style="font-family:'Lato',Arial,sans-serif;font-size:30px;font-weight:700;color:#555555;line-height:1.2">${post.title.toUpperCase()}</span>
     </td></tr></tbody>
     </table>
   </td></tr></tbody>
@@ -297,6 +323,23 @@ export async function sendNewsletterCampaign(post: {
 </table>
 </body></html>`;
 
+  // Invio test: usa API transazionale, non crea campagna
+  if (listId === TEST_LIST_ID) {
+    const data = await brevoGet(`/contacts?listId=${TEST_LIST_ID}&limit=50`);
+    const emails: string[] = (data.contacts ?? []).map((c: { email: string }) => c.email);
+    await Promise.all(
+      emails.map((email) =>
+        brevoPost("/smtp/email", {
+          sender: SENDER,
+          to: [{ email }],
+          subject: post.title,
+          htmlContent: html,
+        })
+      )
+    );
+    return { campaignId: null, isTest: true };
+  }
+
   const now = new Date().toLocaleDateString("it-IT");
   const campaign = await brevoPost("/emailCampaigns", {
     name: `STEADYNEWS — ${post.title} — ${now}`,
@@ -308,7 +351,7 @@ export async function sendNewsletterCampaign(post: {
   });
 
   await brevoPost(`/emailCampaigns/${campaign.id}/sendNow`, {});
-  return { campaignId: campaign.id };
+  return { campaignId: campaign.id, isTest: false };
 }
 
 // ── 4. Promemoria prima della visita ─────────────────────────────────────────
