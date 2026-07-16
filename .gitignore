@@ -29,6 +29,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# claude code — permessi locali, può contenere comandi con credenziali in chiaro
+.claude/settings.local.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
