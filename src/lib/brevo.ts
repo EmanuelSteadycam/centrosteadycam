@@ -174,6 +174,11 @@ export async function sendRejectionEmail(booking: {
   });
 }
 
+// ── Rimuovi contatto da lista newsletter ─────────────────────────────────────
+export async function deleteSubscriberFromList(email: string, listId = NEWSLETTER_LIST_ID): Promise<void> {
+  await brevoPost(`/contacts/lists/${listId}/contacts/remove`, { emails: [email] });
+}
+
 // ── Ultimi iscritti newsletter ────────────────────────────────────────────────
 export async function getLatestSubscribers(limit = 20): Promise<Array<{
   email: string;
