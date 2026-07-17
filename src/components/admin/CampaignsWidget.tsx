@@ -17,8 +17,66 @@ const STATUS_CLASS: Record<string, string> = {
   queued: "bg-blue-100 text-blue-700",
 };
 
+function fmt(n: number) {
+  return n.toLocaleString("it-IT");
+}
+
+function ExplanationPopup({ c, onClose }: { c: BrevoStat; onClose: () => void }) {
+  const bounces = c.hardBounces + c.softBounces;
+
+  return (
+    <>
+      <div className="fixed inset-0 z-40" onClick={onClose} />
+      <div className="absolute bottom-full right-0 mb-2 z-50 w-80 max-w-[90vw] bg-white rounded-lg shadow-xl border border-gray-200 p-4 text-sm text-gray-700 leading-relaxed">
+        <div className="flex items-center justify-between mb-2">
+          <span className="font-semibold text-gray-800">Cosa significano questi numeri?</span>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 text-lg leading-none px-1"
+            aria-label="Chiudi"
+          >
+            ×
+          </button>
+        </div>
+
+        <p className="mb-2">
+          Immagina di aver scritto <strong>{fmt(c.sent)} lettere</strong> e di averle spedite a tutti i tuoi amici. 📮
+        </p>
+
+        {bounces > 0 && (
+          <p className="mb-2">
+            <strong>{fmt(bounces)}</strong> sono tornate indietro perché l&apos;indirizzo non c&apos;era più (bounce) — quindi solo{" "}
+            <strong>{fmt(c.delivered)} persone</strong> hanno davvero ricevuto la lettera nella cassetta. ❌
+          </p>
+        )}
+
+        <p className="mb-2">
+          Di queste, <strong>{fmt(c.uniqueViews)} persone</strong> ({c.openRate.toFixed(1)}%, circa 1 su{" "}
+          {Math.max(1, Math.round(100 / Math.max(c.openRate, 1)))}) hanno aperto la busta e forse l&apos;hanno letta. Le altre l&apos;hanno lasciata chiusa sul tavolo. 👀
+        </p>
+
+        <p className="mb-2">
+          Dentro c&apos;era scritto &quot;clicca qui per saperne di più&quot;: solo{" "}
+          <strong>{fmt(c.uniqueClicks)} persone</strong> ({c.clickRate.toFixed(1)}%) hanno davvero cliccato per approfondire. 👆
+        </p>
+
+        {c.unsubscribed > 0 ? (
+          <p>
+            <strong>{fmt(c.unsubscribed)} persone</strong> hanno detto &quot;basta, non mandatemi più niente&quot; e si sono cancellate. 🚪
+            {c.sent > 0 && c.unsubscribed / c.sent < 0.01 && " Su tutti gli invii è pochissimo — quasi nessuno si è infastidito."}
+          </p>
+        ) : (
+          <p>Nessuno si è disiscritto dopo questa mail — segno che è stata gradita. 🚪</p>
+        )}
+      </div>
+    </>
+  );
+}
+
 export default function CampaignsWidget({ campaigns }: { campaigns: BrevoStat[] }) {
   const [expanded, setExpanded] = useState(false);
+  const [helpOpenId, setHelpOpenId] = useState<number | null>(null);
 
   return (
     <div className="bg-white rounded-lg shadow-sm border-l-4 border-indigo-400 mb-4">
@@ -58,13 +116,30 @@ export default function CampaignsWidget({ campaigns }: { campaigns: BrevoStat[] 
                   )}
                   {c.sent > 0 && (
                     <>
-                      <span className="text-gray-600 font-medium">{c.sent.toLocaleString("it-IT")} inviati</span>
-                      <span>📬 {c.openRate.toFixed(1)}%</span>
-                      <span>🖱 {c.clickRate.toFixed(1)}%</span>
+                      <span className="text-gray-600 font-medium">{fmt(c.sent)} inviati</span>
+                      <span title="Percentuale di persone uniche che hanno aperto la mail (non eventi totali)">
+                        {c.openRate.toFixed(1)}% aperture uniche
+                      </span>
+                      <span title="Percentuale di persone uniche che hanno cliccato un link (non eventi totali)">
+                        {c.clickRate.toFixed(1)}% clic unici
+                      </span>
                       {c.unsubscribed > 0 && <span className="text-red-400">−{c.unsubscribed} disiscritti</span>}
                       {(c.hardBounces + c.softBounces) > 0 && (
                         <span className="text-orange-400">{c.hardBounces + c.softBounces} bounce</span>
                       )}
+                      <span className="relative inline-block">
+                        <button
+                          type="button"
+                          onClick={() => setHelpOpenId(helpOpenId === c.id ? null : c.id)}
+                          className="w-4 h-4 rounded-full border border-gray-300 text-gray-400 hover:border-indigo-400 hover:text-indigo-500 flex items-center justify-center text-[10px] font-bold leading-none"
+                          aria-label="Spiegazione numeri"
+                        >
+                          ?
+                        </button>
+                        {helpOpenId === c.id && (
+                          <ExplanationPopup c={c} onClose={() => setHelpOpenId(null)} />
+                        )}
+                      </span>
                     </>
                   )}
                 </div>

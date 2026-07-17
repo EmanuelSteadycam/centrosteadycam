@@ -374,6 +374,9 @@ export type BrevoStat = {
   status: string;
   sentDate: string | null;
   sent: number;
+  delivered: number;
+  uniqueViews: number;
+  uniqueClicks: number;
   openRate: number;
   clickRate: number;
   hardBounces: number;
@@ -412,6 +415,9 @@ export async function getBrevoRecentCampaigns(limit = 5): Promise<BrevoStat[]> {
       status: c.status,
       sentDate: c.sentDate ?? c.scheduledAt ?? c.createdAt ?? null,
       sent,
+      delivered,
+      uniqueViews: src.uniqueViews ?? 0,
+      uniqueClicks: src.uniqueClicks ?? 0,
       openRate,
       clickRate,
       hardBounces: src.hardBounces ?? 0,

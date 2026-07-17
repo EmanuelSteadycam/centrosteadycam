@@ -81,7 +81,7 @@ export default function AnalyticsWidget({
                   <p className="text-xs text-gray-400 uppercase tracking-wide mb-3">Pagine più visitate</p>
                   <div className="space-y-2">
                     {data.topPages.map((p) => (
-                      <TopPageRow key={p.route} route={p.route} views={p.views} max={data.topPages[0].views} />
+                      <TopPageRow key={p.route} route={p.route} views={p.views} suspicious={p.suspicious} max={data.topPages[0].views} />
                     ))}
                   </div>
                 </div>
@@ -114,7 +114,7 @@ function MiniBarChart({ rows }: { rows: { timestamp: string; views: number }[] }
   );
 }
 
-function TopPageRow({ route, views, max }: { route: string; views: number; max: number }) {
+function TopPageRow({ route, views, suspicious, max }: { route: string; views: number; suspicious: boolean; max: number }) {
   const pct = max > 0 ? (views / max) * 100 : 0;
   const label = route === "/" ? "Homepage" : route;
   return (
@@ -125,6 +125,14 @@ function TopPageRow({ route, views, max }: { route: string; views: number; max: 
           <span className="absolute inset-0 flex items-center px-2 text-xs text-gray-700 truncate">{label}</span>
         </div>
       </div>
+      {suspicious && (
+        <span
+          className="text-amber-500 text-xs shrink-0 cursor-help"
+          title="Picco concentrato subito dopo un invio newsletter: probabile scansione automatica dei link da parte di sistemi di sicurezza email, non lettori reali"
+        >
+          ⚠️
+        </span>
+      )}
       <span className="text-xs text-gray-500 shrink-0 w-16 text-right">{views.toLocaleString("it-IT")}</span>
     </div>
   );
