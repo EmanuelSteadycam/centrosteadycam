@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import ApprofondimentiModal from "./ApprofondimentiModal";
+import { formatDateShort as formatDate } from "@/lib/format";
 
 type Item = {
   id: number;
@@ -11,11 +12,6 @@ type Item = {
   estratto: string | null;
   image_url: string | null;
 };
-
-function formatDate(d: string | null) {
-  if (!d) return null;
-  return new Date(d).toLocaleDateString("it-IT", { day: "2-digit", month: "short", year: "numeric" });
-}
 
 function ItemCard({ item, onOpen }: { item: Item; onOpen: (id: number) => void }) {
   const [imgError, setImgError] = useState(false);

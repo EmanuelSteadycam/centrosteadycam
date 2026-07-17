@@ -1,13 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { formatDateLong as formatDate } from "@/lib/format";
 
 type Item = Record<string, any>;
-
-function formatDate(d: string | null) {
-  if (!d) return null;
-  return new Date(d).toLocaleDateString("it-IT", { day: "2-digit", month: "long", year: "numeric" });
-}
 
 export default function ApprofondimentiModal({
   itemId,

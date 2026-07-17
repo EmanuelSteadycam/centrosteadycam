@@ -144,7 +144,7 @@ export default function IProgettiPage() {
             I Progetti
           </h1>
           <p className="font-light text-[#1e1e1e]/50 text-sm mt-2 max-w-xl" style={{ fontFamily: "var(--font-raleway)" }}>
-            Vent'anni di attività tra media education, prevenzione e promozione della salute nel territorio dell'ASL CN2.
+            Vent&apos;anni di attività tra media education, prevenzione e promozione della salute nel territorio dell&apos;ASL CN2.
           </p>
         </div>
       </div>

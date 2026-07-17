@@ -44,7 +44,6 @@ async function sendMail({ to, subject, htmlBody }: { to: string; subject: string
     subject,
     htmlContent: htmlBody,
   });
-  console.log(`[Brevo] sent to ${to}`);
 }
 
 function formatDate(date: string): string {
@@ -82,8 +81,6 @@ export async function addToNewsletterGroup(recipient: { email: string; nome: str
     }),
   });
 
-  console.log(`[Brevo addToNewsletter] status:${res.status}`);
-
   if (res.ok || res.status === 204) {
     const text = await res.text();
     const body = text ? JSON.parse(text) : {};
@@ -114,8 +111,6 @@ export async function addToDisplayGroup(recipient: {
     }),
   });
 
-  console.log(`[Brevo addToDisplay] status:${res.status}`);
-
   if (res.ok || res.status === 204) {
     const text = await res.text();
     const body = text ? JSON.parse(text) : {};
@@ -130,12 +125,11 @@ export async function addToDisplayGroup(recipient: {
 // ── rimuovi contatto dal gruppo Display ──────────────────────────────────────
 export async function removeFromDisplayGroup(_email: string, _brevoId?: number | null) {
   if (!_email) return;
-  const res = await fetch(BASE + `/contacts/lists/${DISPLAY_LIST_ID}/contacts/remove`, {
+  await fetch(BASE + `/contacts/lists/${DISPLAY_LIST_ID}/contacts/remove`, {
     method: "POST",
     headers: { "api-key": API_KEY, "Content-Type": "application/json" },
     body: JSON.stringify({ emails: [_email] }),
   });
-  console.log(`[Brevo removeFromDisplay] email:${_email} status:${res.status}`);
 }
 
 // ── 1. Conferma ricezione form ────────────────────────────────────────────────

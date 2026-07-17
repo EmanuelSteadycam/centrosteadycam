@@ -200,7 +200,7 @@ export default function RichTextEditor({
           </button>
           <span className="w-px bg-gray-200 mx-1 self-stretch" />
           <button type="button" onClick={() => editor.chain().focus().toggleBlockquote().run()} className={btn(editor.isActive("blockquote"))}>
-            " Quote
+            &quot; Quote
           </button>
           <button type="button" onClick={() => editor.chain().focus().setHorizontalRule().run()} className={BTN}>
             — Linea
@@ -281,7 +281,7 @@ export default function RichTextEditor({
               {/* Archivio */}
               {onListFiles && (
                 <div>
-                  <p className="text-xs font-medium text-gray-600 mb-2">— o scegli dall'archivio —</p>
+                  <p className="text-xs font-medium text-gray-600 mb-2">— o scegli dall&apos;archivio —</p>
                   {modal.loadingArchive ? (
                     <p className="text-xs text-gray-400">Caricamento archivio…</p>
                   ) : modal.archiveFiles?.length === 0 ? (

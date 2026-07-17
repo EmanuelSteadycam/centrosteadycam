@@ -93,7 +93,7 @@ export default function ArchivioPage() {
             L&apos;archivio digitale Azzardo e Media raccoglie oltre 200 risorse tra spot pubblicitari,
             film e contenuti media analizzati per l&apos;educazione alla prevenzione del gioco d&apos;azzardo.
           </p>
-          <a href="/adam" className="btn-orange">Vai all'Archivio ADAM</a>
+          <a href="/adam" className="btn-orange">Vai all&apos;Archivio ADAM</a>
         </div>
       </section>
 

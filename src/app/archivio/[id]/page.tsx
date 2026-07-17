@@ -2,13 +2,9 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { formatDateLong as formatDate } from "@/lib/format";
 
 type Params = { id: string };
-
-function formatDate(d: string | null) {
-  if (!d) return null;
-  return new Date(d).toLocaleDateString("it-IT", { day: "2-digit", month: "long", year: "numeric" });
-}
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   if (!value && value !== false) return null;

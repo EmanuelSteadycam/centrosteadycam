@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, CSSProperties } from "react";
+import { useRef, CSSProperties } from "react";
 import { motion, useScroll, useTransform, MotionValue } from "framer-motion";
 
 const LINE        = "#cfc4ff";
