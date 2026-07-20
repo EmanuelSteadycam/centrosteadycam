@@ -14,6 +14,15 @@
 import React, { useRef, CSSProperties } from "react";
 import { motion, useScroll, useTransform, MotionValue } from "framer-motion";
 
+/* larghezza del blocco timeline: 42% desktop, allargata sui breakpoint stretti
+   (stessi valori del CSS Webflow originale per .line-container) */
+const TL_BLOCK_CSS = `
+  .tl-block { width: 42%; min-width: 280px; margin: 0 auto; }
+  @media (max-width: 991px) { .tl-block { width: 55%; } }
+  @media (max-width: 767px) { .tl-block { width: 60%; } }
+  @media (max-width: 479px) { .tl-block { width: 98%; } }
+`;
+
 const LINE = "#e0cffe";
 const PARA = "#9b7ecd";
 const PILL_TEXT = "#402e70";
@@ -148,14 +157,37 @@ const GRID_TICKS: { kf: KF; axis: "h" | "v"; w?: number; h?: number }[] = [
 /* ── hero ─────────────────────────────────────────────────────────────── */
 
 function Hero() {
+  const heroRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
+  const scrollHintOpacity = useTransform(scrollYProgress, [0.5, 0.63], [1, 0]);
+  const scrollHintY = useTransform(scrollYProgress, [0.5, 0.63], [0, 20]);
+
   return (
     <div
+      ref={heroRef}
       style={{
         position: "relative", height: "100vh", overflow: "hidden",
         display: "flex", flexDirection: "column", justifyContent: "flex-end", alignItems: "center",
         padding: "0 10px 70px",
       }}
     >
+      {/* copia "ghost" dietro il testo principale: stesso page-load reveal ma
+          partenza più larga/ruotata e dissolvenza a opacity 0.4 (effetto eco) */}
+      <motion.div
+        aria-hidden
+        initial={{ opacity: 0, scale: 1.8, rotate: -12 }}
+        animate={{ opacity: 0.4, scale: 1, rotate: 0 }}
+        transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+        style={{ position: "absolute", zIndex: 1, textAlign: "center", filter: "blur(2px)" }}
+      >
+        <div style={{ display: "inline-block", padding: "8px 16px 8px 24px", backgroundColor: LINE, marginBottom: 8 }}>
+          <h3 style={{ ...h3Style, color: PILL_TEXT, fontSize: "clamp(1rem,2.2vw,1.7rem)", letterSpacing: "0.18em" }}>
+            What a
+          </h3>
+        </div>
+        <h1 style={h1Style}>Year</h1>
+      </motion.div>
+
       <motion.div
         initial={{ opacity: 0, scale: 1.5, rotate: -10, filter: "blur(8px)" }}
         animate={{ opacity: 1, scale: 1, rotate: 0, filter: "blur(0px)" }}
@@ -174,7 +206,10 @@ function Hero() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.9, duration: 0.6 }}
-        style={{ position: "absolute", bottom: 24, display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}
+        style={{
+          position: "absolute", bottom: 24, display: "flex", flexDirection: "column", alignItems: "center", gap: 12,
+          opacity: scrollHintOpacity, y: scrollHintY,
+        }}
       >
         <motion.div
           initial={{ scaleY: 0 }}
@@ -214,6 +249,7 @@ export default function CovidTimelineClone() {
 
   return (
     <div style={{ position: "relative", backgroundColor: "#121212" }}>
+      <style>{TL_BLOCK_CSS}</style>
       <div
         style={{
           position: "fixed", inset: 0, zIndex: 0,
@@ -228,7 +264,7 @@ export default function CovidTimelineClone() {
 
       <div style={{ maxWidth: 940, margin: "0 auto", padding: "0 24px" }}>
         {/* ── blocco 1: GEN → LUG ─────────────────────────────────────── */}
-        <div ref={block1Ref} style={{ width: "42%", minWidth: 280, margin: "0 auto" }}>
+        <div ref={block1Ref} className="tl-block">
           <div style={{ display: "inline-flex", alignItems: "flex-end", marginBottom: 56 }}>
             <VTick p={p1} kf={[6, 12]} h={100} marginTop={-10} />
             <Label p={p1} kf={[12, 18]} align="left">JAN</Label>
@@ -238,7 +274,7 @@ export default function CovidTimelineClone() {
 
           <div style={ROW}>
             <Para p={p1} kf={[12, 18]} align="left">
-              China identified a new virus that had infected dozens of people in Asia
+              Testo segnaposto per l&apos;evento del mese: una breve descrizione generica.
             </Para>
             <div style={{ display: "flex", alignItems: "flex-end" }}>
               <Label p={p1} kf={[24, 30]} align="right">FEB</Label>
@@ -254,7 +290,7 @@ export default function CovidTimelineClone() {
               <Label p={p1} kf={[36, 42]} align="left">MAR</Label>
             </div>
             <Para p={p1} kf={[36, 42]} align="right">
-              The World Health Organization declared a global health emergency.
+              Testo segnaposto per l&apos;evento del mese: una breve descrizione generica.
             </Para>
           </div>
 
@@ -262,7 +298,7 @@ export default function CovidTimelineClone() {
 
           <div style={ROW}>
             <Para p={p1} kf={[36, 42]} align="left">
-              Lockdowns and restrictions have been imposed worldwide
+              Testo segnaposto per l&apos;evento del mese: una breve descrizione generica.
             </Para>
             <VTick p={p1} kf={[42, 48]} h={100} marginBottom={-10} style={{ alignSelf: "flex-end" }} />
           </div>
@@ -281,11 +317,11 @@ export default function CovidTimelineClone() {
             <VTick p={p1} kf={[66, 70]} h={400} />
             <div style={{ display: "flex", width: "62%" }}>
               <div style={{ width: "50%", display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-                <Para p={p1} kf={[60, 68]} align="left">Global death toll surpassed 200,000.</Para>
+                <Para p={p1} kf={[60, 68]} align="left">Testo segnaposto per l&apos;evento del mese.</Para>
                 <Label p={p1} kf={[60, 68]} align="left">JUN</Label>
               </div>
               <div style={{ width: "50%", display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-                <Para p={p1} kf={[60, 68]} align="right">Both Japan and Germany entered a recession.</Para>
+                <Para p={p1} kf={[60, 68]} align="right">Testo segnaposto per l&apos;evento del mese.</Para>
                 <Label p={p1} kf={[70, 74]} align="right">JUL</Label>
               </div>
             </div>
@@ -299,11 +335,11 @@ export default function CovidTimelineClone() {
 
           <div style={{ ...ROW, alignItems: "flex-start" }}>
             <Para p={p1} kf={[70, 74]} align="left">
-              Attempts to open the borders and ease restrictions have begun.
+              Testo segnaposto per l&apos;evento del mese: una breve descrizione generica.
             </Para>
             <VTick p={p1} kf={[76, 78]} h={100} marginBottom={-10} />
             <Para p={p1} kf={[70, 74]} align="right">
-              Worldwide, lockdowns were reimposed for a second time.
+              Testo segnaposto per l&apos;evento del mese: una breve descrizione generica.
             </Para>
           </div>
 
@@ -311,7 +347,7 @@ export default function CovidTimelineClone() {
         </div>
 
         {/* ── blocco 2: AGO → DIC ─────────────────────────────────────── */}
-        <div ref={block2Ref} style={{ width: "42%", minWidth: 280, margin: "0 auto" }}>
+        <div ref={block2Ref} className="tl-block">
           <div style={{ display: "inline-flex", alignItems: "flex-end", marginBottom: 56 }}>
             <VTick p={p2} kf={[0, 6]} h={100} marginTop={-10} />
             <Label p={p2} kf={[6, 12]} align="left">AUG</Label>
@@ -321,7 +357,7 @@ export default function CovidTimelineClone() {
 
           <div style={ROW}>
             <Para p={p2} kf={[6, 12]} align="left">
-              The C.D.C. began developing plans to distribute a coronavirus vaccine.
+              Testo segnaposto per l&apos;evento del mese: una breve descrizione generica.
             </Para>
             <div style={{ display: "flex", alignItems: "flex-end" }}>
               <Label p={p2} kf={[18, 24]} align="right">SEP</Label>
@@ -336,14 +372,14 @@ export default function CovidTimelineClone() {
               <VTick p={p2} kf={[24, 28]} h={200} />
               <Label p={p2} kf={[28, 34]} align="left">OCT</Label>
             </div>
-            <Para p={p2} kf={[28, 34]} align="right">Global death toll reached 1 million.</Para>
+            <Para p={p2} kf={[28, 34]} align="right">Testo segnaposto per l&apos;evento del mese.</Para>
           </div>
 
           <HConn p={p2} kf={[28, 34]} origin="left" />
 
           <div style={ROW}>
             <Para p={p2} kf={[28, 34]} align="left">
-              Trump, the USA President, tested positive for the virus.
+              Testo segnaposto per l&apos;evento del mese: una breve descrizione generica.
             </Para>
             <VTick p={p2} kf={[34, 36]} h={100} marginBottom={-10} style={{ alignSelf: "flex-end" }} />
           </div>
@@ -362,7 +398,7 @@ export default function CovidTimelineClone() {
             <div style={{ width: "62%", display: "flex", alignItems: "flex-end" }}>
               <div style={{ width: "50%" }}>
                 <Para p={p2} kf={[42, 54]} align="left">
-                  The 2nd and 3rd rounds of lockdowns were reimposed.
+                  Testo segnaposto per l&apos;evento del mese: una breve descrizione generica.
                 </Para>
               </div>
               <div style={{ width: "50%", display: "flex", justifyContent: "flex-end" }}>
@@ -380,7 +416,7 @@ export default function CovidTimelineClone() {
           <div style={{ ...ROW, alignItems: "flex-start" }}>
             <div style={{ width: "50%" }} />
             <Para p={p2} kf={[58, 64]} align="right">
-              Pfizer and Moderna received F.D.A. approval for their vaccine
+              Testo segnaposto per l&apos;evento del mese: una breve descrizione generica.
             </Para>
           </div>
 
@@ -388,7 +424,7 @@ export default function CovidTimelineClone() {
         </div>
 
         {/* ── blocco 3: griglia decorativa + "What's next?" ────────────── */}
-        <div ref={block3Ref} style={{ width: "42%", minWidth: 280, margin: "0 auto" }}>
+        <div ref={block3Ref} className="tl-block">
           <VTick p={p3} kf={[0, 6]} h={100} marginBottom={-10} style={{ alignSelf: "center" }} />
           <HConn p={p3} kf={[6, 12]} origin="right" style={{ width: "51%" }} />
 
