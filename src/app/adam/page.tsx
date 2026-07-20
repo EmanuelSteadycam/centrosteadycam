@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { getAdamArchivio, formatDate, stripHtml } from "@/lib/wordpress";
 
 export const metadata: Metadata = {
@@ -18,7 +19,7 @@ export default async function AdamPage({
     page,
     perPage: 20,
     search,
-  });
+  }).catch(() => notFound());
 
   return (
     <div className="min-h-screen bg-white">

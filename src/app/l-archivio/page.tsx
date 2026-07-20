@@ -83,20 +83,6 @@ export default function ArchivioPage() {
         </div>
       </section>
 
-      {/* ADAM archive CTA */}
-      <section className="py-12 bg-white">
-        <div className="max-w-3xl mx-auto px-4 text-center">
-          <h3 className="font-title font-light text-cs-charcoal text-xl uppercase tracking-[0.06em] mb-4">
-            Archivio ADAM
-          </h3>
-          <p className="text-cs-text text-sm leading-relaxed mb-6">
-            L&apos;archivio digitale Azzardo e Media raccoglie oltre 200 risorse tra spot pubblicitari,
-            film e contenuti media analizzati per l&apos;educazione alla prevenzione del gioco d&apos;azzardo.
-          </p>
-          <a href="/adam" className="btn-orange">Vai all&apos;Archivio ADAM</a>
-        </div>
-      </section>
-
       <NavGrid exclude="/l-archivio" />
     </div>
   );
