@@ -18,6 +18,11 @@
       "mcp__ide__getDiagnostics",
       "WebFetch(domain:github.com)",
       "WebSearch"
+    ],
+    "deny": [
+      "Read(.env)",
+      "Read(.env.local)",
+      "Read(.env*)"
     ]
   }
 }
