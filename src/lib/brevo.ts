@@ -186,7 +186,7 @@ export async function getLatestSubscribers(limit = 20): Promise<Array<{
   nome: string;
   createdAt: string;
 }>> {
-  const data = await brevoGet(`/contacts?listId=${NEWSLETTER_LIST_ID}&limit=${limit}&sort=desc`);
+  const data = await brevoGet(`/contacts/lists/${NEWSLETTER_LIST_ID}/contacts?limit=${limit}&sort=desc`);
   return (data.contacts ?? []).map((c: { email: string; attributes?: { FIRSTNAME?: string }; createdAt?: string }) => ({
     email: c.email,
     nome: c.attributes?.FIRSTNAME ?? "",
@@ -202,7 +202,6 @@ export async function sendNewsletterCampaign(post: {
   featured_image_url: string | null;
 }, listId: number = NEWSLETTER_LIST_ID): Promise<{ campaignId: number | null; isTest: boolean }> {
   const SITE = process.env.SITE_URL ?? "https://centrosteadycam.it";
-  const BANNER = `${SITE}/media/01Banner-Centro-Steadycam2.png`;
   const postUrl = `${SITE}/blog/${post.slug}`;
 
   const imageBlock = post.featured_image_url
@@ -227,19 +226,6 @@ export async function sendNewsletterCampaign(post: {
 <body style="margin:0;padding:0;background-color:#ffffff;">
 <table class="nl-container" width="100%" border="0" cellpadding="0" cellspacing="0" style="background-color:#fff">
 <tbody><tr><td>
-
-  <!-- Banner -->
-  <table align="center" width="100%" border="0" cellpadding="0" cellspacing="0">
-  <tbody><tr><td>
-    <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="max-width:600px;margin:0 auto">
-    <tbody><tr><td style="padding:0;line-height:0">
-      <a href="${SITE}" target="_blank" style="outline:none">
-        <img src="${BANNER}" width="600" alt="Centro Steadycam" style="display:block;width:100%;max-width:600px;height:auto;border:0">
-      </a>
-    </td></tr></tbody>
-    </table>
-  </td></tr></tbody>
-  </table>
 
   <!-- Titolo -->
   <table align="center" width="100%" border="0" cellpadding="0" cellspacing="0">
@@ -269,6 +255,7 @@ export async function sendNewsletterCampaign(post: {
     <table align="center" border="0" cellpadding="10" cellspacing="0" width="600" style="max-width:600px;background-color:#fff;margin:0 auto">
     <tbody><tr><td style="padding:10px">
       <div style="font-family:'Open Sans','Helvetica Neue',Arial,sans-serif;font-size:14px;color:#555;line-height:1.6">
+        <p style="margin:0 0 10px">Ciao {{contact.NOME}},</p>
         <p style="margin:0">${post.excerpt ?? ""}</p>
       </div>
     </td></tr></tbody>
@@ -276,14 +263,14 @@ export async function sendNewsletterCampaign(post: {
   </td></tr></tbody>
   </table>
 
-  <!-- Bottone Leggi -->
+  <!-- Link Leggi -->
   <table align="center" width="100%" border="0" cellpadding="0" cellspacing="0">
   <tbody><tr><td>
     <table align="center" border="0" cellpadding="10" cellspacing="0" width="600" style="max-width:600px;margin:0 auto">
-    <tbody><tr><td align="right" style="padding:10px">
+    <tbody><tr><td style="padding:10px">
       <a href="${postUrl}" target="_blank"
-        style="display:inline-block;background-color:#8ac893;color:#fff;font-family:Arial,sans-serif;font-size:16px;font-weight:400;text-decoration:none;padding:8px 24px;border-radius:4px">
-        Leggi
+        style="color:#8ac893;font-family:Arial,sans-serif;font-size:15px;font-weight:600;text-decoration:underline">
+        Leggi l'articolo &rarr;
       </a>
     </td></tr></tbody>
     </table>
@@ -331,14 +318,14 @@ export async function sendNewsletterCampaign(post: {
 
   // Invio test: usa API transazionale, non crea campagna
   if (listId === TEST_LIST_ID) {
-    const data = await brevoGet(`/contacts?listId=${TEST_LIST_ID}&limit=50`);
+    const data = await brevoGet(`/contacts/lists/${TEST_LIST_ID}/contacts?limit=50`);
     const emails: string[] = (data.contacts ?? []).map((c: { email: string }) => c.email);
     await Promise.all(
       emails.map((email) =>
         brevoPost("/smtp/email", {
           sender: SENDER,
           to: [{ email }],
-          subject: post.title,
+          subject: `TEST - ${post.title}`,
           htmlContent: html,
         })
       )
