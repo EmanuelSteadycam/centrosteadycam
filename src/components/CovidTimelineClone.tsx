@@ -11,7 +11,7 @@
  * locale 0→100, e ogni linea/testo si "disegna" nella sua finestra kf[0]→kf[1].
  */
 
-import React, { useRef, CSSProperties } from "react";
+import React, { useRef, useState, useEffect, useLayoutEffect, CSSProperties } from "react";
 import { motion, useScroll, useTransform, MotionValue } from "framer-motion";
 
 /* larghezza del blocco timeline: 42% desktop, allargata sui breakpoint stretti
@@ -61,10 +61,20 @@ const h1Style: CSSProperties = {
   fontFamily: FONT,
 };
 
-const ROW: CSSProperties = { display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 56 };
-const ROW_STRETCH: CSSProperties = { display: "flex", justifyContent: "space-between", alignItems: "stretch", marginBottom: 56 };
+const ROW: CSSProperties = { display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 0 };
+const ROW_STRETCH: CSSProperties = { display: "flex", justifyContent: "space-between", alignItems: "stretch", marginBottom: 0 };
 
 type KF = [number, number];
+
+/* ogni blocco (p1/p2/p3) ha il proprio scroll locale 0→100, quindi due kf
+   uguali in blocchi diversi NON sono la stessa cosa — l'etichetta di debug
+   deve distinguerli, altrimenti si "fondono" per coincidenza numerica */
+const blockTags = new WeakMap<MotionValue<number>, string>();
+let nextBlockTag = 0;
+function blockTag(p: MotionValue<number>): string {
+  if (!blockTags.has(p)) blockTags.set(p, String.fromCharCode(97 + nextBlockTag++));
+  return blockTags.get(p)!;
+}
 
 /* ── primitive di disegno scroll-driven (sub-componenti: mai useTransform in loop) ── */
 
@@ -74,6 +84,7 @@ function VTick({ p, kf, h = 200, marginTop, marginBottom, style }: {
   const scaleY = useTransform(p, [kf[0] / 100, kf[1] / 100], [0, 1]);
   return (
     <motion.div
+      data-kf={`V:${blockTag(p)}:${kf[0]}-${kf[1]}`}
       style={{
         width: 10, height: h, backgroundColor: LINE, flexShrink: 0,
         marginTop, marginBottom, transformOrigin: "50% 0%", scaleY,
@@ -89,8 +100,9 @@ function HConn({ p, kf, origin, style }: {
   const scaleX = useTransform(p, [kf[0] / 100, kf[1] / 100], [0, 1]);
   return (
     <motion.div
+      data-kf={`H:${blockTag(p)}:${kf[0]}-${kf[1]}`}
       style={{
-        width: "100%", height: 10, backgroundColor: LINE, marginBottom: 56,
+        width: "100%", height: 10, backgroundColor: LINE, marginBottom: 0,
         transformOrigin: origin === "left" ? "0% 50%" : "100% 50%", scaleX,
         ...style,
       }}
@@ -106,20 +118,21 @@ function Label({ p, kf, children, align = "left" }: {
   const margin: CSSProperties = align === "left" ? { marginLeft: 20 } : { marginRight: 20 };
   return (
     <div style={{ overflow: "hidden", ...margin }}>
-      <motion.h3 style={{ ...h3Style, textAlign: align, y, opacity }}>{children}</motion.h3>
+      <motion.h3 data-kf={`L:${blockTag(p)}:${kf[0]}-${kf[1]}`} style={{ ...h3Style, textAlign: align, y, opacity }}>{children}</motion.h3>
     </div>
   );
 }
 
-function Para({ p, kf, children, align = "left" }: {
-  p: MotionValue<number>; kf: KF; children: React.ReactNode; align?: "left" | "right";
+function Para({ p, kf, children, align = "left", width }: {
+  p: MotionValue<number>; kf: KF; children: React.ReactNode; align?: "left" | "right"; width?: string;
 }) {
   const y = useTransform(p, [kf[0] / 100, kf[1] / 100], [-120, 0]);
   const opacity = useTransform(p, [kf[0] / 100, kf[1] / 100], [0, 1]);
   const margin: CSSProperties = align === "left" ? { marginLeft: 20 } : { marginRight: 20 };
+  const finalWidth = width ? `calc(${width} - 20px)` : "48%";
   return (
-    <div style={{ overflow: "hidden", width: "48%", alignSelf: "flex-start", ...margin }}>
-      <motion.p style={{ ...pStyle, textAlign: align, y, opacity }}>{children}</motion.p>
+    <div style={{ overflow: "hidden", width: finalWidth, alignSelf: "flex-start", ...margin }}>
+      <motion.p data-kf={`P:${blockTag(p)}:${kf[0]}-${kf[1]}`} style={{ ...pStyle, textAlign: align, y, opacity }}>{children}</motion.p>
     </div>
   );
 }
@@ -232,6 +245,77 @@ function Hero() {
   );
 }
 
+/* ── overlay di debug: etichetta ogni segmento con un nome sequenziale
+   (V1, V2, H1, H2, ...) invece del kf grezzo — stesso numero per le linee
+   parallele che condividono lo stesso kf (?debug=1) ── */
+
+function DebugOverlay() {
+  const [on, setOn] = useState(false);
+  const [labels, setLabels] = useState<{ label: string; x: number; y: number }[]>([]);
+
+  useEffect(() => {
+    setOn(new URLSearchParams(window.location.search).get("debug") === "1");
+  }, []);
+
+  useEffect(() => {
+    if (!on) return;
+    const update = () => {
+      const els = Array.from(document.querySelectorAll<HTMLElement>("[data-kf]"));
+      const counters: Record<string, number> = {};
+      const seen: Record<string, number> = {};
+      // solo V e H (linee) condividono il numero quando sono "parallele" (stesso kf);
+      // L e P sono etichette/testi distinti anche se coincidono nel timing, quindi
+      // ognuno ha sempre il proprio numero, altrimenti l'etichetta torna ambigua.
+      const SHARED_TYPES = new Set(["V", "H"]);
+      setLabels(els.map((el) => {
+        const raw = el.dataset.kf || ""; // formato: "V:a:6-12" → tipo, blocco, kf
+        const [type, block, value] = raw.split(":");
+        const key = `${type}:${block}:${value}`;
+        if (SHARED_TYPES.has(type)) {
+          if (!(key in seen)) {
+            counters[type] = (counters[type] || 0) + 1;
+            seen[key] = counters[type];
+          }
+        } else {
+          counters[type] = (counters[type] || 0) + 1;
+          seen[key] = counters[type];
+        }
+        const r = el.getBoundingClientRect();
+        return { label: `${type}${seen[key]}`, x: r.left, y: r.top - 12 };
+      }));
+    };
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    const interval = setInterval(update, 300);
+    return () => {
+      window.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+      clearInterval(interval);
+    };
+  }, [on]);
+
+  if (!on) return null;
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 999, pointerEvents: "none" }}>
+      <div style={{ position: "fixed", top: 8, left: 8, fontSize: 10, color: "#fff", background: "#000", padding: "2px 6px" }}>
+        DEBUG
+      </div>
+      {labels.map((l, i) => (
+        <div
+          key={i}
+          style={{
+            position: "fixed", left: l.x, top: l.y, fontSize: 9, lineHeight: 1,
+            color: "#ff0", background: "#000", padding: "1px 3px", whiteSpace: "nowrap",
+          }}
+        >
+          {l.label}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /* ── componente principale ───────────────────────────────────────────── */
 
 export default function CovidTimelineClone() {
@@ -240,8 +324,34 @@ export default function CovidTimelineClone() {
   const block3Ref = useRef<HTMLDivElement>(null);
 
   const { scrollYProgress: p1 } = useScroll({ target: block1Ref, offset: ["start end", "end start"] });
-  const { scrollYProgress: p2 } = useScroll({ target: block2Ref, offset: ["start end", "end start"] });
+  const { scrollYProgress: p2Raw } = useScroll({ target: block2Ref, offset: ["start end", "end start"] });
   const { scrollYProgress: p3 } = useScroll({ target: block3Ref, offset: ["start end", "end start"] });
+
+  /* il contenuto animato del blocco 1 finisce al kf=80 (H7), ma il trigger geometrico
+     "fine del blocco 1" (bordo inferiore = cima del viewport) scatta solo al 100% del
+     suo percorso — quel 20% di scroll extra, se non compensato, lascia una pausa vuota
+     prima che il blocco 2 inizi (verificato sul sito originale: lì non c'è nessuna
+     pausa, i due blocchi si toccano). Calcolo a runtime, dalle altezze reali, il punto
+     esatto (in frazione del percorso di p2Raw) in cui il blocco 1 ha finito di
+     disegnarsi, e uso quello come vero "inizio" del blocco 2 — indipendente
+     dall'altezza della finestra o dal contenuto, si ricalcola anche al resize. */
+  const [p2GateStart, setP2GateStart] = useState(0);
+  useLayoutEffect(() => {
+    function recompute() {
+      if (!block1Ref.current || !block2Ref.current) return;
+      const h1 = block1Ref.current.getBoundingClientRect().height;
+      const h2 = block2Ref.current.getBoundingClientRect().height;
+      const vh = window.innerHeight;
+      const BLOCK1_CONTENT_MAX_KF = 0.8; // H7 = kf [78,80], ultimo elemento animato del blocco 1
+      const residualScroll = (1 - BLOCK1_CONTENT_MAX_KF) * (h1 + vh);
+      const frac = residualScroll / (h2 + vh);
+      setP2GateStart(Math.min(1, Math.max(0, frac)));
+    }
+    recompute();
+    window.addEventListener("resize", recompute);
+    return () => window.removeEventListener("resize", recompute);
+  }, []);
+  const p2 = useTransform(p2Raw, [p2GateStart, 1], [0, 1]);
 
   const whatsNextY = useTransform(p3, [0.35, 0.5], [120, 0]);
   const whatsNextOpacity = useTransform(p3, [0.35, 0.5], [0, 1]);
@@ -249,6 +359,7 @@ export default function CovidTimelineClone() {
 
   return (
     <div style={{ position: "relative", backgroundColor: "#121212" }}>
+      <DebugOverlay />
       <style>{TL_BLOCK_CSS}</style>
       <div
         style={{
@@ -265,7 +376,7 @@ export default function CovidTimelineClone() {
       <div style={{ maxWidth: 940, margin: "0 auto", padding: "0 24px" }}>
         {/* ── blocco 1: GEN → LUG ─────────────────────────────────────── */}
         <div ref={block1Ref} className="tl-block">
-          <div style={{ display: "inline-flex", alignItems: "flex-end", marginBottom: 56 }}>
+          <div style={{ display: "flex", alignItems: "flex-end", marginBottom: 0 }}>
             <VTick p={p1} kf={[6, 12]} h={100} marginTop={-10} />
             <Label p={p1} kf={[12, 18]} align="left">JAN</Label>
           </div>
@@ -289,7 +400,7 @@ export default function CovidTimelineClone() {
               <VTick p={p1} kf={[30, 36]} h={200} />
               <Label p={p1} kf={[36, 42]} align="left">MAR</Label>
             </div>
-            <Para p={p1} kf={[36, 42]} align="right">
+            <Para p={p1} kf={[24, 30]} align="right">
               Testo segnaposto per l&apos;evento del mese: una breve descrizione generica.
             </Para>
           </div>
@@ -311,44 +422,42 @@ export default function CovidTimelineClone() {
             <Label p={p1} kf={[60, 68]} align="left">MAY</Label>
           </div>
 
-          <HConn p={p1} kf={[60, 66]} origin="left" />
+          <HConn p={p1} kf={[60, 66]} origin="left" style={{ transformOrigin: "50% 50%" }} />
 
           <div style={ROW_STRETCH}>
             <VTick p={p1} kf={[66, 70]} h={400} />
-            <div style={{ display: "flex", width: "62%" }}>
-              <div style={{ width: "50%", display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-                <Para p={p1} kf={[60, 68]} align="left">Testo segnaposto per l&apos;evento del mese.</Para>
-                <Label p={p1} kf={[60, 68]} align="left">JUN</Label>
-              </div>
-              <div style={{ width: "50%", display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-                <Para p={p1} kf={[60, 68]} align="right">Testo segnaposto per l&apos;evento del mese.</Para>
-                <Label p={p1} kf={[70, 74]} align="right">JUL</Label>
-              </div>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <Para p={p1} kf={[60, 68]} align="left" width="100%">Testo segnaposto per l&apos;evento del mese.</Para>
+              <Label p={p1} kf={[70, 76]} align="left">JUN</Label>
+            </div>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", alignItems: "flex-end" }}>
+              <Para p={p1} kf={[60, 68]} align="right" width="100%">Testo segnaposto per l&apos;evento del mese.</Para>
+              <Label p={p1} kf={[70, 76]} align="right">JUL</Label>
             </div>
             <VTick p={p1} kf={[66, 70]} h={400} />
           </div>
 
-          <div style={{ display: "flex", marginBottom: 56 }}>
+          <div style={{ display: "flex", marginBottom: 0 }}>
             <div style={{ width: "50%" }}><HConn p={p1} kf={[70, 76]} origin="left" style={{ marginBottom: 0 }} /></div>
             <div style={{ width: "50%" }}><HConn p={p1} kf={[70, 76]} origin="right" style={{ marginBottom: 0 }} /></div>
           </div>
 
           <div style={{ ...ROW, alignItems: "flex-start" }}>
-            <Para p={p1} kf={[70, 74]} align="left">
+            <Para p={p1} kf={[70, 76]} align="left">
               Testo segnaposto per l&apos;evento del mese: una breve descrizione generica.
             </Para>
             <VTick p={p1} kf={[76, 78]} h={100} marginBottom={-10} />
-            <Para p={p1} kf={[70, 74]} align="right">
+            <Para p={p1} kf={[70, 76]} align="right">
               Testo segnaposto per l&apos;evento del mese: una breve descrizione generica.
             </Para>
           </div>
 
-          <HConn p={p1} kf={[78, 80]} origin="right" style={{ width: "50%", marginLeft: "auto" }} />
+          <HConn p={p1} kf={[78, 80]} origin="right" style={{ width: "50%", marginRight: "auto" }} />
         </div>
 
         {/* ── blocco 2: AGO → DIC ─────────────────────────────────────── */}
         <div ref={block2Ref} className="tl-block">
-          <div style={{ display: "inline-flex", alignItems: "flex-end", marginBottom: 56 }}>
+          <div style={{ display: "flex", alignItems: "flex-end", marginBottom: 0 }}>
             <VTick p={p2} kf={[0, 6]} h={100} marginTop={-10} />
             <Label p={p2} kf={[6, 12]} align="left">AUG</Label>
           </div>
@@ -372,7 +481,7 @@ export default function CovidTimelineClone() {
               <VTick p={p2} kf={[24, 28]} h={200} />
               <Label p={p2} kf={[28, 34]} align="left">OCT</Label>
             </div>
-            <Para p={p2} kf={[28, 34]} align="right">Testo segnaposto per l&apos;evento del mese.</Para>
+            <Para p={p2} kf={[18, 24]} align="right">Testo segnaposto per l&apos;evento del mese.</Para>
           </div>
 
           <HConn p={p2} kf={[28, 34]} origin="left" />
@@ -388,10 +497,10 @@ export default function CovidTimelineClone() {
 
           <div style={ROW}>
             <Label p={p2} kf={[42, 54]} align="left">NOV</Label>
-            <VTick p={p2} kf={[38, 42]} h={100} marginTop={-10} />
+            <VTick p={p2} kf={[38, 42]} h={100} style={{ position: "relative", left: "calc(-50% + 5px)" }} />
           </div>
 
-          <HConn p={p2} kf={[42, 48]} origin="left" />
+          <HConn p={p2} kf={[42, 48]} origin="left" style={{ transformOrigin: "50% 50%" }} />
 
           <div style={ROW_STRETCH}>
             <VTick p={p2} kf={[48, 58]} h={400} />
@@ -408,7 +517,7 @@ export default function CovidTimelineClone() {
             <VTick p={p2} kf={[48, 58]} h={400} />
           </div>
 
-          <div style={{ display: "flex", marginBottom: 56 }}>
+          <div style={{ display: "flex", marginBottom: 0 }}>
             <div style={{ width: "50%" }}><HConn p={p2} kf={[58, 64]} origin="left" style={{ marginBottom: 0 }} /></div>
             <div style={{ width: "50%" }}><HConn p={p2} kf={[58, 64]} origin="right" style={{ marginBottom: 0 }} /></div>
           </div>
