@@ -2,9 +2,9 @@ import Image from "next/image";
 
 const WP = "/media";
 
-export default function Footer() {
+export default function Footer({ style }: { style?: React.CSSProperties }) {
   return (
-    <footer className="bg-white border-t border-gray-100">
+    <footer className="bg-white border-t border-gray-100 relative z-10" style={style}>
       <div className="max-w-7xl mx-auto px-6 sm:px-10 py-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
 
         {/* Sinistra — nome + contatti */}

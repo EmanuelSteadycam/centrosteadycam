@@ -29,6 +29,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
   const isDisplay = pathname.startsWith("/display");
   const isHome     = pathname === "/";
   const isArchivio = pathname.startsWith("/archivio");
+  const isStoria   = pathname.startsWith("/storia");
   const visible    = useScrollVisible(isArchivio);
 
   return (
@@ -61,7 +62,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
         <>
           <Navbar visible={visible} />
           <main>{children}</main>
-          <Footer />
+          <Footer style={isStoria ? { marginTop: 100 } : undefined} />
         </>
       )}
     </>
