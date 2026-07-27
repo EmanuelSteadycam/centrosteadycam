@@ -396,12 +396,16 @@ const TV_STATIC_NOISE = `url("data:image/svg+xml,${encodeURIComponent(
     "<feColorMatrix type='matrix' values='0 0 0 0 0.85  0 0 0 0 0.85  0 0 0 0 0.85  0 0 0 1 0'/></filter>" +
     "<rect width='100%' height='100%' filter='url(#n)'/></svg>"
 )}")`;
+/* servite da Vercel Blob via il rewrite /media/:path* (next.config.js), NON da
+   public/wp-content/uploads/ direttamente: in produzione le richieste dirette a
+   /wp-content/* vengono bloccate (403) da una regola di sicurezza lato Vercel
+   che non esiste in `next dev` — da qui funzionavano in locale ma non online. */
 const CAROUSEL_IMAGES = [
-  "/wp-content/uploads/01Steadycam_archivio1-100-1.jpg",
-  "/wp-content/uploads/Steadycam_ilCentro3-scaled.jpg",
-  "/wp-content/uploads/Contatti_2-scaled.jpg",
-  "/wp-content/uploads/Steadycam_servizi-scaled.jpg",
-  "/wp-content/uploads/ProgettiSteadycamNew-scaled.jpg",
+  "/media/01Steadycam_archivio1-100-1.jpg",
+  "/media/Steadycam_ilCentro3-scaled.jpg",
+  "/media/Contatti_2-scaled.jpg",
+  "/media/Steadycam_servizi-scaled.jpg",
+  "/media/ProgettiSteadycamNew-scaled.jpg",
 ];
 
 /* finestra [start,end] di ogni slot = stesso kf[0] con cui appare la
