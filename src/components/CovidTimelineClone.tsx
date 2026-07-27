@@ -440,7 +440,7 @@ const TV_H = 420; // l'illustrazione è su canvas quadrato (2500x2500): stesso W
    della bbox trasparente rispetto al canvas 2500x2500. */
 const TV_SCREEN_RECT = { leftPct: 29.4, topPct: 32.0, widthPct: 39.7, heightPct: 28.7 };
 const TV_IMAGE_TRAVEL = 30; // px percorsi verticalmente (alto/basso) durante l'ingresso/uscita
-const TV_TILT = "rotateY(16deg) rotateX(4deg)"; // "inclina dalla parte opposta": rotateY invertito rispetto a prima
+const TV_TILT = "rotateY(28deg) rotateX(4deg)"; // TV vista di scorcio, direzione invertita su richiesta
 const TV_SCANLINES = "repeating-linear-gradient(to bottom, rgba(0,0,0,0.22) 0px, rgba(0,0,0,0.22) 1px, transparent 2px, transparent 4px)";
 
 function TVImage({ p, start, end, src }: { p: MotionValue<number>; start: number; end: number; src: string }) {
@@ -561,8 +561,8 @@ function RetroTV({ p1, p2 }: { p1: MotionValue<number>; p2: MotionValue<number> 
                 />
               )
             )}
-            {/* leggera vignetta stile schermo CRT */}
-            <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.55) 100%)" }} />
+            {/* vignetta CRT rimossa su richiesta (creava un ovale più chiaro visibile al centro):
+               <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.55) 100%)" }} /> */}
             {/* scanline */}
             <div style={{ position: "absolute", inset: 0, background: TV_SCANLINES, mixBlendMode: "overlay" }} />
             {/* lampo di accensione a scrollY=100px: si espande in orizzontale dal centro */}
