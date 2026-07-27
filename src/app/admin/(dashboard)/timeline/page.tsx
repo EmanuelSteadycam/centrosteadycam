@@ -17,13 +17,13 @@ export default async function AdminTimelinePage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-semibold text-gray-800">Timeline "La nostra Storia"</h1>
+        <h1 className="text-xl font-semibold text-gray-800">Timeline &ldquo;La nostra Storia&rdquo;</h1>
         <span className="text-xs text-gray-400">{(entries ?? []).length} anni</span>
       </div>
 
       {error && (
         <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-lg mb-6">
-          Errore: {error.message}. La tabella "timeline_entries" esiste su Supabase?
+          Errore: {error.message}. La tabella &ldquo;timeline_entries&rdquo; esiste su Supabase?
         </div>
       )}
 
