@@ -39,6 +39,11 @@ const icons: Record<string, React.ReactNode> = {
       <path d="M3 9h18M3 15h18M9 3v18"/>
     </svg>
   ),
+  timeline: (
+    <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+      <line x1="3" y1="12" x2="21" y2="12"/><circle cx="7" cy="12" r="2"/><circle cx="15" cy="12" r="2"/>
+    </svg>
+  ),
 };
 
 const nav = [
@@ -48,6 +53,7 @@ const nav = [
   { href: "/admin/pagine",       label: "Pagine",       icon: icons.pagine       },
   { href: "/admin/staff",        label: "Staff",        icon: icons.staff        },
   { href: "/admin/home-grid",    label: "Home Grid",    icon: icons.homegrid     },
+  { href: "/admin/timeline",     label: "Timeline",     icon: icons.timeline     },
 ];
 
 export default function AdminSidebar() {

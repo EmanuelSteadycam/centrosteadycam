@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import TimelineSection from "@/components/TimelineSection";
 
 export const metadata: Metadata = {
   title: "I Progetti — Centro Steadycam",
@@ -172,9 +171,6 @@ export default function IProgettiPage() {
           ))}
         </div>
       </section>
-
-      {/* ── Timeline ── */}
-      <TimelineSection />
 
     </div>
   );

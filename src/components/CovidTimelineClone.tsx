@@ -366,6 +366,217 @@ function Hero({ block1Ref }: { block1Ref: React.RefObject<HTMLDivElement> }) {
   );
 }
 
+/* ── televisore anni '90 a sinistra della timeline ────────────────────────
+   Idee scartate prima di questa (per riferimento, non più in uso): un
+   "occhio di bue" con maschera radiale ovale, poi una variante a forma di
+   buco da proiettile (bordo irregolare + crepe via SVG). L'utente ha cambiato
+   idea: ora le immagini scorrono dentro lo schermo di un vecchio televisore
+   CRT, "appoggiato" sullo sfondo (piccola ombra sotto per non farlo sembrare
+   fluttuante). Colonna fissa (non scrolla con la pagina, non legge/modifica
+   nulla del layout della timeline). Ogni immagine compare/scompare e trasla
+   da sinistra verso destra agganciata allo stesso scroll (stessi p1/p2,
+   stesse finestre kf) in cui compare il suo anno di riferimento — nessun
+   loop autonomo. Per ora un piccolo set di foto placeholder alternate. */
+const SIDE_CAROUSEL_CSS = `
+  .side-spotlight { display: none; }
+  @media (min-width: 1400px) { .side-spotlight { display: block; } }
+  @keyframes tv-static-shift {
+    0% { background-position: 0 0; }
+    100% { background-position: 120px 87px; }
+  }
+  .tv-static { animation: tv-static-shift 0.15s steps(2) infinite; }
+`;
+/* "sabbia grigia" delle vecchie TV: rumore generato via SVG feTurbulence
+   (nessuna immagine esterna), sempre in loop ma visibile solo durante la
+   transizione fra un'immagine e l'altra (opacity agganciata allo scroll,
+   esattamente l'inverso dell'opacity dell'immagine stessa). */
+const TV_STATIC_NOISE = `url("data:image/svg+xml,${encodeURIComponent(
+  "<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'>" +
+    "<filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/>" +
+    "<feColorMatrix type='matrix' values='0 0 0 0 0.85  0 0 0 0 0.85  0 0 0 0 0.85  0 0 0 1 0'/></filter>" +
+    "<rect width='100%' height='100%' filter='url(#n)'/></svg>"
+)}")`;
+const CAROUSEL_IMAGES = [
+  "/wp-content/uploads/01Steadycam_archivio1-100-1.jpg",
+  "/wp-content/uploads/Steadycam_ilCentro3-scaled.jpg",
+  "/wp-content/uploads/Contatti_2-scaled.jpg",
+  "/wp-content/uploads/Steadycam_servizi-scaled.jpg",
+  "/wp-content/uploads/ProgettiSteadycamNew-scaled.jpg",
+];
+
+/* finestra [start,end] di ogni slot = stesso kf[0] con cui appare la
+   YearLabel di quell'anno, fino al kf[0] della YearLabel successiva (o 100
+   per l'ultimo anno di ciascun blocco p1/p2). Quando due anni compaiono
+   insieme (2003+2004, 2005+2006: stesso kf nel layout a due colonne) condividono
+   uno slot. */
+const YEAR_IMAGE_SLOTS: { p: "p1" | "p2"; start: number; end: number }[] = [
+  { p: "p1", start: 12, end: 24 }, // 2000
+  { p: "p1", start: 24, end: 36 }, // 2001
+  { p: "p1", start: 36, end: 60 }, // 2002
+  { p: "p1", start: 60, end: 70 }, // 2003 + 2004
+  { p: "p1", start: 70, end: 100 }, // 2005 + 2006
+  { p: "p2", start: 6, end: 18 }, // 2007
+  { p: "p2", start: 18, end: 28 }, // 2008
+  { p: "p2", start: 28, end: 42 }, // 2009
+  { p: "p2", start: 42, end: 53.8 }, // 2010
+  { p: "p2", start: 53.8, end: 100 }, // 2011
+];
+
+/* cornice CSS disegnata a mano (scartata su richiesta dell'utente, che ha
+   fornito un'illustrazione reale del televisore da usare al suo posto — vedi
+   TV_IMAGE_SRC sotto). Codice precedente non conservato qui per esteso:
+   corpo con linear-gradient, schermo con borderRadius+boxShadow inset,
+   pannello comandi con grill+due manopole disegnati a div. */
+const TV_IMAGE_SRC = "/tv-90s-2.png"; // v2: gambe del tavolo modificate dall'utente
+const TV_W = 420;
+const TV_H = 420; // l'illustrazione è su canvas quadrato (2500x2500): stesso W/H, niente distorsione
+/* rettangolo dello schermo dentro TV.png: è già trasparente in origine (misurato
+   via script sul PNG, alpha=0 in quell'area) — ci basta allineare il contenuto
+   scrollabile dietro l'immagine, nessuna maschera CSS necessaria. Percentuali
+   della bbox trasparente rispetto al canvas 2500x2500. */
+const TV_SCREEN_RECT = { leftPct: 29.4, topPct: 32.0, widthPct: 39.7, heightPct: 28.7 };
+const TV_IMAGE_TRAVEL = 30; // px percorsi verticalmente (alto/basso) durante l'ingresso/uscita
+const TV_TILT = "rotateY(16deg) rotateX(4deg)"; // "inclina dalla parte opposta": rotateY invertito rispetto a prima
+const TV_SCANLINES = "repeating-linear-gradient(to bottom, rgba(0,0,0,0.22) 0px, rgba(0,0,0,0.22) 1px, transparent 2px, transparent 4px)";
+
+function TVImage({ p, start, end, src }: { p: MotionValue<number>; start: number; end: number; src: string }) {
+  const fadeInStart = Math.max(0, start - 4);
+  const fadeOutStart = Math.max(start, end - 4);
+  const inputRange = [fadeInStart / 100, start / 100, fadeOutStart / 100, end / 100];
+  const opacity = useTransform(p, inputRange, [0, 1, 1, 0]);
+  const y = useTransform(p, inputRange, [-TV_IMAGE_TRAVEL, 0, 0, TV_IMAGE_TRAVEL]);
+  return (
+    <motion.div style={{ position: "absolute", inset: 0, opacity, y }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+    </motion.div>
+  );
+}
+
+/* prima immagine (2000): l'ingresso è agganciato al pixel assoluto di scroll
+   (500px), non alla percentuale kf del blocco — su richiesta esplicita, "in
+   concomitanza col primo anno". L'uscita resta invece agganciata al normale
+   meccanismo p1 (stesso fadeOutStart/end della vecchia TVImage), così il
+   passaggio alla seconda immagine (2001, ancora su base p1) resta senza buchi
+   né sovrapposizioni. */
+const TV_FIRST_IMAGE_PX = 500;
+
+function FirstTVImage({ scrollY, p, end, src }: { scrollY: MotionValue<number>; p: MotionValue<number>; end: number; src: string }) {
+  const fadeOutStart = Math.max(0, end - 4) / 100;
+  const fadeOutEnd = end / 100;
+  const opacity = useTransform([scrollY, p], (values) => {
+    const [sy, pv] = values as number[];
+    const inFactor = Math.min(1, Math.max(0, (sy - (TV_FIRST_IMAGE_PX - 60)) / 60));
+    const outFactor = 1 - Math.min(1, Math.max(0, (pv - fadeOutStart) / (fadeOutEnd - fadeOutStart)));
+    return Math.min(inFactor, outFactor);
+  });
+  const y = useTransform([scrollY, p], (values) => {
+    const [sy, pv] = values as number[];
+    const outT = Math.min(1, Math.max(0, (pv - fadeOutStart) / (fadeOutEnd - fadeOutStart)));
+    if (outT > 0) return outT * TV_IMAGE_TRAVEL;
+    const inT = Math.min(1, Math.max(0, (sy - (TV_FIRST_IMAGE_PX - 60)) / 60));
+    return (1 - inT) * -TV_IMAGE_TRAVEL;
+  });
+  return (
+    <motion.div style={{ position: "absolute", inset: 0, opacity, y }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+    </motion.div>
+  );
+}
+
+/* "accensione" della TV a scrollY=100px (pixel assoluti di pagina, non
+   percentuale di un blocco): un lampo sottile che si allarga in orizzontale
+   dal centro verso i bordi, poi la sabbia (stesso rumore delle transizioni)
+   resta accesa come stato di base finché non arriva la prima immagine. */
+const TV_POWER_ON_PX = 100;
+
+function RetroTV({ p1, p2 }: { p1: MotionValue<number>; p2: MotionValue<number> }) {
+  const { scrollY } = useScroll();
+  const flashScaleX = useTransform(scrollY, [TV_POWER_ON_PX - 15, TV_POWER_ON_PX], [0, 1]);
+  const flashOpacity = useTransform(scrollY, [TV_POWER_ON_PX - 15, TV_POWER_ON_PX - 5, TV_POWER_ON_PX + 25, TV_POWER_ON_PX + 55], [0, 1, 1, 0]);
+  const staticBaseOpacity = useTransform(scrollY, [TV_POWER_ON_PX - 10, TV_POWER_ON_PX + 5], [0, 1]);
+  return (
+    <div
+      className="side-spotlight"
+      style={{ position: "fixed", left: 40, top: "50%", transform: "translateY(-50%)", zIndex: 1, pointerEvents: "none", width: TV_W, height: TV_H, perspective: 1200 }}
+    >
+      {/* ombra: rappresenta il "piano" — la posizione resta ferma, ma si
+         ingrandisce/scurisce quando la TV è vicina (in basso) e si rimpicciolisce/
+         schiarisce quando è più in alto, in fase con lo stesso bob (stessa durata) */}
+      <motion.div
+        animate={{ scaleX: [1, 0.7, 1], opacity: [0.9, 0.5, 0.9] }}
+        transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+        style={{
+          position: "absolute", left: "12%", right: "12%", bottom: -6, height: 30,
+          borderRadius: "50%", background: "radial-gradient(ellipse, rgba(0,0,0,0.55) 0%, transparent 72%)",
+          filter: "blur(3px)",
+        }}
+      />
+
+      {/* wrapper separato solo per il bob su/giù: parte da y=0 (posizione attuale,
+         a contatto col piano/ombra) e sale, poi torna — mai sotto zero, quindi il
+         "piano" resta esattamente dove sta ora l'ombra */}
+      <motion.div
+        animate={{ y: [0, -16, 0] }}
+        transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+        style={{ position: "relative", width: "100%", height: "100%" }}
+      >
+        {/* cornice + schermo ruotati insieme (stesso transform) così il contenuto
+            resta sempre allineato al buco trasparente del PNG anche in 3D */}
+        <div style={{ position: "relative", width: "100%", height: "100%", transformStyle: "preserve-3d", transform: TV_TILT, filter: "drop-shadow(0 26px 30px rgba(0,0,0,0.55))" }}>
+          <div style={{
+            position: "absolute",
+            left: `${TV_SCREEN_RECT.leftPct}%`, top: `${TV_SCREEN_RECT.topPct}%`,
+            width: `${TV_SCREEN_RECT.widthPct}%`, height: `${TV_SCREEN_RECT.heightPct}%`,
+            overflow: "hidden", background: "#000",
+          }}>
+            {/* sabbia di base: la TV, una volta accesa, resta "sabbiosa" finché
+               non arriva la prima immagine (le singole TVImage la coprono
+               quando sono opache) */}
+            <motion.div
+              className="tv-static"
+              style={{ position: "absolute", inset: 0, backgroundImage: TV_STATIC_NOISE, mixBlendMode: "screen", opacity: staticBaseOpacity }}
+            />
+            {YEAR_IMAGE_SLOTS.map((slot, i) =>
+              i === 0 ? (
+                <FirstTVImage
+                  key={i}
+                  scrollY={scrollY}
+                  p={p1}
+                  end={slot.end}
+                  src={CAROUSEL_IMAGES[i % CAROUSEL_IMAGES.length]}
+                />
+              ) : (
+                <TVImage
+                  key={i}
+                  p={slot.p === "p1" ? p1 : p2}
+                  start={slot.start}
+                  end={slot.end}
+                  src={CAROUSEL_IMAGES[i % CAROUSEL_IMAGES.length]}
+                />
+              )
+            )}
+            {/* leggera vignetta stile schermo CRT */}
+            <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.55) 100%)" }} />
+            {/* scanline */}
+            <div style={{ position: "absolute", inset: 0, background: TV_SCANLINES, mixBlendMode: "overlay" }} />
+            {/* lampo di accensione a scrollY=100px: si espande in orizzontale dal centro */}
+            <motion.div style={{
+              position: "absolute", left: 0, right: 0, top: "50%", height: 2, marginTop: -1,
+              background: "#fff", boxShadow: "0 0 14px 4px rgba(255,255,255,0.85)",
+              transformOrigin: "50% 50%", scaleX: flashScaleX, opacity: flashOpacity,
+            }} />
+          </div>
+
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={TV_IMAGE_SRC} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} />
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 /* ── overlay di debug: etichetta ogni segmento con un nome sequenziale
    (V1, V2, H1, H2, ...) invece del kf grezzo — stesso numero per le linee
    parallele che condividono lo stesso kf (?debug=1) ── */
@@ -441,7 +652,16 @@ function DebugOverlay() {
 
 /* ── componente principale ───────────────────────────────────────────── */
 
-export default function CovidTimelineClone() {
+const DEFAULT_DESCRIPTION = "Testo segnaposto per l'evento del mese: una breve descrizione generica.";
+const HARDCODED_MAX_YEAR = 2011; // ultimo anno con layout scritto a mano (2000-2011); oltre, catena dinamica
+
+export default function CovidTimelineClone({ entries = [] }: { entries?: { year: number; description: string }[] }) {
+  const descByYear = new Map(entries.map((e) => [e.year, e.description]));
+  const desc = (year: number) => descByYear.get(year) || DEFAULT_DESCRIPTION;
+  const newEntries = entries
+    .filter((e) => e.year > HARDCODED_MAX_YEAR)
+    .sort((a, b) => a.year - b.year);
+
   const block1Ref = useRef<HTMLDivElement>(null);
   const block2Ref = useRef<HTMLDivElement>(null);
   const block3Ref = useRef<HTMLDivElement>(null);
@@ -547,6 +767,7 @@ export default function CovidTimelineClone() {
     <div style={{ position: "relative", backgroundColor: "#121212" }}>
       <DebugOverlay />
       <style>{TL_BLOCK_CSS}</style>
+      <style>{SIDE_CAROUSEL_CSS}</style>
       <div
         style={{
           position: "fixed", inset: 0, zIndex: 0,
@@ -554,6 +775,7 @@ export default function CovidTimelineClone() {
           backgroundRepeat: "repeat", backgroundPosition: "0 0", backgroundSize: "auto",
         }}
       />
+      <RetroTV p1={p1} p2={p2} />
 
       <div style={{ position: "relative", zIndex: 1 }}>
 
@@ -571,7 +793,7 @@ export default function CovidTimelineClone() {
 
           <div style={ROW}>
             <Para p={p1} kf={[12, 18]} align="left">
-              Testo segnaposto per l&apos;evento del mese: una breve descrizione generica.
+              {desc(2000)}
             </Para>
             <div style={{ display: "flex", alignItems: "flex-end" }}>
               <YearLabel p={p1} kf={[24, 30]} align="right" year="2001" />
@@ -587,7 +809,7 @@ export default function CovidTimelineClone() {
               <YearLabel p={p1} kf={[36, 42]} align="left" year="2002" />
             </div>
             <Para p={p1} kf={[24, 30]} align="right">
-              Testo segnaposto per l&apos;evento del mese: una breve descrizione generica.
+              {desc(2001)}
             </Para>
           </div>
 
@@ -595,7 +817,7 @@ export default function CovidTimelineClone() {
 
           <div style={ROW}>
             <Para p={p1} kf={[36, 42]} align="left">
-              Testo segnaposto per l&apos;evento del mese: una breve descrizione generica.
+              {desc(2002)}
             </Para>
             <VTick p={p1} kf={[42, 48]} h={100} marginBottom={-10} style={{ alignSelf: "flex-end" }} />
           </div>
@@ -613,11 +835,11 @@ export default function CovidTimelineClone() {
           <div style={ROW_STRETCH}>
             <VTick p={p1} kf={[66, 70]} h={400} />
             <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", alignItems: "flex-start" }}>
-              <Para p={p1} kf={[60, 68]} align="left" width="100%">Testo segnaposto per l&apos;evento del mese.</Para>
+              <Para p={p1} kf={[60, 68]} align="left" width="100%">{desc(2003)}</Para>
               <YearLabel p={p1} kf={[70, 76]} align="left" year="2005" />
             </div>
             <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", alignItems: "flex-end" }}>
-              <Para p={p1} kf={[60, 68]} align="right" width="100%">Testo segnaposto per l&apos;evento del mese.</Para>
+              <Para p={p1} kf={[60, 68]} align="right" width="100%">{desc(2004)}</Para>
               <YearLabel p={p1} kf={[70, 76]} align="right" year="2006" />
             </div>
             <VTick p={p1} kf={[66, 70]} h={400} />
@@ -630,11 +852,11 @@ export default function CovidTimelineClone() {
 
           <div style={{ ...ROW, alignItems: "flex-start" }}>
             <Para p={p1} kf={[70, 76]} align="left">
-              Testo segnaposto per l&apos;evento del mese: una breve descrizione generica.
+              {desc(2005)}
             </Para>
             <VTick p={p1} kf={[76, 78]} h={100} marginBottom={-10} />
             <Para p={p1} kf={[70, 76]} align="right">
-              Testo segnaposto per l&apos;evento del mese: una breve descrizione generica.
+              {desc(2006)}
             </Para>
           </div>
 
@@ -652,7 +874,7 @@ export default function CovidTimelineClone() {
 
           <div style={ROW}>
             <Para p={p2} kf={[6, 12]} align="left">
-              Testo segnaposto per l&apos;evento del mese: una breve descrizione generica.
+              {desc(2007)}
             </Para>
             <div style={{ display: "flex", alignItems: "flex-end" }}>
               <YearLabel p={p2} kf={[18, 24]} align="right" year="2008" />
@@ -667,14 +889,14 @@ export default function CovidTimelineClone() {
               <VTick p={p2} kf={[24, 28]} h={200} />
               <YearLabel p={p2} kf={[28, 34]} align="left" year="2009" />
             </div>
-            <Para p={p2} kf={[18, 24]} align="right">Testo segnaposto per l&apos;evento del mese.</Para>
+            <Para p={p2} kf={[18, 24]} align="right">{desc(2008)}</Para>
           </div>
 
           <HConn p={p2} kf={[28, 34]} origin="left" />
 
           <div style={ROW}>
             <Para p={p2} kf={[28, 34]} align="left">
-              Testo segnaposto per l&apos;evento del mese: una breve descrizione generica.
+              {desc(2009)}
             </Para>
             <VTick p={p2} kf={[34, 36]} h={100} marginBottom={-10} style={{ alignSelf: "flex-end" }} />
           </div>
@@ -696,7 +918,7 @@ export default function CovidTimelineClone() {
             <VTick p={p2} kf={[45.9, 53.8]} h={400} />
             <div style={{ position: "absolute", top: 0, left: 0 }}>
               <Para p={p2} kf={[42, 54]} align="left">
-                Testo segnaposto per l&apos;evento del mese: una breve descrizione generica.
+                {desc(2010)}
               </Para>
             </div>
           </div>
@@ -708,7 +930,7 @@ export default function CovidTimelineClone() {
 
           <div style={{ display: "flex", justifyContent: "flex-end" }}>
             <Para p={p2} kf={[53.8, 58.5]} align="right" width="40%">
-              Testo segnaposto per l&apos;evento del mese: una breve descrizione generica.
+              {desc(2011)}
             </Para>
           </div>
 
