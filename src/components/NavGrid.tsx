@@ -7,7 +7,7 @@ const cards = [
   { label: "i progetti",       img: `${WP}/ProgettiSteadycamNew-scaled.jpg`,      href: "/i-progetti" },
   { label: "l'archivio",       img: `${WP}/01Steadycam_archivio1-100-1.jpg`,      href: "/l-archivio" },
   { label: "il metodo",        img: `${WP}/Steadycam_metodo-scaled.jpg`,           href: "/il-metodo" },
-  { label: "staff",            img: `${WP}/2017/07/thanachot-phonket-319688.jpg`,  href: "/staff" },
+  { label: "staff",            img: `${WP}/2017/07/thanachot-phonket-319688.jpg`,  href: "/il-centro#staff" },
   { label: "contatti",         img: `${WP}/Contatti_2-scaled.jpg`,                href: "/contatti" },
   { label: "comunicare salute",img: `${WP}/Logo-per-home@3x.png`,                 href: "/comunicare-salute" },
 ];

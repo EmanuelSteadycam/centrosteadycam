@@ -13,7 +13,7 @@ const centroLinks = [
   { label: "Storia",     href: "/storia" },
 ];
 
-const centroPaths = ["/il-centro", "/i-servizi", "/il-metodo", "/l-archivio", "/staff", "/contatti"];
+const centroPaths = ["/il-centro", "/i-servizi", "/il-metodo", "/l-archivio", "/contatti"];
 
 const pillBg  = "rgba(28,28,28,0.92)";
 const green   = "#a3d39c";

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { createSupabaseServerClient } from "@/lib/supabase-server";
 
 export const metadata: Metadata = {
   title: "Il Centro — Centro Steadycam",
@@ -22,14 +23,10 @@ const services = [
   },
 ];
 
-const staff = [
-  { name: "Valentino", role: "Coordinatore / Educatore Professionale", bio: "Attraverso l'esperienza del volontariato e del Servizio Civile matura l'idea di diventare Educatore Professionale. Ha lavorato prima come operatore di territorio e di strada. Ha fondato ed è stato presidente di una cooperativa sociale. Dal 2011 coordina le attività del Centro Steadycam. Si occupa degli aspetti progettuali e organizzativi e della realizzazione di interventi sulla saggezza digitale e sulla promozione della salute. Ha una spiccata predilezione per P. K. Dick e Bruce Springsteen.", color: "#a3d39c", initial: "V" },
-  { name: "Carmen",    role: "Psicologa Psicoterapeuta",               bio: "Psicologa psicoterapeuta, specializzata in psicoterapie espressive, conduce corsi di formazione agli operatori e agli insegnanti. Nell'ambito delle dipendenze patologiche si è occupata di clinica e di supervisione agli operatori del settore. Dai primi anni 2000 si occupa del disagio adolescenziale presso lo spazio di ascolto giovani dell'ASL CN2 e co-conduce gruppi per il sostegno genitoriale.", color: "#88bfe0", initial: "C" },
-  { name: "Emanuel",   role: "Media Designer / Videomaker",            bio: "Da oltre venti anni crea e produce formati video su differenti piattaforme. Videomaker, Media designer, esperto in editing video e in crossmedialità, progetta e conduce percorsi produttivi in ambito didattico e socio-pedagogico. Dai suoi trascorsi come VJ ha mantenuto il gusto dell'esplorazione e della sperimentazione di ogni novità tecnologica e digitale, per mixare formati differenti, trasformando in opportunità creativa ciò che a prima vista è solo commerciale.", color: "#f4a261", initial: "E" },
-  { name: "Stefano",   role: "Educatore Professionale",                bio: "Educatore professionale. Doveva insegnare Storia, poi si è appassionato alle storie che sono diventate il suo lavoro. Ha svolto attività educative in ambiti territoriali, semiresidenziali e residenziali, pubblici e privati. Dal 2002 al Ser.D dell'AslCn2, dove si occupa di clinica, formazione, supervisione e promozione della salute in particolare con adolescenti e giovani.", color: "#7bbfa3", initial: "S" },
-  { name: "Beppe",     role: "Media Educator / Comunicatore",          bio: "Laureato in Scienze della Comunicazione presso l'Università di Torino, entra a far parte di Steadycam nel 2007. Appassionato di cinema, videogiochi fantasy, storia medievale e cioccolato, progetta e gestisce interventi educativi e percorsi di formazione su media e promozione della salute. Dal 2010 conduce serate informative per genitori e insegnanti sull'utilizzo critico e consapevole delle tecnologie digitali. All'interno del Centro Display conduce i laboratori sul gaming.", color: "#b07fd4", initial: "B" },
-  { name: "Michele",   role: "Media Educator / Formatore",             bio: "Media educator, supervisore e formatore, progetta e conduce percorsi sull'analisi dei media e sul loro utilizzo in ambito pedagogico, sociale, culturale e aziendale. Insegna Tecnologie dell'istruzione e dell'apprendimento e Peer&Media Education all'Università Cattolica di Milano, ove è membro del Cremit. Dal 2000 collabora con Steadycam, a cui deve molto, sul piano umano e non solo professionale. È sempre più convinto che saper guardare sia una virtù etica e che la creatività sia una dimensione di cittadinanza.", color: "#80c4d0", initial: "M" },
-];
+/* colori ciclici per il cerchio+iniziale di fallback quando una persona non ha
+   ancora un'immagine caricata dall'admin (/admin/staff) — stessa palette che
+   era usata a mano nell'array hardcoded precedente. */
+const STAFF_COLORS = ["#a3d39c", "#88bfe0", "#f4a261", "#7bbfa3", "#b07fd4", "#80c4d0"];
 
 const bodyStyle     = { fontFamily: "var(--font-raleway)", fontSize: "clamp(13px, 1.3vw, 16px)" };
 const servicesStyle = { fontFamily: "var(--font-raleway)", fontSize: "clamp(13px, 1.3vw, 16px)" };
@@ -37,7 +34,13 @@ const servicesStyle = { fontFamily: "var(--font-raleway)", fontSize: "clamp(13px
 const mobileTitle = "absolute bottom-0 left-0 right-0 px-6 py-5 md:hidden";
 const mobileTitleGradient = "absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent md:hidden pointer-events-none";
 
-export default function IlCentroPage() {
+export default async function IlCentroPage() {
+  const supabase = createSupabaseServerClient();
+  const { data: staff } = await supabase
+    .from("staff")
+    .select("id, name, role, bio, photo_url")
+    .order("sort_order", { ascending: true });
+
   return (
     <div>
       {/* ── Il Centro — immagine prima su mobile, testo dx su desktop ── */}
@@ -232,21 +235,28 @@ export default function IlCentroPage() {
             Staff
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-6">
-            {staff.map((m) => (
-              <div key={m.name + m.role}>
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-title shrink-0"
-                    style={{ background: m.color }}>
-                    {m.initial}
+            {(staff ?? []).map((m, i) => {
+              const color = STAFF_COLORS[i % STAFF_COLORS.length];
+              return (
+                <div key={m.id}>
+                  <div className="flex items-center gap-2 mb-1">
+                    {m.photo_url ? (
+                      <img src={m.photo_url} alt={m.name} className="w-9 h-9 rounded-full object-cover shrink-0" />
+                    ) : (
+                      <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-title shrink-0"
+                        style={{ background: color }}>
+                        {m.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div>
+                      <p className="font-title font-semibold text-white text-[15px] leading-tight">{m.name}</p>
+                      <p className="font-title uppercase tracking-wider text-[11px]" style={{ color }}>{m.role}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-title font-semibold text-white text-[15px] leading-tight">{m.name}</p>
-                    <p className="font-title uppercase tracking-wider text-[11px]" style={{ color: m.color }}>{m.role}</p>
-                  </div>
+                  <p className="font-light text-white/70 leading-[1.7]" style={{ fontSize: "14px" }}>{m.bio}</p>
                 </div>
-                <p className="font-light text-white/70 leading-[1.7]" style={{ fontSize: "14px" }}>{m.bio}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
