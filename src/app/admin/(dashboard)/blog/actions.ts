@@ -69,7 +69,10 @@ export async function getBrevoLists(): Promise<{ id: number; name: string }[]> {
     headers: { "api-key": process.env.BREVO_API_KEY! },
     cache: "no-store",
   });
-  if (!res.ok) return [];
+  if (!res.ok) {
+    console.error("getBrevoLists failed", res.status, await res.text().catch(() => ""));
+    return [];
+  }
   const data = await res.json();
   return (data.lists ?? [])
     .map((l: { id: number; name: string }) => ({ id: l.id, name: l.name }))
