@@ -1074,9 +1074,20 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
           </p>
         )}
         {submitError && (
-          <p className="mt-4 text-sm text-red-400 text-center" style={{ fontFamily: "var(--font-raleway)" }}>
-            Errore: {submitError}
-          </p>
+          <div className="mt-4 text-center">
+            <p className="text-sm text-red-400" style={{ fontFamily: "var(--font-raleway)" }}>
+              Errore: {submitError}
+            </p>
+            {!isWaitlist && submitError.includes("esaurite") && (
+              <button
+                onClick={() => { setIsWaitlist(true); setSubmitError(""); }}
+                className="mt-3 px-6 py-2 text-white text-sm tracking-wider uppercase rounded-full transition-all"
+                style={{ background: "#88BF81", fontFamily: "var(--font-raleway)" }}
+              >
+                Iscriviti alla lista d&apos;attesa →
+              </button>
+            )}
+          </div>
         )}
         <div className="flex gap-3 mt-6 justify-between">
           <button
