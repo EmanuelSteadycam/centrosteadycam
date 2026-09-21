@@ -120,3 +120,29 @@ Sessione breve, solo di chiusura/handoff — nessuna modifica al codice applicat
 2. Se serve un deploy/preview che tocchi l'editor blog Brevo, impostare `BREVO_API_KEY` anche per l'ambiente Preview su Vercel.
 3. Valutare con l'utente se creare una chiave API Brevo a permessi ristretti, ora che l'allowlist IP è disattivata.
 4. (Voci precedenti dalla sessione TV/staff, ancora valide) convertire i trigger a pixel fissi della TV in `/storia` a percentuale quando arrivano date/immagini reali; collegare `image_url` al carosello; sostituire i placeholder; costruire il blocco anni >2011; decidere l'estetica finale della sezione staff.
+
+## Aggiunta successiva: verifica pre-lancio Display Techno, nessuna modifica al codice (2026-09-21)
+
+Sessione di sola verifica/handoff, **nessun codice scritto o modificato in questa conversazione**: il lavoro applicativo descritto qui sotto era già stato fatto e committato in una sessione precedente lo stesso giorno (mattina del 21/09), prima che questa conversazione iniziasse. Qui ci si è limitati a ricostruire cosa fosse stato fatto e a verificarne lo stato in produzione, su richiesta esplicita dell'utente ("sistemato tutto per l'iscrizione di domani? Display?").
+
+**Cosa era stato fatto stamattina (ricostruito da `git log`, non dalla memoria della conversazione — questa è una conversazione diversa da quella in cui il lavoro è stato fatto)**: tre commit di hardening sul sistema di prenotazione Display in vista dell'apertura iscrizioni dell'evento "Display Techno", fissata per il 22/09/2026 ore 12:00:
+- `6218480` (10:10) — apertura evento ora **enforced anche lato server** in `submitBooking` (prima il countdown pubblico era solo estetico, aggirabile cambiando l'ora del device), confronto sempre in fuso Europe/Rome; aggiunta notifica email all'admin per ogni nuova iscrizione, comprese quelle in lista d'attesa.
+- `eecf48f` (10:48) — `deleteEvent` blocca la cancellazione se esistono iscrizioni collegate; conferma eliminazione ora richiede di scrivere il nome dell'evento. Sostituito il flag booleano `disabilita` col conteggio esatto `n_disabilita` (0-10) ovunque nel flusso (form, insert, notifica, `BookingsList`, export CSV). Il commit include anche la migration `supabase/alter_n_disabilita.sql`, da eseguire manualmente su Supabase prima del lancio.
+- `6439d9f` (12:47) — CTA immediata verso la lista d'attesa quando il submit fallisce per cap raggiunto, senza perdere i dati compilati.
+
+Seguiti da tre commit non legati a Display (`fdeeb9a`, `ac7c18c`, `c3b564a`, 12:55-13:09): link della casella ADAM in home aggiornato al dominio proprio, animazione Lottie al posto del logo statico, sfondo nero dietro l'animazione (era trasparente nelle aree vuote).
+
+**Verifiche fatte in questa sessione, con prova diretta**:
+- `git status` pulito e `main` allineato esattamente a `origin/main` (nessun commit locale da pushare, nessun commit remoto da tirare).
+- `vercel ls --prod`: l'ultimo deploy di produzione risulta creato il 21/09 alle 13:10:02; il commit più recente (`c3b564a`) è delle 13:09:54 — gli orari coincidono a 8 secondi, quindi tutti e 6 i commit di stamattina risultano effettivamente live.
+- Pagina pubblica `/display` (Chrome reale, non solo `curl`): mostra correttamente il countdown "DISPLAY TECHNO — Le iscrizioni aprono il 22 settembre 2026 dalle ore 12:00", con timer coerente rispetto all'ora corrente.
+- La migration `alter_n_disabilita.sql` (aggiunge `n_disabilita`, backfill da `disabilita=TRUE`, droppa `disabilita`) **è stata eseguita su Supabase dall'utente** — confermato a voce dall'utente stesso in chat, non verificato direttamente da me con una query (un tentativo di verifica via script Node/`@supabase/supabase-js` è stato scritto ma non eseguito con successo per un problema di risoluzione moduli, poi reso superfluo dalla conferma dell'utente). **Se in futuro serve riverificarlo con una prova diretta** (non solo la parola dell'utente), la via più semplice è una query di lettura su `event_bookings` selezionando la colonna `n_disabilita`.
+
+**Non verificato**: lo stato dell'evento dentro `/admin/prenotazioni` (slot configurati, capacità, toggle lista d'attesa) — richiede login admin, non fatto in questa sessione, offerto esplicitamente all'utente ma non richiesto.
+
+Aggiornata anche la memoria di progetto (`project_admin_system.md`, sezione "Display Techno — lancio iscrizioni 2026-09-22") con lo stesso contenuto, per renderlo recuperabile da conversazioni future senza rileggere questo file.
+
+## Prossimi passi concreti (aggiornati al 21/09 pomeriggio)
+
+1. Il giorno del lancio (22/09 dalle 12:00), verificare end-to-end una prenotazione reale (o di prova) per confermare che l'insert con `n_disabilita` funzioni senza errori — la migration non è mai stata verificata con una query diretta, solo per conferma verbale dell'utente.
+2. (Invariati dalla sezione precedente) fix `f141c6e` newsletter da confermare in produzione; `BREVO_API_KEY` da impostare anche su Preview; valutare chiave Brevo a permessi ristretti; lavoro rimasto aperto su `/storia` (trigger pixel TV, `image_url` nel carosello, placeholder, blocco anni >2011) ed estetica sezione staff.
