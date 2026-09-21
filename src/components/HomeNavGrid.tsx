@@ -14,7 +14,7 @@ const staticCards: CardData[] = [
   { label: "SMCR",              img: `${WP}/Steadycam-SMCR.png`,                   href: "/blog",                 col: "1 / 3", row: "5 / 7" },
   // slot latest post → col 3-5 rows 1-3, iniettato via prop
   { label: "I Progetti",        img: `${WP}/ProgettiSteadycamNew-scaled.jpg`,      href: "/i-progetti",         col: "3 / 6", row: "3 / 5" },
-  { label: "ADAM",              img: `${WP}/ADAM_LOGO_SITO2.png`,                  href: "https://adam-video-platform.vercel.app/", col: "3 / 5", row: "5 / 7" },
+  { label: "ADAM",              img: `${WP}/ADAM_LOGO_SITO2.png`,                  href: "https://adam.centrosteadycam.it/", col: "3 / 5", row: "5 / 7" },
   { label: "Comunicare Salute", img: `${WP}/Logo-per-home@3x.png`,                href: "/i-progetti",         col: "6 / 7", row: "1 / 3" },
   { label: "Staff",             img: `${WP}/2017/07/thanachot-phonket-319688.jpg`, href: "/il-centro#staff",    col: "6 / 7", row: "3 / 4" },
   { label: "Contatti",          img: `${WP}/Contatti_2-scaled.jpg`,                href: "/il-centro#contatti", col: "6 / 7", row: "4 / 5" },
