@@ -1,10 +1,13 @@
 "use client";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useState, useRef, useCallback } from "react";
+
+const AdamLogoAnimation = dynamic(() => import("./AdamLogoAnimation"), { ssr: false });
 
 const WP = "/media";
 
-type CardData = { label: string; img: string; href: string; col: string; row: string; objectPosition?: string };
+type CardData = { label: string; img: string; href: string; col: string; row: string; objectPosition?: string; lottie?: boolean };
 
 const staticCards: CardData[] = [
   { label: "Il Centro",         img: `${WP}/Steadycam_ilCentro3-scaled.jpg`,      href: "/il-centro",          col: "1 / 3", row: "1 / 2", objectPosition: "bottom" },
@@ -14,7 +17,7 @@ const staticCards: CardData[] = [
   { label: "SMCR",              img: `${WP}/Steadycam-SMCR.png`,                   href: "/blog",                 col: "1 / 3", row: "5 / 7" },
   // slot latest post → col 3-5 rows 1-3, iniettato via prop
   { label: "I Progetti",        img: `${WP}/ProgettiSteadycamNew-scaled.jpg`,      href: "/i-progetti",         col: "3 / 6", row: "3 / 5" },
-  { label: "ADAM",              img: `${WP}/ADAM_LOGO_SITO2.png`,                  href: "https://adam.centrosteadycam.it/", col: "3 / 5", row: "5 / 7" },
+  { label: "ADAM",              img: `${WP}/ADAM_LOGO_SITO2.png`,                  href: "https://adam.centrosteadycam.it/", col: "3 / 5", row: "5 / 7", lottie: true },
   { label: "Comunicare Salute", img: `${WP}/Logo-per-home@3x.png`,                href: "/i-progetti",         col: "6 / 7", row: "1 / 3" },
   { label: "Staff",             img: `${WP}/2017/07/thanachot-phonket-319688.jpg`, href: "/il-centro#staff",    col: "6 / 7", row: "3 / 4" },
   { label: "Contatti",          img: `${WP}/Contatti_2-scaled.jpg`,                href: "/il-centro#contatti", col: "6 / 7", row: "4 / 5" },
@@ -41,7 +44,7 @@ const offscreen: Record<Direction, string> = {
   left:   "translateX(-100%)",
 };
 
-function NavCard({ label, img, href, col, row, objectPosition = "center" }: CardData) {
+function NavCard({ label, img, href, col, row, objectPosition = "center", lottie = false }: CardData) {
   const ref = useRef<HTMLAnchorElement>(null);
   const [hovered, setHovered]       = useState(false);
   const [transform, setTransform]   = useState("translateY(-100%)");
@@ -76,12 +79,18 @@ function NavCard({ label, img, href, col, row, objectPosition = "center" }: Card
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <img
-        src={img}
-        alt={label}
-        className="absolute inset-0 w-full h-full object-cover"
-        style={{ transform: hovered ? "scale(1.05)" : "scale(1)", transition: "transform 0.5s ease", objectPosition }}
-      />
+      {lottie ? (
+        <AdamLogoAnimation
+          style={{ transform: hovered ? "scale(1.05)" : "scale(1)", transition: "transform 0.5s ease" }}
+        />
+      ) : (
+        <img
+          src={img}
+          alt={label}
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ transform: hovered ? "scale(1.05)" : "scale(1)", transition: "transform 0.5s ease", objectPosition }}
+        />
+      )}
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
       <div
         className="absolute inset-0 pointer-events-none"
