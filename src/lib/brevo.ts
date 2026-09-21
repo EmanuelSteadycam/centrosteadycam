@@ -68,6 +68,33 @@ export async function sendNewsletterNotification(subscriber: { nome: string; ema
   });
 }
 
+// ── notifica admin nuova iscrizione Display ───────────────────────────────────
+export async function sendDisplayBookingNotification(booking: {
+  nome: string; cognome: string; email: string; cellulare: string | null;
+  istituto: string; ordine_scuola: string; classe: string;
+  n_alunni: number; n_adulti: number; tipo_visita: string;
+}) {
+  const adminEmail = process.env.BREVO_ADMIN_EMAIL ?? "steadycam01@gmail.com";
+  const now = new Date().toLocaleString("it-IT", { timeZone: "Europe/Rome" });
+  const waitlist = booking.tipo_visita === "lista_attesa";
+  await sendMail({
+    to: adminEmail,
+    subject: `DISPLAY — nuova iscrizione${waitlist ? " (lista d'attesa)" : ""}: ${booking.istituto}`,
+    htmlBody: `<p style="font-family:sans-serif;font-size:15px;">
+      ${waitlist ? "<strong>⚠ Iscrizione in lista d'attesa (posti esauriti)</strong><br><br>" : ""}
+      <strong>Istituto:</strong> ${booking.istituto}<br>
+      <strong>Plesso:</strong> ${booking.ordine_scuola}<br>
+      <strong>Classe:</strong> ${booking.classe}<br>
+      <strong>Insegnante:</strong> ${booking.nome} ${booking.cognome}<br>
+      <strong>Email:</strong> ${booking.email}<br>
+      <strong>Cellulare:</strong> ${booking.cellulare ?? "—"}<br>
+      <strong>N. alunni:</strong> ${booking.n_alunni}<br>
+      <strong>N. adulti:</strong> ${booking.n_adulti}<br>
+      <strong>Ricevuta:</strong> ${now}
+    </p>`,
+  });
+}
+
 // ── aggiungi contatto al gruppo Newsletter ────────────────────────────────────
 export async function addToNewsletterGroup(recipient: { email: string; nome: string }): Promise<number | null> {
   const res = await fetch(BASE + "/contacts", {
