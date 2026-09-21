@@ -56,7 +56,7 @@ export async function submitBooking(data: {
   tipo_visita: string;
   n_alunni: number;
   n_adulti: number;
-  disabilita: boolean;
+  n_disabilita: number;
   istituto: string;
   ordine_scuola: string;
   nome: string;
@@ -130,6 +130,7 @@ export async function submitBooking(data: {
         classe: data.classe,
         n_alunni: data.n_alunni,
         n_adulti: data.n_adulti,
+        n_disabilita: data.n_disabilita,
         tipo_visita: data.tipo_visita,
       });
     } catch (err) {

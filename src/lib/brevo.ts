@@ -72,7 +72,7 @@ export async function sendNewsletterNotification(subscriber: { nome: string; ema
 export async function sendDisplayBookingNotification(booking: {
   nome: string; cognome: string; email: string; cellulare: string | null;
   istituto: string; ordine_scuola: string; classe: string;
-  n_alunni: number; n_adulti: number; tipo_visita: string;
+  n_alunni: number; n_adulti: number; n_disabilita: number; tipo_visita: string;
 }) {
   const adminEmail = process.env.BREVO_ADMIN_EMAIL ?? "steadycam01@gmail.com";
   const now = new Date().toLocaleString("it-IT", { timeZone: "Europe/Rome" });
@@ -90,6 +90,7 @@ export async function sendDisplayBookingNotification(booking: {
       <strong>Cellulare:</strong> ${booking.cellulare ?? "—"}<br>
       <strong>N. alunni:</strong> ${booking.n_alunni}<br>
       <strong>N. adulti:</strong> ${booking.n_adulti}<br>
+      <strong>Alunni con disabilità motorie:</strong> ${booking.n_disabilita}<br>
       <strong>Ricevuta:</strong> ${now}
     </p>`,
   });

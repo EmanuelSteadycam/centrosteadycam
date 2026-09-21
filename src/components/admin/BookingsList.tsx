@@ -5,7 +5,7 @@ import { approveBooking, rejectBooking, deleteBooking } from "@/app/admin/(dashb
 type Booking = {
   id: number; created_at: string; istituto: string; nome: string; cognome: string;
   email: string; cellulare: string | null; classe: string; n_alunni: number;
-  n_adulti: number; tipo_visita: string; status: string;
+  n_adulti: number; n_disabilita: number; tipo_visita: string; status: string;
   event_slots: { date: string; time_slot: string; time_start: string | null; time_end: string | null } | null;
 };
 
@@ -83,11 +83,11 @@ export default function BookingsList({ bookings, eventSlug }: { bookings: Bookin
   };
 
   const exportCSV = () => {
-    const header = "Data,Istituto,Insegnante,Email,Telefono,Classe,Alunni,Adulti,Tipo visita,Stato";
+    const header = "Data,Istituto,Insegnante,Email,Telefono,Classe,Alunni,Adulti,Disabilità motorie,Tipo visita,Stato";
     const rows = localBookings.map((b) => [
       b.event_slots ? b.event_slots.date : "",
       b.istituto, `${b.nome} ${b.cognome}`, b.email,
-      b.cellulare ?? "", b.classe, b.n_alunni, b.n_adulti, b.tipo_visita, b.status,
+      b.cellulare ?? "", b.classe, b.n_alunni, b.n_adulti, b.n_disabilita, b.tipo_visita, b.status,
     ].map((v) => `"${v}"`).join(","));
     const csv = [header, ...rows].join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
@@ -127,6 +127,9 @@ export default function BookingsList({ bookings, eventSlug }: { bookings: Bookin
                 </p>
                 <p className="text-xs text-gray-400 mt-0.5">
                   Cl. {b.classe} · {b.n_alunni} alunni · {b.n_adulti} adulti
+                  {b.n_disabilita > 0 && (
+                    <span className="text-amber-600"> · {b.n_disabilita} con disabilità motorie</span>
+                  )}
                 </p>
               </div>
               <div className="text-right shrink-0 ml-3 flex flex-col items-end gap-2">

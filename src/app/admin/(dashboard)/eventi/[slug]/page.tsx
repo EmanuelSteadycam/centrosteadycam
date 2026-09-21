@@ -51,7 +51,7 @@ export default async function EventoPage({ params }: { params: { slug: string } 
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-semibold text-gray-800">{event.name}</h1>
-        <DeleteEventButton eventSlug={slug} />
+        <DeleteEventButton eventSlug={slug} eventName={event.name} />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">

@@ -203,6 +203,18 @@ export async function deleteEvent(eventSlug: string): Promise<{ error: string | 
   const supabase = createSupabaseAdminClient();
   const eventId = await getEventId(eventSlug);
   if (!eventId) return { error: "Evento non trovato" };
+
+  const { count } = await supabase
+    .from("event_bookings")
+    .select("*", { count: "exact", head: true })
+    .eq("event_id", eventId);
+
+  if ((count ?? 0) > 0) {
+    return {
+      error: `Impossibile eliminare: ci sono ancora ${count} iscrizioni collegate a questo evento. Eliminale prima dal pannello, poi riprova.`,
+    };
+  }
+
   const { error } = await supabase.from("events").delete().eq("id", eventId);
   if (error) return { error: error.message };
   revalidatePath("/admin/eventi");

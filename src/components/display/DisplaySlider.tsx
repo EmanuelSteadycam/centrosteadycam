@@ -548,7 +548,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [form, setForm] = useState({
-    giaPart: "", nAlunni: "", nAdulti: "2", disabilita: "nessuno",
+    giaPart: "", nAlunni: "", nAdulti: "2", nDisabilita: "0",
     istituto: "", plesso: "",
     classe: "", nome: "", cognome: "", email: "", cellulare: "",
   });
@@ -610,7 +610,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
       tipo_visita: isWaitlist ? "lista_attesa" : selectedSlot!.time_slot,
       n_alunni: parseInt(form.nAlunni),
       n_adulti: parseInt(form.nAdulti),
-      disabilita: form.disabilita !== "nessuno",
+      n_disabilita: parseInt(form.nDisabilita) || 0,
       istituto: form.istituto,
       ordine_scuola: form.plesso,
       nome: form.nome,
@@ -823,7 +823,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
               setScreen("intro");
               setFormStep(0);
               setSelectedSlot(null);
-              setForm({ giaPart: "", nAlunni: "", nAdulti: "2", disabilita: "nessuno", istituto: "", plesso: "", classe: "", nome: "", cognome: "", email: "", cellulare: "" });
+              setForm({ giaPart: "", nAlunni: "", nAdulti: "2", nDisabilita: "0", istituto: "", plesso: "", classe: "", nome: "", cognome: "", email: "", cellulare: "" });
             }}>Iscrivi altra classe</PillBtn>
           </div>
         </motion.div>
@@ -1029,13 +1029,11 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
                   Alunni con disabilità motorie
                 </label>
                 <CustomSelect
-                  value={form.disabilita}
-                  onChange={(v) => setForm({ ...form, disabilita: v })}
+                  value={form.nDisabilita}
+                  onChange={(v) => setForm({ ...form, nDisabilita: v })}
                   options={[
-                    { value: "nessuno", label: "Nessuno" },
-                    { value: "1", label: "1" },
-                    { value: "2", label: "2" },
-                    { value: "piu", label: "Più di due" },
+                    { value: "0", label: "Nessuno" },
+                    ...Array.from({ length: 10 }, (_, i) => ({ value: String(i + 1), label: String(i + 1) })),
                   ]}
                 />
               </div>

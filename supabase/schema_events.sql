@@ -34,7 +34,7 @@ CREATE TABLE event_bookings (
   tipo_visita TEXT NOT NULL,
   n_alunni INTEGER NOT NULL,
   n_adulti INTEGER NOT NULL,
-  disabilita BOOLEAN DEFAULT FALSE,
+  n_disabilita SMALLINT NOT NULL DEFAULT 0,
   istituto TEXT NOT NULL,
   ordine_scuola TEXT NOT NULL,
   nome TEXT NOT NULL,
