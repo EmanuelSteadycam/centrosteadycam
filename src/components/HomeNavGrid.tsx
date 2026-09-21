@@ -80,9 +80,12 @@ function NavCard({ label, img, href, col, row, objectPosition = "center", lottie
       onMouseLeave={handleMouseLeave}
     >
       {lottie ? (
-        <AdamLogoAnimation
-          style={{ transform: hovered ? "scale(1.05)" : "scale(1)", transition: "transform 0.5s ease" }}
-        />
+        <>
+          <div className="absolute inset-0 bg-black" />
+          <AdamLogoAnimation
+            style={{ transform: hovered ? "scale(1.05)" : "scale(1)", transition: "transform 0.5s ease" }}
+          />
+        </>
       ) : (
         <img
           src={img}
