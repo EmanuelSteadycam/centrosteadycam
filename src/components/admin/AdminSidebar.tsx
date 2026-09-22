@@ -44,12 +44,18 @@ const icons: Record<string, React.ReactNode> = {
       <line x1="3" y1="12" x2="21" y2="12"/><circle cx="7" cy="12" r="2"/><circle cx="15" cy="12" r="2"/>
     </svg>
   ),
+  mail: (
+    <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+      <rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>
+    </svg>
+  ),
 };
 
 const nav = [
   { href: "/admin",              label: "Dashboard",    icon: icons.dashboard    },
   { href: "/admin/eventi",       label: "Eventi",       icon: icons.eventi       },
   { href: "/admin/blog",         label: "Blog",         icon: icons.blog         },
+  { href: "/admin/mail-inviate", label: "Invio Mail",   icon: icons.mail         },
   { href: "/admin/pagine",       label: "Pagine",       icon: icons.pagine       },
   { href: "/admin/staff",        label: "Staff",        icon: icons.staff        },
   { href: "/admin/home-grid",    label: "Home Grid",    icon: icons.homegrid     },

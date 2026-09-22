@@ -375,6 +375,200 @@ export async function sendNewsletterCampaign(post: {
   return { campaignId: campaign.id, isTest: false };
 }
 
+// ── Converte l'HTML del RichTextEditor in HTML compatibile con i client email ──
+// (i client email ignorano i CSS del sito: pulsanti CTA e embed video vanno
+// trasformati con stili inline; gli iframe YouTube diventano un'anteprima cliccabile)
+function emailifyContent(html: string): string {
+  let out = html;
+
+  out = out.replace(
+    /<div[^>]*data-youtube-video[^>]*>[\s\S]*?<iframe[^>]*src="([^"]+)"[\s\S]*?<\/iframe>[\s\S]*?<\/div>/g,
+    (_match, src: string) => {
+      const idMatch = src.match(/(?:embed\/|[?&]v=|youtu\.be\/)([a-zA-Z0-9_-]{6,})/);
+      const videoId = idMatch?.[1];
+      const watchUrl = videoId ? `https://www.youtube.com/watch?v=${videoId}` : src;
+      const thumb = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : "";
+      return `<table align="center" width="100%" border="0" cellpadding="0" cellspacing="0" style="margin:16px 0"><tbody><tr><td>
+        <a href="${watchUrl}" target="_blank" rel="noopener noreferrer" style="display:block;text-decoration:none">
+          ${thumb ? `<img src="${thumb}" alt="Video" style="display:block;width:100%;max-width:600px;height:auto;border:0">` : ""}
+          <div style="text-align:center;margin-top:8px">
+            <span style="display:inline-block;background:#8ac893;color:#fff;padding:8px 16px;border-radius:20px;font-family:Arial,sans-serif;font-size:13px;font-weight:600;text-transform:uppercase;">&#9654; Guarda il video</span>
+          </div>
+        </a>
+      </td></tr></tbody></table>`;
+    }
+  );
+
+  out = out.replace(/<div[^>]*class="btn-group-block"[^>]*>/g, '<div style="margin:20px 0">');
+  out = out.replace(/<a\s+[^>]*class="btn-green-block"[^>]*>/g, (tag) => {
+    const href = tag.match(/href="([^"]*)"/)?.[1] ?? "#";
+    return `<a href="${href}" target="_blank" rel="noopener noreferrer" style="display:inline-block;background:#8ac893;color:#ffffff;padding:10px 22px;margin:6px 10px 6px 0;border-radius:24px;text-decoration:none;text-transform:uppercase;font-weight:600;font-family:Arial,sans-serif;font-size:13px;">`;
+  });
+
+  out = out
+    .replace(/<h2>/g, '<h2 style="font-family:Arial,sans-serif;font-size:21px;color:#333;margin:24px 0 10px;line-height:1.3">')
+    .replace(/<h3>/g, '<h3 style="font-family:Arial,sans-serif;font-size:18px;color:#333;margin:20px 0 8px;line-height:1.3">')
+    .replace(/<p>/g, '<p style="margin:0 0 14px">')
+    .replace(/<ul>/g, '<ul style="margin:0 0 14px;padding-left:20px">')
+    .replace(/<ol>/g, '<ol style="margin:0 0 14px;padding-left:20px">')
+    .replace(/<blockquote>/g, '<blockquote style="margin:16px 0;padding:10px 16px;border-left:3px solid #8ac893;color:#666;font-style:italic">')
+    .replace(/<hr>/g, '<hr style="border:none;border-top:1px solid #eee;margin:20px 0">')
+    .replace(/<img /g, '<img style="max-width:100%;height:auto;display:block" ')
+    .replace(/<a(?![^>]*style=)([^>]*)>/g, '<a$1 style="color:#8ac893;text-decoration:underline">');
+
+  return out;
+}
+
+// ── Campagna "solo email" con contenuto completo (non pubblicata sul sito) ────
+export function buildNewsletterEmailHtml(post: {
+  title: string;
+  excerpt: string | null;
+  content: string | null;
+  featured_image_url: string | null;
+}): string {
+  const SITE = process.env.SITE_URL ?? "https://centrosteadycam.it";
+
+  const imageBlock = post.featured_image_url
+    ? `<table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
+        <tbody><tr><td style="padding:0">
+          <img src="${post.featured_image_url.startsWith("/") ? SITE + post.featured_image_url : post.featured_image_url}"
+            style="display:block;width:100%;max-width:600px;height:auto;border:0" width="600" alt="${post.title}">
+        </td></tr></tbody>
+      </table>`
+    : "";
+
+  const preheader = post.excerpt
+    ? `<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">${post.excerpt}</div>`
+    : "";
+
+  const bodyHtml = emailifyContent(post.content ?? "");
+
+  const html = `<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>${post.title}</title>
+<style>@import url('https://fonts.googleapis.com/css2?family=Lato:wght@700&display=swap');</style>
+</head>
+<body style="margin:0;padding:0;background-color:#ffffff;">
+${preheader}
+<table width="100%" border="0" cellpadding="0" cellspacing="0" style="background-color:#fff">
+<tbody><tr><td>
+
+  <!-- Titolo -->
+  <table align="center" width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tbody><tr><td>
+    <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="max-width:600px;background-color:#fff;margin:0 auto">
+    <tbody><tr><td style="padding:20px 10px 10px;font-family:'Lato',Arial,sans-serif;font-size:28px;font-weight:700;color:#555555;line-height:1.25">
+      ${post.title}
+    </td></tr></tbody>
+    </table>
+  </td></tr></tbody>
+  </table>
+
+  <!-- Immagine -->
+  <table align="center" width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tbody><tr><td>
+    <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="max-width:600px;margin:0 auto">
+    <tbody><tr><td style="padding:0 0 10px">${imageBlock}</td></tr></tbody>
+    </table>
+  </td></tr></tbody>
+  </table>
+
+  <!-- Contenuto completo -->
+  <table align="center" width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tbody><tr><td>
+    <table align="center" border="0" cellpadding="10" cellspacing="0" width="600" style="max-width:600px;background-color:#fff;margin:0 auto">
+    <tbody><tr><td style="padding:10px;font-family:'Open Sans','Helvetica Neue',Arial,sans-serif;font-size:15px;color:#333;line-height:1.65">
+      ${bodyHtml}
+    </td></tr></tbody>
+    </table>
+  </td></tr></tbody>
+  </table>
+
+  <!-- Footer contatti -->
+  <table align="center" width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tbody><tr><td>
+    <table align="center" border="0" cellpadding="10" cellspacing="0" width="600" style="max-width:600px;margin:0 auto">
+    <tbody><tr><td style="padding:20px 10px;text-align:center;font-family:Roboto,Arial,sans-serif;font-size:14px;color:#555">
+      <p style="margin:0">Lo Staff Steadycam</p>
+      <p style="margin:4px 0">info@centrosteadycam.it</p>
+      <p style="margin:4px 0">0173 316210</p>
+    </td></tr></tbody>
+    </table>
+  </td></tr></tbody>
+  </table>
+
+  <!-- Divisore -->
+  <table align="center" width="75%" border="0" cellpadding="0" cellspacing="0" style="margin:0 auto">
+  <tbody><tr><td height="1" style="font-size:0;line-height:1px;border-top:2px solid #8ac893">&nbsp;</td></tr></tbody>
+  </table>
+
+  <!-- Footer legale -->
+  <table align="center" width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tbody><tr><td>
+    <table align="center" border="0" cellpadding="10" cellspacing="0" width="600" style="max-width:600px;margin:0 auto">
+    <tbody><tr><td style="padding:16px 10px;text-align:center;font-family:Arial,sans-serif;font-size:11px;color:#a5a5a5;line-height:1.6">
+      <p style="margin:0 0 6px">Ricevi questa mail perché ti sei iscritto/a alla newsletter o hai partecipato a un nostro progetto.</p>
+      <p style="margin:0 0 6px">
+        <a href="{{unsubscribe}}" style="color:#a5a5a5;text-decoration:underline">Cancella iscrizione</a>
+        &nbsp;|&nbsp;
+        <a href="{{unsubscribe}}" style="color:#a5a5a5;text-decoration:underline">Unsubscribe</a>
+      </p>
+      <p style="margin:0">2025 © Centro Steadycam - ASL CN2 Alba Bra</p>
+    </td></tr></tbody>
+    </table>
+  </td></tr></tbody>
+  </table>
+
+</td></tr></tbody>
+</table>
+</body></html>`;
+
+  return html;
+}
+
+// ── Campagna "solo email" con contenuto completo (non pubblicata sul sito) ────
+export async function sendFullNewsletterCampaign(post: {
+  title: string;
+  excerpt: string | null;
+  content: string | null;
+  featured_image_url: string | null;
+}, listId: number = NEWSLETTER_LIST_ID): Promise<{ campaignId: number | null; isTest: boolean }> {
+  const html = buildNewsletterEmailHtml(post);
+
+  // Invio test: usa API transazionale, non crea campagna
+  if (listId === TEST_LIST_ID) {
+    const data = await brevoGet(`/contacts/lists/${TEST_LIST_ID}/contacts?limit=50`);
+    const emails: string[] = (data.contacts ?? []).map((c: { email: string }) => c.email);
+    await Promise.all(
+      emails.map((email) =>
+        brevoPost("/smtp/email", {
+          sender: SENDER,
+          to: [{ email }],
+          subject: `TEST - ${post.title}`,
+          htmlContent: html,
+        })
+      )
+    );
+    return { campaignId: null, isTest: true };
+  }
+
+  const now = new Date().toLocaleDateString("it-IT");
+  const campaign = await brevoPost("/emailCampaigns", {
+    name: `STEADYNEWS — ${post.title} — ${now}`,
+    subject: post.title,
+    sender: SENDER,
+    type: "classic",
+    htmlContent: html,
+    recipients: { listIds: [listId] },
+  });
+
+  await brevoPost(`/emailCampaigns/${campaign.id}/sendNow`, {});
+  return { campaignId: campaign.id, isTest: false };
+}
+
 // ── 4. Report campagne ───────────────────────────────────────────────────────
 export type BrevoStat = {
   id: number;
