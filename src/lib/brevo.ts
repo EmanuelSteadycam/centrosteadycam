@@ -8,6 +8,7 @@ import {
 const API_KEY = process.env.BREVO_API_KEY!;
 const BASE = "https://api.brevo.com/v3";
 const SENDER = { name: "Centro Steadycam", email: "info@centrosteadycam.it" };
+const REPLY_TO = { name: "Centro Steadycam", email: "steadycam01@gmail.com" };
 const DISPLAY_LIST_ID = 12;
 const NEWSLETTER_LIST_ID = 3;
 const TEST_LIST_ID = 15;
@@ -43,6 +44,7 @@ async function sendMail({ to, subject, htmlBody }: { to: string; subject: string
     to: [{ email: to }],
     subject,
     htmlContent: htmlBody,
+    replyTo: REPLY_TO,
   });
 }
 
@@ -355,6 +357,7 @@ export async function sendNewsletterCampaign(post: {
           to: [{ email }],
           subject: `TEST - ${post.title}`,
           htmlContent: html,
+          replyTo: REPLY_TO,
         })
       )
     );
@@ -369,6 +372,7 @@ export async function sendNewsletterCampaign(post: {
     type: "classic",
     htmlContent: html,
     recipients: { listIds: [listId] },
+    replyTo: REPLY_TO.email,
   });
 
   await brevoPost(`/emailCampaigns/${campaign.id}/sendNow`, {});
@@ -549,6 +553,7 @@ export async function sendFullNewsletterCampaign(post: {
           to: [{ email }],
           subject: `TEST - ${post.title}`,
           htmlContent: html,
+          replyTo: REPLY_TO,
         })
       )
     );
@@ -563,6 +568,7 @@ export async function sendFullNewsletterCampaign(post: {
     type: "classic",
     htmlContent: html,
     recipients: { listIds: [listId] },
+    replyTo: REPLY_TO.email,
   });
 
   await brevoPost(`/emailCampaigns/${campaign.id}/sendNow`, {});
