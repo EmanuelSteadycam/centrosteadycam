@@ -567,39 +567,49 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
     return () => clearInterval(id);
   }, []);
 
-  useEffect(() => {
+  const fetchSlots = useCallback(async (showLoading: boolean) => {
     const today = new Date().toISOString().slice(0, 10);
-    supabase
+    if (showLoading) setSloading(true);
+    const { data: event } = await supabase
       .from("events")
       .select("id")
       .eq("slug", "display")
-      .single()
-      .then(({ data: event }) => {
-        if (!event) { setSloading(false); return; }
-        Promise.all([
-          supabase
-            .from("event_slots")
-            .select("id, date, time_slot, bookings_count, max_capacity")
-            .eq("event_id", event.id)
-            .eq("is_open", true)
-            .gte("date", today)
-            .order("date", { ascending: true }),
-          supabase
-            .from("event_settings")
-            .select("key, value")
-            .eq("event_id", event.id)
-            .in("key", ["waitlist_enabled", "opens_at"]),
-        ]).then(([{ data: slotData }, { data: settings }]) => {
-          setSlots(slotData ?? []);
-          setSloading(false);
-          const get = (k: string) => settings?.find(s => s.key === k)?.value;
-          setIsWaitlist(get("waitlist_enabled") === "true");
-          const oa = get("opens_at");
-          if (oa) setOpensAt(new Date(oa));
-        });
-      });
+      .single();
+    if (!event) { setSloading(false); return; }
+    const [{ data: slotData }, { data: settings }] = await Promise.all([
+      supabase
+        .from("event_slots")
+        .select("id, date, time_slot, bookings_count, max_capacity")
+        .eq("event_id", event.id)
+        .eq("is_open", true)
+        .gte("date", today)
+        .order("date", { ascending: true }),
+      supabase
+        .from("event_settings")
+        .select("key, value")
+        .eq("event_id", event.id)
+        .in("key", ["waitlist_enabled", "opens_at"]),
+    ]);
+    setSlots(slotData ?? []);
+    setSloading(false);
+    const get = (k: string) => settings?.find(s => s.key === k)?.value;
+    setIsWaitlist(get("waitlist_enabled") === "true");
+    const oa = get("opens_at");
+    if (oa) setOpensAt(new Date(oa));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    fetchSlots(true);
+  }, [fetchSlots]);
+
+  // Aggiorna le date disponibili in automatico (senza refresh) mentre l'utente sceglie la data
+  useEffect(() => {
+    if (screen !== "date") return;
+    fetchSlots(false); // aggiorna subito all'ingresso nella schermata (es. tornando da un errore)
+    const id = setInterval(() => fetchSlots(false), 15000);
+    return () => clearInterval(id);
+  }, [screen, fetchSlots]);
 
   const handleSubmit = async () => {
     if (!isWaitlist && !selectedSlot) return;
@@ -623,6 +633,8 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
     if (error) {
       setSubmitError(error);
       setSubmitting(false);
+      // La data scelta potrebbe essere stata appena presa da un altro utente: aggiorna subito la lista
+      if (!isWaitlist) fetchSlots(false);
       return;
     }
     // Segna lo slot come prenotato nello stato locale
@@ -1085,6 +1097,15 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
                 style={{ background: "#88BF81", fontFamily: "var(--font-raleway)" }}
               >
                 Iscriviti alla lista d&apos;attesa →
+              </button>
+            )}
+            {!isWaitlist && submitError.includes("prenotata da qualcun altro") && (
+              <button
+                onClick={() => { setSelectedSlot(null); setSubmitError(""); setScreen("date"); }}
+                className="mt-3 px-6 py-2 text-white text-sm tracking-wider uppercase rounded-full transition-all"
+                style={{ background: "#88BF81", fontFamily: "var(--font-raleway)" }}
+              >
+                ← Vedi le date disponibili
               </button>
             )}
           </div>
