@@ -84,7 +84,8 @@ export async function submitBooking(data: {
     .eq("key", "opens_at")
     .single();
 
-  if (openSetting?.value && Date.now() < opensAtToUtcMs(openSetting.value)) {
+  const bypassOpenGate = process.env.NEXT_PUBLIC_DISPLAY_TEST_MODE === "true";
+  if (!bypassOpenGate && openSetting?.value && Date.now() < opensAtToUtcMs(openSetting.value)) {
     return { error: "Le iscrizioni non sono ancora aperte. Riprova più tardi." };
   }
 
@@ -106,7 +107,7 @@ export async function submitBooking(data: {
     if (!slotAvailable) {
       // Slot pieno nel frattempo — annulla la prenotazione appena inserita
       await supabase.from("event_bookings").delete().eq("id", bookingId);
-      return { error: "La data selezionata è appena stata prenotata da qualcun altro. Scegli un'altra data." };
+      return { error: "La data selezionata è appena stata prenotata da un'altra persona. Scegli un'altra data." };
     }
   }
 

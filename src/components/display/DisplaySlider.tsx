@@ -547,6 +547,8 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
   const [formStep, setFormStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [showDateModal, setShowDateModal] = useState(false);
+  const [dateJustChanged, setDateJustChanged] = useState(false);
   const [form, setForm] = useState({
     giaPart: "", nAlunni: "", nAdulti: "2", nDisabilita: "0",
     istituto: "", plesso: "",
@@ -605,11 +607,11 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
 
   // Aggiorna le date disponibili in automatico (senza refresh) mentre l'utente sceglie la data
   useEffect(() => {
-    if (screen !== "date") return;
-    fetchSlots(false); // aggiorna subito all'ingresso nella schermata (es. tornando da un errore)
+    if (screen !== "date" && !showDateModal) return;
+    fetchSlots(false); // aggiorna subito all'ingresso nella schermata/modale (es. tornando da un errore)
     const id = setInterval(() => fetchSlots(false), 15000);
     return () => clearInterval(id);
-  }, [screen, fetchSlots]);
+  }, [screen, showDateModal, fetchSlots]);
 
   const handleSubmit = async () => {
     if (!isWaitlist && !selectedSlot) return;
@@ -655,6 +657,83 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
     grouped[month].push(s);
   });
 
+  // ── Lista date riusabile (schermata dedicata + modale di riselezione) ──────
+  const renderDateList = (onSelect: (slot: AvailableSlot) => void) => (
+    <div className="relative flex gap-2">
+      <div ref={dateListRef} className="overflow-y-auto space-y-4 pb-2 flex-1" style={{ maxHeight: "45vh", scrollbarWidth: "none" }}>
+        {sloading && (
+          <p className="text-center text-base py-6" style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>
+            Caricamento...
+          </p>
+        )}
+        {!sloading && slots.length === 0 && (
+          <p className="text-center text-base py-6 leading-relaxed" style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>
+            Nessuna data disponibile al momento.<br />
+            <span className="text-sm opacity-60">Controlla più avanti o contattaci.</span>
+          </p>
+        )}
+        {Object.entries(grouped).map(([month, monthSlots]) => (
+          <div key={month}>
+            <p className="text-base font-semibold uppercase tracking-widest mb-2" style={{ fontFamily: "var(--font-raleway)", color: "#88BF81" }}>
+              {new Date(month + "-01").toLocaleDateString("it-IT", { month: "long", year: "numeric" })}
+            </p>
+            <div className="space-y-1.5">
+              {monthSlots.map((slot) => {
+                const isFull = slot.bookings_count >= slot.max_capacity;
+                const isSelected = selectedSlot?.id === slot.id;
+                const dateLabel = new Date(slot.date + "T00:00:00").toLocaleDateString("it-IT", {
+                  weekday: "long", day: "numeric", month: "long",
+                });
+                return (
+                  <button
+                    key={slot.id}
+                    onClick={() => !isFull && onSelect(slot)}
+                    disabled={isFull}
+                    className={`w-full text-left px-4 py-2 rounded transition-all border flex items-center justify-between ${
+                      isFull
+                        ? "border-white/10 bg-white/3 opacity-50 cursor-not-allowed"
+                        : isSelected
+                          ? "border-[#88BF81] bg-[#88BF81]/15"
+                          : "border-white/15 bg-white/5 hover:border-white/30 hover:bg-white/10"
+                    }`}
+                  >
+                    <div>
+                      <p className="text-base capitalize" style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>{dateLabel}</p>
+                      <p className="text-sm opacity-50" style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>
+                        h. 8.00–13.00
+                      </p>
+                    </div>
+                    {isFull && (
+                      <span className="text-xs font-semibold px-3 py-1 rounded-full shrink-0 ml-3"
+                        style={{ background: "#ffe694", color: "#1a1a1a", fontFamily: "var(--font-raleway)" }}>
+                        Prenotata
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+      {/* Frecce scroll */}
+      <div className="flex flex-col justify-between py-1 shrink-0">
+        <button
+          onClick={() => dateListRef.current?.scrollBy({ top: -120, behavior: "smooth" })}
+          className="w-8 h-8 flex items-center justify-center rounded-full border border-white/30 hover:border-[#88BF81] hover:text-[#88BF81] transition-all"
+          style={{ color: "#ffffff" }}>
+          ▲
+        </button>
+        <button
+          onClick={() => dateListRef.current?.scrollBy({ top: 120, behavior: "smooth" })}
+          className="w-8 h-8 flex items-center justify-center rounded-full border border-white/30 hover:border-[#88BF81] hover:text-[#88BF81] transition-all"
+          style={{ color: "#ffffff" }}>
+          ▼
+        </button>
+      </div>
+    </div>
+  );
+
   const BG = (
     <>
       <Image src={`${WP}/Display_over_booking2-scaled.jpg`} alt="" fill className="object-cover object-center" unoptimized />
@@ -663,7 +742,8 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
   );
 
   // ── Countdown: iscrizioni non ancora aperte ──────────────────────────────
-  if (now && opensAt && now < opensAt) {
+  const bypassOpenGate = process.env.NEXT_PUBLIC_DISPLAY_TEST_MODE === "true";
+  if (!bypassOpenGate && now && opensAt && now < opensAt) {
     const diff = opensAt.getTime() - now.getTime();
     const days    = Math.floor(diff / 86400000);
     const hours   = Math.floor((diff % 86400000) / 3600000);
@@ -857,79 +937,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
             Scegli una data disponibile
           </h2>
 
-          <div className="relative flex gap-2">
-          <div ref={dateListRef} className="overflow-y-auto space-y-4 pb-2 flex-1" style={{ maxHeight: "45vh", scrollbarWidth: "none" }}>
-            {sloading && (
-              <p className="text-center text-base py-6" style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>
-                Caricamento...
-              </p>
-            )}
-            {!sloading && slots.length === 0 && (
-              <p className="text-center text-base py-6 leading-relaxed" style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>
-                Nessuna data disponibile al momento.<br />
-                <span className="text-sm opacity-60">Controlla più avanti o contattaci.</span>
-              </p>
-            )}
-            {Object.entries(grouped).map(([month, monthSlots]) => (
-              <div key={month}>
-                <p className="text-base font-semibold uppercase tracking-widest mb-2" style={{ fontFamily: "var(--font-raleway)", color: "#88BF81" }}>
-                  {new Date(month + "-01").toLocaleDateString("it-IT", { month: "long", year: "numeric" })}
-                </p>
-                <div className="space-y-1.5">
-                  {monthSlots.map((slot) => {
-                    const isFull = slot.bookings_count >= slot.max_capacity;
-                    const isSelected = selectedSlot?.id === slot.id;
-                    const dateLabel = new Date(slot.date + "T00:00:00").toLocaleDateString("it-IT", {
-                      weekday: "long", day: "numeric", month: "long",
-                    });
-                    return (
-                      <button
-                        key={slot.id}
-                        onClick={() => !isFull && setSelectedSlot(slot)}
-                        disabled={isFull}
-                        className={`w-full text-left px-4 py-2 rounded transition-all border flex items-center justify-between ${
-                          isFull
-                            ? "border-white/10 bg-white/3 opacity-50 cursor-not-allowed"
-                            : isSelected
-                              ? "border-[#88BF81] bg-[#88BF81]/15"
-                              : "border-white/15 bg-white/5 hover:border-white/30 hover:bg-white/10"
-                        }`}
-                      >
-                        <div>
-                          <p className="text-base capitalize" style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>{dateLabel}</p>
-                          <p className="text-sm opacity-50" style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>
-                            h. 8.00–13.00
-                          </p>
-                        </div>
-                        {isFull && (
-                          <span className="text-xs font-semibold px-3 py-1 rounded-full shrink-0 ml-3"
-                            style={{ background: "#ffe694", color: "#1a1a1a", fontFamily: "var(--font-raleway)" }}>
-                            Prenotata
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-          {/* Frecce scroll */}
-          <div className="flex flex-col justify-between py-1 shrink-0">
-            <button
-              onClick={() => dateListRef.current?.scrollBy({ top: -120, behavior: "smooth" })}
-              className="w-8 h-8 flex items-center justify-center rounded-full border border-white/30 hover:border-[#88BF81] hover:text-[#88BF81] transition-all"
-              style={{ color: "#ffffff" }}>
-              ▲
-            </button>
-            <button
-              onClick={() => dateListRef.current?.scrollBy({ top: 120, behavior: "smooth" })}
-              className="w-8 h-8 flex items-center justify-center rounded-full border border-white/30 hover:border-[#88BF81] hover:text-[#88BF81] transition-all"
-              style={{ color: "#ffffff" }}>
-              ▼
-            </button>
-          </div>
-          </div>
+          {renderDateList(setSelectedSlot)}
 
           <div className="flex gap-3 mt-5 justify-between">
             <button
@@ -956,9 +964,10 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
   // ── Multi-step form ───────────────────────────────────────────────────────
   const selectedDateLabel = selectedSlot
     ? new Date(selectedSlot.date + "T00:00:00").toLocaleDateString("it-IT", {
-        weekday: "long", day: "numeric", month: "long",
+        weekday: "long", day: "numeric", month: "long", year: "numeric",
       })
     : "";
+  const dateConflict = !isWaitlist && submitError.includes("prenotata da un'altra persona");
 
   return (
     <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
@@ -1086,10 +1095,12 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
           </p>
         )}
         {submitError && (
-          <div className="mt-4 text-center">
-            <p className="text-sm text-red-400" style={{ fontFamily: "var(--font-raleway)" }}>
-              Errore: {submitError}
-            </p>
+          <div className="mt-4 text-center px-4 py-3 rounded-lg" style={{ background: "rgba(242,108,104,0.15)", border: "1px solid #f26c68" }}>
+            {submitError.split(". ").map((sentence, i, arr) => (
+              <p key={i} className="text-base font-semibold leading-snug" style={{ fontFamily: "var(--font-raleway)", color: "#ff9d9a" }}>
+                {sentence}{i < arr.length - 1 ? "." : ""}
+              </p>
+            ))}
             {!isWaitlist && submitError.includes("esaurite") && (
               <button
                 onClick={() => { setIsWaitlist(true); setSubmitError(""); }}
@@ -1099,15 +1110,16 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
                 Iscriviti alla lista d&apos;attesa →
               </button>
             )}
-            {!isWaitlist && submitError.includes("prenotata da qualcun altro") && (
-              <button
-                onClick={() => { setSelectedSlot(null); setSubmitError(""); setScreen("date"); }}
-                className="mt-3 px-6 py-2 text-white text-sm tracking-wider uppercase rounded-full transition-all"
-                style={{ background: "#88BF81", fontFamily: "var(--font-raleway)" }}
-              >
-                ← Vedi le date disponibili
-              </button>
-            )}
+          </div>
+        )}
+        {!submitError && dateJustChanged && !isWaitlist && (
+          <div className="mt-4 text-center px-4 py-3 rounded-lg" style={{ background: "rgba(136,191,129,0.15)", border: "1px solid #88BF81" }}>
+            <p className="text-sm" style={{ fontFamily: "var(--font-raleway)", color: "#88BF81" }}>
+              Nuova data selezionata
+            </p>
+            <p className="text-lg font-semibold capitalize" style={{ fontFamily: "var(--font-raleway)", color: "#88BF81" }}>
+              {selectedDateLabel}
+            </p>
           </div>
         )}
         <div className="flex gap-3 mt-6 justify-between">
@@ -1127,6 +1139,14 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
             >
               Avanti →
             </button>
+          ) : dateConflict ? (
+            <button
+              onClick={() => { setSubmitError(""); setSelectedSlot(null); setDateJustChanged(false); setShowDateModal(true); }}
+              className="px-7 py-2.5 text-white text-sm tracking-wider uppercase rounded-full transition-all"
+              style={{ background: "#88BF81", fontFamily: "var(--font-raleway)" }}
+            >
+              Scegli altra data →
+            </button>
           ) : (
             <button
               disabled={
@@ -1144,6 +1164,33 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
           )}
         </div>
       </motion.div>
+
+      {showDateModal && (
+        <div
+          className="absolute inset-0 z-50 flex items-center justify-center p-6"
+          style={{ background: "rgba(0,0,0,0.75)" }}
+          onClick={() => setShowDateModal(false)}
+        >
+          <div
+            className="w-full max-w-lg max-h-[85vh] flex flex-col rounded-lg p-6"
+            style={{ background: "#1a1a1a", border: "1px solid rgba(255,255,255,0.15)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold uppercase tracking-wide" style={{ fontFamily: "var(--font-raleway)", color: "#ffffff" }}>
+                Scegli un&apos;altra data
+              </h3>
+              <button
+                onClick={() => setShowDateModal(false)}
+                className="text-white/50 hover:text-white text-sm"
+              >
+                ✕
+              </button>
+            </div>
+            {renderDateList((slot) => { setSelectedSlot(slot); setShowDateModal(false); setDateJustChanged(true); })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
