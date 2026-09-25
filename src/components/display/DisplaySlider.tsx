@@ -324,20 +324,23 @@ function SoldOutMessage({ nav, showBack = true, animateIn = false }: { nav: (id:
         </motion.p>
         <motion.p
           {...fadeUp(0.75)}
-          className="text-white/80 text-sm font-light mb-10 leading-relaxed"
+          className="text-white/80 text-base font-light mb-10 leading-relaxed"
           style={{ fontFamily: "var(--font-raleway)" }}
         >
-          <strong>CAPS - Centro Attività Promozione della Salute.</strong> Anche quest&apos;anno scolastico sarà possibile
+          <strong>CAPS - Centro Attività Promozione della Salute.</strong>
+          <br /><br />
+          Anche quest&apos;anno scolastico sarà possibile
           (esclusivamente per le scuole del secondo anno della Secondaria di Primo grado) accedere al percorso
           &ldquo;Social &amp; Technology&rdquo; sul tema delle tecnologie del Centro Regionale di Promozione della Salute.
+          <br /><br />
           Il Centro è ubicato <strong>a Torino presso l&apos;Educatorio della Provvidenza (corso Trento, 13)</strong>,
           il servizio è gratuito, ma i costi di viaggio sono a carico delle scuole.
         </motion.p>
         <motion.div {...fadeUp(0.95)} className="flex flex-wrap gap-3 justify-center">
-          <PillBtn href={`${WP}/Scheda-catalogo-CAPS-Prox-Experience-Techno-2025.26-1.pdf`} target="_blank">
+          <PillBtn href={`${WP}/CAPS-Prox-Experience-Techno26-27.pdf`} target="_blank">
             Scheda Progetto
           </PillBtn>
-          <PillBtn href="https://forms.gle/Y8LETMFMmEQwUQtq5" target="_blank">
+          <PillBtn href="https://forms.gle/Pb6gJbNwyDX34vez7" target="_blank">
             Iscrizione
           </PillBtn>
           <PillBtn onClick={() => nav("contatti")}>Contattaci</PillBtn>
