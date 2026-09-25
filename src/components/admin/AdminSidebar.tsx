@@ -49,6 +49,12 @@ const icons: Record<string, React.ReactNode> = {
       <rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>
     </svg>
   ),
+  media: (
+    <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+      <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+      <path d="M21 15l-5-5L5 21"/>
+    </svg>
+  ),
 };
 
 const nav = [
@@ -56,6 +62,7 @@ const nav = [
   { href: "/admin/eventi",       label: "Eventi",       icon: icons.eventi       },
   { href: "/admin/blog",         label: "Blog",         icon: icons.blog         },
   { href: "/admin/mail-inviate", label: "Invio Mail",   icon: icons.mail         },
+  { href: "/admin/media",        label: "Media",        icon: icons.media        },
   { href: "/admin/pagine",       label: "Pagine",       icon: icons.pagine       },
   { href: "/admin/staff",        label: "Staff",        icon: icons.staff        },
   { href: "/admin/home-grid",    label: "Home Grid",    icon: icons.homegrid     },
