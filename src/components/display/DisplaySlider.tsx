@@ -813,13 +813,12 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
   }
 
   // ── Caricamento stato slot: evita il lampo della schermata "prenota" prima
-  // di sapere se i posti sono esauriti (soldOut sotto dipende da sloading) ──
+  // di sapere se i posti sono esauriti (soldOut sotto dipende da sloading).
+  // Sfondo neutro (non la foto condivisa del flusso prenotazione): durante
+  // l'animazione di transizione della slide non deve intravedersi nessun
+  // contenuto "riconoscibile" prima di sapere quale schermata mostrare.
   if (screen === "intro" && sloading) {
-    return (
-      <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
-        {BG}
-      </div>
-    );
+    return <div className="relative w-full h-full bg-[#111]" />;
   }
 
   // ── Tutto esaurito, lista d'attesa chiusa ─────────────────────────────────
