@@ -812,6 +812,16 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
     );
   }
 
+  // ── Caricamento stato slot: evita il lampo della schermata "prenota" prima
+  // di sapere se i posti sono esauriti (soldOut sotto dipende da sloading) ──
+  if (screen === "intro" && sloading) {
+    return (
+      <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+        {BG}
+      </div>
+    );
+  }
+
   // ── Tutto esaurito, lista d'attesa chiusa ─────────────────────────────────
   const soldOut = !isWaitlist && !sloading && (slots.length === 0 || slots.every(s => s.bookings_count >= s.max_capacity));
   if (screen === "intro" && soldOut) {
