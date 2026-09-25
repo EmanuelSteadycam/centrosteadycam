@@ -1,3 +1,67 @@
+# Handoff — sessione 2026-09-22 (mattina, pre-lancio Display Techno ore 12:00)
+
+## Nota sulla versione precedente di questo file
+
+Il contenuto precedente (sessioni 2026-07-26/27 sul televisore 3D di `/storia`, poi le aggiunte successive su staff, DNS/Brevo, e la verifica pre-lancio del 21/09) resta recuperabile più sotto in questo stesso file e da `git log`. Qui si riparte dalla mattina del 22/09, giorno del lancio vero e proprio delle iscrizioni "Display Techno" (apertura fissata per le 12:00).
+
+## Cosa è successo in questa sessione
+
+Sessione divisa in due filoni di lavoro, entrambi richiesti esplicitamente dall'utente, più le operazioni di commit/push/deploy finali fatte sotto pressione di tempo (lancio alle 12:00, sessione iniziata verso le 10:30 circa, questa nota scritta alle 11:20).
+
+**1. Nuova sezione admin "Invio Mail" (commit `dfc29f6`)**. Richiesta: poter scrivere articoli che vengono inviati **solo via email** agli iscritti, senza essere pubblicati sul sito, senza limite di parole, con link esterni, embed video e pulsanti CTA verso documenti caricati. Soluzione realizzata riusando l'infrastruttura esistente del blog invece di costruire qualcosa da zero:
+- Stessa tabella `posts`, ma con `type = "newsletter"` invece di `"post"` — tutte le query pubbliche del blog filtrano sempre `type = "post"`, quindi questi articoli restano invisibili sul sito per costruzione, non per un controllo aggiuntivo fragile.
+- Stesso editor ricco Tiptap (`RichTextEditor.tsx`) e stesso archivio documenti (`blog/uploadImage.ts`, Vercel Blob) del blog, riusati senza modifiche.
+- Nuova sezione `/admin/mail-inviate` (voce sidebar rinominata su richiesta dell'utente in **"Invio Mail"**): lista con stato Bozza/Inviata, form di modifica con pulsante "Invio di prova" (sempre verso la lista Brevo ID 15 "TEST NEWSLETTER" — verificato via API, contiene 4 indirizzi: valentino/emanuel/beppe@progettosteadycam.it + 33manu33l@gmail.com) e pulsante "Invia →" verso una lista scelta dal selettore, con conferma. L'articolo resta modificabile e reinviabile in futuro anche ad altre liste — richiesta esplicita, nessun blocco dopo il primo invio.
+- `newsletter_sent_at`/`newsletter_list_id` (nuove colonne su `posts`, migration `supabase/alter_posts_newsletter.sql` — **eseguita dall'utente su Supabase**, confermato a voce, poi il file è stato spostato in `supabase/_eseguiti/` seguendo la convenzione del progetto) si aggiornano **solo** per invii a liste reali, mai per la lista test — questo pilota la voce "Inviata" nell'elenco.
+- `sendFullNewsletterCampaign()` in `src/lib/brevo.ts` (nuova funzione, non tocca `sendNewsletterCampaign` esistente usata dal blog) include il **contenuto completo** dell'articolo, non solo l'estratto, e converte pulsanti CTA ed embed YouTube (che non funzionano nei client email) in HTML con stili inline via una funzione `emailifyContent()` scritta ad hoc.
+- Pulsante "👁 Anteprima email" aggiunto su richiesta successiva dell'utente ("riesco ad avere un'anteprima della mail? ... vorrei vedere dove sta meglio [un bottone]"): server action `previewMailHtml` che genera l'HTML reale (stessi stili dell'invio) senza salvare né inviare, mostrato in un iframe modale.
+- **Non verificato in questa sessione**: che un invio reale (test o a lista vera) sia stato effettivamente cliccato e completato con successo dall'utente in browser. Il flusso è stato costruito, buildato con successo (`npm run build` pulito più volte), e l'utente ha navigato attivamente la pagina di modifica (richieste POST visibili nei log del dev server), ma nessuna conferma esplicita del tipo "ho inviato e ho ricevuto la mail" è arrivata in questa conversazione.
+
+**2. Miglioramenti al flusso di prenotazione Display per il conflitto su stessa data (commit `e309541` poi `1d69777`)**. Punto di partenza: scenario descritto dall'utente — utente A e utente B prenotano la stessa data nello stesso momento, A vince, B riceve un errore e deve poter scegliere un'altra data senza perdere i dati già inseriti, vedendo lo stato aggiornato (incluso un eventuale utente C che nel frattempo ha preso un'altra data). Costruito in più passaggi, ciascuno confermato dall'utente prima del successivo:
+- Aggiornamento automatico della lista date: polling ogni 15s mentre l'utente è sulla schermata "Scegli una data", più un refetch immediato ogni volta che si rientra in quella schermata (`e309541`).
+- Su richiesta successiva, il flusso di recupero dall'errore è stato ridisegnato: il pulsante "Conferma" in fondo al form **si trasforma in "Scegli altra data →"** quando arriva l'errore di conflitto, apre un **modale** (non una schermata separata: il form resta montato dietro, con tutti i dati già compilati) con la stessa lista date/badge "Prenotata", e si chiude da solo non appena si sceglie una data libera — nessun pulsante "Continua" aggiuntivo nel modale, su richiesta esplicita (`1d69777`). Rifattorizzata la lista date in una funzione `renderDateList()` condivisa tra la schermata dedicata e il modale, per non duplicare ~70 righe di JSX.
+- Testo errore aggiornato due volte su richieste dell'utente: prima "da qualcun altro" → "da un'altra persona"; poi tolto il prefisso "Errore:", la frase "Scegli un'altra data" va a capo su una riga separata, testo reso più visibile (riquadro con bordo rosso, testo più grande e in grassetto, prima era piccolo e in un rosso spento).
+- Aggiunto un riquadro di conferma verde (stesso stile di quello già esistente in alto al form) che compare **in basso**, vicino al pulsante, subito dopo aver scelto la nuova data dal modale — richiesta esplicita, perché l'utente potrebbe non notare l'aggiornamento del riquadro in alto. La data mostrata ora include **l'anno** (prima era tipo "mercoledì 20 gennaio", ora "mercoledì 20 gennaio 2026").
+- **Non riverificato in browser dopo l'ultima modifica**: il giro di modifiche sul testo dell'errore/riquadro di conferma/anno (l'ultimo blocco descritto sopra) è stato verificato solo con `tsc --noEmit` e `npm run build` puliti, **non** ritestato visivamente dall'utente prima di essere committato e deployato — a differenza del giro precedente (trasformazione del pulsante in modale), che l'utente aveva esplicitamente confermato ("provato, tutto ok") prima di procedere.
+
+**Test end-to-end con due PC in ufficio, stesso ufficio/rete WiFi**. Per evitare di aprire pubblicamente le iscrizioni prima del lancio ufficiale, il test è stato fatto sul server di sviluppo locale (`npm run dev`), raggiungibile da un secondo PC in ufficio tramite l'IP di rete locale del Mac (`192.168.1.13:3000/display`, verificato raggiungibile con una richiesta HTTP diretta, non solo assunto). **Punto critico gestito**: il server locale usa lo stesso `.env.local`, quindi punta allo **stesso database Supabase e allo stesso account Brevo della produzione** — non esiste un ambiente di test separato in questo progetto. Per non dover spostare la data reale di apertura (`opens_at`, che avrebbe aperto le iscrizioni anche online per chiunque), è stato aggiunto un bypass **solo locale**: variabile `NEXT_PUBLIC_DISPLAY_TEST_MODE=true` aggiunta **solo** a `.env.local` (mai su Vercel — verificato con `vercel env ls production`, la variabile non compare), letta sia in `src/app/display/actions.ts` (gate server-side) sia in `src/components/display/DisplaySlider.tsx` (countdown client-side) per saltare il controllo `opens_at` solo quando presente. Il codice di questo bypass è stato comunque commesso e deployato in produzione (è innocuo lì: la variabile semplicemente non esiste in quell'ambiente, quindi il countdown reale resta invariato — verificato, vedi sotto).
+
+## Stato attuale esatto
+
+- `npx tsc --noEmit` e `npm run build` completi eseguiti più volte, sempre puliti (solo warning preesistenti `<img>`/`next/image`, nessun errore) — ultima verifica dopo l'ultimo commit (`1d69777`).
+- `git status` pulito, `main` allineato a `origin/main`. Tre commit pushati e deployati in produzione in questa sessione: `e309541` (auto-refresh date), `dfc29f6` (sezione Invio Mail), `1d69777` (conflitto data in modale).
+- Deploy Vercel: ultimo `readyState: READY`, alias su `https://centrosteadycam.it` confermato (`▲ Aliased`), `curl -I https://centrosteadycam.it/display` risponde 200.
+- **Verificato con query dirette al database, alle 11:20 circa (40 minuti prima del lancio)**: `event_bookings` per l'evento `display` è **vuoto** (0 righe), e nessuno slot ha `bookings_count > 0` — nessun residuo dei test fatti sui due PC in ufficio. Il database è pulito e pronto per ricevere le prenotazioni reali dalle 12:00.
+- **Verificato**: `opens_at` per l'evento `display` è impostato a `2026-09-22T12:00` (Europe/Rome) nel database — il countdown pubblico in produzione lo rispetterà correttamente, dato che `NEXT_PUBLIC_DISPLAY_TEST_MODE` non è settata su Vercel.
+- `.env.local` locale ha ora una riga aggiuntiva `NEXT_PUBLIC_DISPLAY_TEST_MODE=true` in fondo, per continuare a poter testare in locale senza countdown. **Da ricordare**: se in futuro si copia `.env.local` per un nuovo setup o si crea un ambiente di staging vero, questa riga va rimossa o gestita esplicitamente, altrimenti quel setup salterebbe sempre il countdown.
+
+## Decisioni prese e perché
+
+- Riusare la tabella `posts` (con un `type` nuovo) invece di crearne una dedicata per "Invio Mail": tutte le query pubbliche del blog già filtrano per `type = "post"`, quindi l'isolamento dalla pubblicazione è garantito dalla struttura esistente, non da un controllo aggiuntivo da mantenere allineato nel tempo.
+- Contenuto completo nell'email (non solo estratto) per gli articoli "solo email", a differenza del blog che manda estratto + link: è il punto centrale della richiesta originale ("senza limite di parole... inviati direttamente all'indirizzario").
+- Conflitto data gestito con un **modale** sopra il form (non una navigazione a schermo pieno come nella prima versione): richiesta esplicita dell'utente per evitare di perdere il contesto visivo del form già compilato, e per una chiusura immediata alla scelta senza un passaggio di conferma aggiuntivo.
+- Bypass del countdown solo via env var locale, mai toccando `opens_at` nel database condiviso: unica soluzione che permette un test end-to-end reale (submit vero, non simulato) senza rischiare di aprire le iscrizioni online prima del previsto, dato che non esiste un ambiente Supabase/Brevo di staging separato in questo progetto.
+
+## Problemi aperti / da verificare
+
+- **Il giro di modifiche più recente sul box di errore Display (rimozione "Errore:", a capo, testo più visibile, riquadro conferma in basso, anno nella data) non è stato riverificato visivamente dall'utente dopo l'ultima modifica**, prima di essere deployato in produzione — solo build/typecheck puliti. Da controllare in browser reale alla prima occasione utile (idealmente prima delle 12:00, se c'è tempo).
+- Non è stato verificato in questa sessione se un invio reale dalla nuova sezione "Invio Mail" (test o lista vera) sia stato effettivamente completato con successo end-to-end dall'utente.
+- Non è chiaro se il collega abbia effettivamente completato il submit finale durante il test sui due PC (il database risulta vuoto — potrebbe significare "tutto pulito dopo il test" oppure "il test si è fermato prima del submit vero", non è distinguibile dai soli dati attuali). Non è un problema per il lancio (il database è comunque pronto), ma vale la pena chiedere conferma all'utente su cosa sia stato effettivamente provato fino in fondo.
+- Riga `NEXT_PUBLIC_DISPLAY_TEST_MODE=true` lasciata in `.env.local` locale — utile per test futuri, ma da tenere a mente se il file viene copiato altrove.
+- (Ereditati dalle sessioni precedenti, non toccati oggi): fix `f141c6e` newsletter da confermare in produzione; `BREVO_API_KEY` da impostare anche su ambiente Preview; valutare chiave Brevo a permessi ristretti; lavoro rimasto aperto su `/storia` (trigger pixel TV, `image_url` nel carosello, placeholder, blocco anni >2011); estetica finale sezione staff.
+
+## Prossimi passi concreti
+
+1. **Prima delle 12:00, se c'è tempo**: riverificare in browser il box di errore/conferma sul flusso Display (vedi punto sopra, mai testato visivamente dopo l'ultima modifica).
+2. **Dalle 12:00**: monitorare le prime iscrizioni reali — verificare che almeno una prenotazione vada a buon fine e che compaia correttamente in `/admin/prenotazioni`.
+3. Chiedere all'utente conferma su cosa sia stato effettivamente testato fino in fondo (submit completo o solo fino all'errore) durante la prova con due PC in ufficio.
+4. Testare end-to-end (invio reale, non solo build) la nuova sezione "Invio Mail".
+5. (Invariati) fix newsletter `f141c6e` da confermare in produzione; `BREVO_API_KEY` su Preview; chiave Brevo a permessi ristretti; lavoro `/storia` (TV pixel/percentuale, `image_url`, placeholder, blocco anni >2011); estetica staff.
+
+---
+
+## Storico sessioni precedenti
+
 # Handoff — sessione 2026-07-26 / 2026-07-27 (aggiornato)
 
 ## Nota sulla versione precedente di questo file
@@ -114,13 +178,6 @@ Sessione breve, solo di chiusura/handoff — nessuna modifica al codice applicat
 
 `HANDOFF.md` (questo file) aveva inoltre delle modifiche già presenti ma non ancora committate all'apertura di questa sessione (l'intera sezione Staff + DNS/Brevo qui sopra). Commit locale di questo file fatto ora, **non pushato** per prassi standard del progetto.
 
-## Prossimi passi concreti (aggiornati)
-
-1. Verificare che il fix `f141c6e` (notifica admin newsletter awaited) sia effettivamente in produzione e testare un'iscrizione reale end-to-end.
-2. Se serve un deploy/preview che tocchi l'editor blog Brevo, impostare `BREVO_API_KEY` anche per l'ambiente Preview su Vercel.
-3. Valutare con l'utente se creare una chiave API Brevo a permessi ristretti, ora che l'allowlist IP è disattivata.
-4. (Voci precedenti dalla sessione TV/staff, ancora valide) convertire i trigger a pixel fissi della TV in `/storia` a percentuale quando arrivano date/immagini reali; collegare `image_url` al carosello; sostituire i placeholder; costruire il blocco anni >2011; decidere l'estetica finale della sezione staff.
-
 ## Aggiunta successiva: verifica pre-lancio Display Techno, nessuna modifica al codice (2026-09-21)
 
 Sessione di sola verifica/handoff, **nessun codice scritto o modificato in questa conversazione**: il lavoro applicativo descritto qui sotto era già stato fatto e committato in una sessione precedente lo stesso giorno (mattina del 21/09), prima che questa conversazione iniziasse. Qui ci si è limitati a ricostruire cosa fosse stato fatto e a verificarne lo stato in produzione, su richiesta esplicita dell'utente ("sistemato tutto per l'iscrizione di domani? Display?").
@@ -141,8 +198,3 @@ Seguiti da tre commit non legati a Display (`fdeeb9a`, `ac7c18c`, `c3b564a`, 12:
 **Non verificato**: lo stato dell'evento dentro `/admin/prenotazioni` (slot configurati, capacità, toggle lista d'attesa) — richiede login admin, non fatto in questa sessione, offerto esplicitamente all'utente ma non richiesto.
 
 Aggiornata anche la memoria di progetto (`project_admin_system.md`, sezione "Display Techno — lancio iscrizioni 2026-09-22") con lo stesso contenuto, per renderlo recuperabile da conversazioni future senza rileggere questo file.
-
-## Prossimi passi concreti (aggiornati al 21/09 pomeriggio)
-
-1. Il giorno del lancio (22/09 dalle 12:00), verificare end-to-end una prenotazione reale (o di prova) per confermare che l'insert con `n_disabilita` funzioni senza errori — la migration non è mai stata verificata con una query diretta, solo per conferma verbale dell'utente.
-2. (Invariati dalla sezione precedente) fix `f141c6e` newsletter da confermare in produzione; `BREVO_API_KEY` da impostare anche su Preview; valutare chiave Brevo a permessi ristretti; lavoro rimasto aperto su `/storia` (trigger pixel TV, `image_url` nel carosello, placeholder, blocco anni >2011) ed estetica sezione staff.
