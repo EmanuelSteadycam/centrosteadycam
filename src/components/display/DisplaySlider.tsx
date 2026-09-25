@@ -290,9 +290,14 @@ function SlideIntro({ nav, onMenu }: { nav: (id: SlideId) => void; onMenu: () =>
 // stesso sfondo, stesso testo CAPS e stessi link di Scheda Progetto/Iscrizione. Riusato sia come
 // slide raggiungibile a mano dal menu, sia mostrato in automatico nel flusso di prenotazione
 // quando i posti sono esauriti e la lista d'attesa è chiusa.
-function SoldOutMessage({ nav, showBack = true }: { nav: (id: SlideId) => void; showBack?: boolean }) {
+function SoldOutMessage({ nav, showBack = true, animateIn = false }: { nav: (id: SlideId) => void; showBack?: boolean; animateIn?: boolean }) {
   return (
-    <div className="relative w-full h-full flex items-center justify-center">
+    <motion.div
+      className="relative w-full h-full flex items-center justify-center overflow-hidden"
+      initial={animateIn ? { x: "100%" } : false}
+      animate={{ x: 0 }}
+      transition={{ duration: 1.0, ease: [0.25, 0.46, 0.45, 0.94] }}
+    >
       <Image src={`${WP}/NooDisplay.jpg.webp`} alt="" fill className="object-cover" priority unoptimized />
       <div className="absolute inset-0 bg-black/55" />
       <div className="relative z-10 flex flex-col items-center text-center px-8 max-w-3xl">
@@ -339,7 +344,7 @@ function SoldOutMessage({ nav, showBack = true }: { nav: (id: SlideId) => void; 
           {showBack && <PillBtn onClick={() => nav("intro")}>Back</PillBtn>}
         </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -824,7 +829,7 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
   // ── Tutto esaurito, lista d'attesa chiusa ─────────────────────────────────
   const soldOut = !isWaitlist && !sloading && (slots.length === 0 || slots.every(s => s.bookings_count >= s.max_capacity));
   if (screen === "intro" && soldOut) {
-    return <SoldOutMessage nav={nav} />;
+    return <SoldOutMessage nav={nav} animateIn />;
   }
 
   // ── Intro / istruzioni ───────────────────────────────────────────────────
