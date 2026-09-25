@@ -286,7 +286,11 @@ function SlideIntro({ nav, onMenu }: { nav: (id: SlideId) => void; onMenu: () =>
   );
 }
 
-function SlideApertura({ nav }: { nav: (id: SlideId) => void }) {
+// Contenuto verificato dal database WordPress originale (slide RevSlider "Nooo...!", id 145) —
+// stesso sfondo, stesso testo CAPS e stessi link di Scheda Progetto/Iscrizione. Riusato sia come
+// slide raggiungibile a mano dal menu, sia mostrato in automatico nel flusso di prenotazione
+// quando i posti sono esauriti e la lista d'attesa è chiusa.
+function SoldOutMessage({ nav, showBack = true }: { nav: (id: SlideId) => void; showBack?: boolean }) {
   return (
     <div className="relative w-full h-full flex items-center justify-center">
       <Image src={`${WP}/NooDisplay.jpg.webp`} alt="" fill className="object-cover" priority unoptimized />
@@ -304,7 +308,7 @@ function SlideApertura({ nav }: { nav: (id: SlideId) => void }) {
           className="text-white text-xl md:text-2xl font-light tracking-[0.1em] mb-6"
           style={{ fontFamily: "var(--font-raleway)" }}
         >
-          Tutte le date disponibili per l&apos;anno scolastico 25-26 sono state prenotate.
+          Tutte le date disponibili per l&apos;anno scolastico 26-27 sono state prenotate.
         </motion.p>
         <motion.p
           {...fadeUp(0.6)}
@@ -318,8 +322,11 @@ function SlideApertura({ nav }: { nav: (id: SlideId) => void }) {
           className="text-white/80 text-sm font-light mb-10 leading-relaxed"
           style={{ fontFamily: "var(--font-raleway)" }}
         >
-          CAPS - Centro Attività Promozione della Salute. Anche quest&apos;anno scolastico sarà possibile
-          vivere un&apos;esperienza simile a Display con il programma Prox Experience Techno.
+          <strong>CAPS - Centro Attività Promozione della Salute.</strong> Anche quest&apos;anno scolastico sarà possibile
+          (esclusivamente per le scuole del secondo anno della Secondaria di Primo grado) accedere al percorso
+          &ldquo;Social &amp; Technology&rdquo; sul tema delle tecnologie del Centro Regionale di Promozione della Salute.
+          Il Centro è ubicato <strong>a Torino presso l&apos;Educatorio della Provvidenza (corso Trento, 13)</strong>,
+          il servizio è gratuito, ma i costi di viaggio sono a carico delle scuole.
         </motion.p>
         <motion.div {...fadeUp(0.95)} className="flex flex-wrap gap-3 justify-center">
           <PillBtn href={`${WP}/Scheda-catalogo-CAPS-Prox-Experience-Techno-2025.26-1.pdf`} target="_blank">
@@ -329,11 +336,15 @@ function SlideApertura({ nav }: { nav: (id: SlideId) => void }) {
             Iscrizione
           </PillBtn>
           <PillBtn onClick={() => nav("contatti")}>Contattaci</PillBtn>
-          <PillBtn onClick={() => nav("intro")}>Back</PillBtn>
+          {showBack && <PillBtn onClick={() => nav("intro")}>Back</PillBtn>}
         </motion.div>
       </div>
     </div>
   );
+}
+
+function SlideApertura({ nav }: { nav: (id: SlideId) => void }) {
+  return <SoldOutMessage nav={nav} />;
 }
 
 function SlidePortfolio({ nav, onMenu: _onMenu }: { nav: (id: SlideId) => void; onMenu: () => void }) {
@@ -799,6 +810,12 @@ function SlideBooking({ nav }: { nav: (id: SlideId) => void }) {
         </motion.div>
       </div>
     );
+  }
+
+  // ── Tutto esaurito, lista d'attesa chiusa ─────────────────────────────────
+  const soldOut = !isWaitlist && !sloading && (slots.length === 0 || slots.every(s => s.bookings_count >= s.max_capacity));
+  if (screen === "intro" && soldOut) {
+    return <SoldOutMessage nav={nav} />;
   }
 
   // ── Intro / istruzioni ───────────────────────────────────────────────────
