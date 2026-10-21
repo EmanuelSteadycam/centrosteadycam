@@ -1,10 +1,59 @@
-# Handoff — sessione 2026-09-22 (mattina, pre-lancio Display Techno ore 12:00)
+# Handoff — sessione 2026-10-21 (breve, nessuna modifica al codice)
+
+## Cosa è successo in questa sessione
+
+L'utente ha ricevuto una mail da Supabase e ha chiesto se riguardasse il progetto. Il contenuto: dal **30 ottobre 2026** Supabase smette di concedere automaticamente l'accesso Data API (supabase-js / PostgREST / GraphQL) alle **nuove** tabelle create nello schema `public` dei progetti esistenti. Le tabelle già esistenti mantengono i loro grant e non sono toccate.
+
+Verificato con grep sul codice che il progetto usa Supabase tramite supabase-js, con la chiave `service_role` lato server (`src/lib/supabase-server.ts`) e la chiave `anon` lato browser (riferimenti trovati in `src/components/display/DisplaySlider.tsx`, `src/app/admin/login/page.tsx`, `src/components/admin/AdminSidebar.tsx`, `src/middleware.ts`). Le tabelle usate oggi dal codice sono: `posts`, `event_bookings`, `event_settings`, `events`, `event_slots`, `timeline_entries`, `staff`, `archivio_items`, `approfondimenti`, `display_slots`. Conclusione data all'utente: oggi non serve fare nulla; d'ora in poi ogni `CREATE TABLE` in `public` (SQL Editor o file in `supabase/`) dovrà includere nello stesso script i `GRANT` — `service_role` sempre, `anon` solo se la tabella è letta dal browser. Vale anche per rilanciare `supabase/schema.sql` su un progetto nuovo. **Non verificato**: non ho controllato nella dashboard Supabase (Data API settings) quali tabelle siano effettivamente esposte, né se esistano tabelle in `public` non referenziate dal codice.
+
+Su richiesta dell'utente è stata aggiunta una nota in memoria Claude (`project_supabase_grants.md`, indicizzata in `MEMORY.md`) perché nelle sessioni future i grant vengano inseriti automaticamente.
+
+## Stato attuale
+
+Nessun file del repository modificato in questa sessione, a parte questo `HANDOFF.md`. Nota: all'inizio della sessione `HANDOFF.md` risultava già modificato e **non committato** — contiene il riassunto delle sessioni 25-26/09 qui sotto, rimasto nel working tree da allora (stessa situazione già capitata con la sessione del 22/09).
+
+## Prossimi passi
+
+- Committare `HANDOFF.md` (include anche il riassunto 25-26/09 mai committato).
+- Alla prossima creazione di una tabella Supabase: aggiungere i `GRANT` nello stesso script.
+- Facoltativo: controllare in dashboard Supabase → Data API settings quali tabelle risultano esposte.
+
+---
+
+# Handoff — sessioni 2026-09-25 / 2026-09-26 (post-lancio Display Techno)
 
 ## Nota sulla versione precedente di questo file
 
-Il contenuto precedente (sessioni 2026-07-26/27 sul televisore 3D di `/storia`, poi le aggiunte successive su staff, DNS/Brevo, e la verifica pre-lancio del 21/09) resta recuperabile più sotto in questo stesso file e da `git log`. Qui si riparte dalla mattina del 22/09, giorno del lancio vero e proprio delle iscrizioni "Display Techno" (apertura fissata per le 12:00).
+Il contenuto della sessione del 22/09 (mattina pre-lancio: auto-refresh date, sezione "Invio Mail", gestione conflitto data in modale) resta subito sotto in questo stesso file — **non è stato committato lo stesso giorno**: il file era rimasto modificato ma non salvato nel working tree fino al 25/09, quando è stato trovato con `git status` e committato allora (`8830918`). Le sessioni precedenti (televisore 3D `/storia`, staff, DNS/Brevo, verifica pre-lancio 21/09) restano ancora più sotto e da `git log`. Qui si riparte dal pomeriggio del 22/09 (un fix trovato subito dopo aver scritto la sezione precedente, quindi non ancora documentato lì) fino al 26/09.
 
-## Cosa è successo in questa sessione
+## Cosa è successo in queste sessioni
+
+**0. Fix trovato la sera del 22/09, non ancora in questo file (`b3e7750`, 12:31)**: tutte le email inviate dal sito (conferme/approvazioni/rifiuti/promemoria prenotazione, notifiche admin, invii newsletter) non avevano un `replyTo` esplicito — le risposte finivano di default sul mittente `info@centrosteadycam.it`. Aggiunto `replyTo: steadycam01@gmail.com` su tutte le chiamate Brevo in `src/lib/brevo.ts` (helper condiviso `sendMail`, e i due path di invio newsletter/test). **Verificato successivamente** (screenshot del pannello ImprovMX fornito dall'utente): il forward `info@centrosteadycam.it → steadycam01@gmail.com` esisteva già a livello DNS/ImprovMX (wildcard `*`) da prima di questo fix — quindi il fix è un miglioramento di trasparenza (l'header "rispondi a" ora è esplicito nell'email) più che una correzione di un problema reale, ma non fa danno ed è già live.
+
+**1. Messaggio automatico "tutto esaurito" quando la lista d'attesa è chiusa (25/09, `f175f76` + 3 fix successivi)**. Il 25/09 l'utente ha chiuso manualmente la lista d'attesa dell'evento Display (`waitlist_enabled = false` in `event_settings`, modifica diretta al DB via script, **nessun commit di codice per questo** — è un dato, non logica) dopo che le iscrizioni erano andate a buon fine. Verificato prima di procedere: 4 persone già in lista d'attesa, 11 prenotazioni reali su 11 slot aperti, tutti pieni (1/1 ciascuno). Con lista d'attesa chiusa e tutti gli slot pieni, un nuovo visitatore su `/display` si trovava davanti a un vicolo cieco: lista di date tutte "Prenotata", nessuna selezionabile, nessun messaggio esplicativo.
+   - Soluzione: recuperato dal **database WordPress locale su MAMP** (non dal codice React, che si era rivelato scorretto) il contenuto originale della slide RevSlider "Nooo...!" (slider 3, slide id 145): titolo, sottotitolo, paragrafo CAPS, e i due bottoni (PDF + Google Form). Il paragrafo CAPS nel codice React esistente (`SlideApertura`) era stato riscritto in modo impreciso ("programma Prox Experience Techno" invece del vero nome del percorso, "Social & Technology" all'Educatorio della Provvidenza di Torino) — corretto con il testo verificato dal DB. Confermato dall'utente che il programma CAPS è ancora valido per il 26-27 (link PDF/Google Form dell'epoca risultavano già coincidenti con quelli attuali). Sfondo (`NooDisplay.jpg.webp`, il "bimbo sconsolato" che l'utente ricordava) verificato identico e già online, nessun recupero necessario.
+   - Estratta la logica in un componente condiviso `SoldOutMessage` (usato sia dalla slide `SlideApertura`, raggiungibile a mano dal menu, sia mostrato **in automatico** dentro `SlideBooking` quando `!isWaitlist && slots.every(pieno)`).
+   - **Tre round di bug trovati dall'utente testando dal vivo e sistemati in giornata**, ciascuno verificato con screenshot via browser automation (non solo build):
+     1. Per un istante si vedeva ancora la schermata di prenotazione normale prima del messaggio "esaurito" (dipendeva da `sloading`, non ancora risolto al primo giro) → aggiunto uno stato di caricamento neutro.
+     2. Quello stato di caricamento neutro riusava però la stessa foto di sfondo condivisa da tutto il flusso prenotazione (una folla), percepita dall'utente come "la pagina vecchia" durante la transizione → sostituita con uno sfondo scuro pieno, nessuna foto riconoscibile.
+     3. Lo sfondo del messaggio "esaurito" compariva di colpo invece di scorrere da destra come le altre slide del deck (la transizione a livello di deck si conclude prima che i dati siano caricati, quindi il passaggio interno "caricamento → esaurito" non veniva tracciato da `AnimatePresence`) → aggiunta un'animazione di scorrimento locale identica a quella del deck, attiva solo quando la schermata compare così.
+   - **Verificato da me con screenshot via `claude-in-chrome`** (non solo confermato a voce dall'utente) che la sequenza finale è corretta: click "Prenota" → breve sfondo neutro → immagine del bambino che scorre da destra → testo "Nooo...!" con anno "26-27" corretto.
+
+**2. Aggiornamento contenuti CAPS per l'anno 26-27 (25/09, `383180d`)**: su richiesta dell'utente, sostituiti PDF e link del blocco "Alternative?":
+   - Nuovo PDF `CAPS-Prox-Experience-Techno26-27.pdf` caricato su Vercel Blob (percorso `media/CAPS-Prox-Experience-Techno26-27.pdf`, stesso schema degli altri asset). **Ostacolo incontrato**: il file, fornito dall'utente in `~/Downloads`, non era leggibile né da Bash né dal tool Read (`EPERM`, permesso di sistema macOS sulla cartella Downloads, non aggirabile da qui) — risolto chiedendo all'utente di spostare il file sul Desktop, cartella senza quella restrizione.
+   - Nuovo link Google Form per l'iscrizione anno 26-27 (`forms.gle/Pb6gJbNwyDX34vez7`, verificato con una richiesta HTTP che il redirect punta a un form Google reale e attivo).
+   - Paragrafo CAPS diviso in tre blocchi separati (a capo prima di "Anche" e prima di "Il Centro", su richiesta esplicita) e font leggermente ingrandito (`text-sm` → `text-base`).
+   - Il vecchio PDF (`Scheda-catalogo-CAPS-Prox-Experience-Techno-2025.26-1.pdf`) **lasciato intenzionalmente** su Vercel Blob su richiesta esplicita dell'utente, pur non essendo più collegato da nessuna parte del sito.
+
+**3. Nuova sezione admin "Media" (25/09, `576b749`)**: richiesta dell'utente di poter vedere anteprime/nomi dei file caricati sul sito, divisi per immagini/documenti/video. Implementata `/admin/media` (server component che chiama `list({ prefix: "media/" })` di `@vercel/blob`, con paginazione a cursore già prevista nel codice anche se non necessaria oggi) + componente client con tab Immagini/Documenti/Video (conteggio per tab), ricerca per nome, griglia con anteprime per immagini, player `<video>` inline per i video, elenco con icona/cartella/dimensione/data per i documenti. Sola lettura, nessuna azione di eliminazione — non richiesta. **Verificato dal vivo** (non solo build): 200 file totali/49MB, 197 immagini, 3 documenti, 0 video — scala ridotta, nessun problema di performance.
+
+**Nota tecnica ricorrente in questa sessione**: il `BLOB_READ_WRITE_TOKEN` presente in `.env.local` risulta **non valido** per chiamate dirette da script Node locali (`BlobAccessError: Access denied`), pur avendo una lunghezza plausibile — stessa classe di problema già documentata per `BREVO_API_KEY` in una sessione precedente (variabile "Sensitive" o comunque non affidabile in locale). **Soluzione che ha funzionato entrambe le volte**: `vercel env pull <file> --environment=production --yes`, usare il token fresco da lì per lo script una tantum, poi cancellare subito il file scaricato. Utile ricordarlo per il prossimo upload manuale su Blob.
+
+**4. Due domande dell'utente, risposte senza modifiche al codice (26/09)**:
+   - Quale email arriva quando si approva un'iscrizione Display dall'admin: quotato il contenuto esatto di `buildApprovalHtml` (`src/lib/mailup-html.ts`) — oggetto "DISPLAY - la tua visita è confermata", corpo con dati data/istituto/classe/partecipanti.
+   - Differenza tra link `/media/...` (relativo, pensato per l'uso interno al sito, passa dal rewrite) e il link diretto di Vercel Blob (assoluto, da usare per condividere un'immagine **fuori** dal sito, es. email a terzi) — spiegata, nessuna modifica necessaria.
+
+## Cosa è successo nella sessione del 22/09 (mattina)
 
 Sessione divisa in due filoni di lavoro, entrambi richiesti esplicitamente dall'utente, più le operazioni di commit/push/deploy finali fatte sotto pressione di tempo (lancio alle 12:00, sessione iniziata verso le 10:30 circa, questa nota scritta alle 11:20).
 
