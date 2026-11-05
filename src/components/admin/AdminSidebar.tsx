@@ -55,6 +55,11 @@ const icons: Record<string, React.ReactNode> = {
       <path d="M21 15l-5-5L5 21"/>
     </svg>
   ),
+  podcast: (
+    <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+      <rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 17v5M8 22h8"/>
+    </svg>
+  ),
 };
 
 const nav = [
@@ -67,6 +72,7 @@ const nav = [
   { href: "/admin/staff",        label: "Staff",        icon: icons.staff        },
   { href: "/admin/home-grid",    label: "Home Grid",    icon: icons.homegrid     },
   { href: "/admin/timeline",     label: "Timeline",     icon: icons.timeline     },
+  { href: "/admin/podcast",      label: "Podcast",      icon: icons.podcast      },
 ];
 
 export default function AdminSidebar() {
