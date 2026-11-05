@@ -1,4 +1,6 @@
 export const PODCAST_PATH = "/addomesticareglischermi";
+// Copertina dello show, uguale per tutte le puntate (usata se l'episodio non ne ha una propria)
+export const PODCAST_COVER = "/podcast/copertina.jpg";
 
 export type PodcastEpisode = {
   id: string;
