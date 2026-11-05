@@ -1,3 +1,42 @@
+# Handoff — sessione 2026-11-05 (pagina podcast "Addomesticare gli schermi")
+
+## Cosa è successo in questa sessione
+
+L'utente sta producendo un podcast, **ADDOMESTICARE GLI SCHERMI**, con episodi pubblicati su Spotify a cadenza settimanale, e ha chiesto una pagina dedicata dentro il sito. Lo show esiste già su Spotify ma non ha ancora episodi, quindi non è cercabile; il link dello show **non è stato ancora fornito**. URL scelto dall'utente: `centrosteadycam.it/addomesticareglischermi`.
+
+Il requisito centrale era mostrare, oltre agli episodi usciti, un'**anteprima degli episodi futuri** (opacizzata, non cliccabile, non ascoltabile). L'utente chiedeva se Spotify esponga gli episodi programmati prima dell'uscita: la risposta data è no — feed RSS di Spotify for Creators e API Spotify contengono solo episodi già pubblicati. **Questa è conoscenza generale sul funzionamento delle piattaforme, non verificata sullo show reale** (non ci sono episodi programmati da testare). Di conseguenza i dati degli episodi futuri vivono nel nostro database.
+
+Realizzato, seguendo lo stesso pattern di `/admin/staff` e `/admin/timeline`:
+
+- **Pagina pubblica** `src/app/addomesticareglischermi/page.tsx` (`force-dynamic`, legge con chiave anon via `createSupabaseServerClient`): hero scuro con titolo, pulsante "Ascolta su Spotify" (solo se è impostato il link dello show), testo di presentazione, elenco episodi. Episodi con `release_at` nel futuro → `opacity-40 grayscale pointer-events-none`, nessun player, etichetta "Esce il …". Dalla data di uscita si attivano da soli con embed Spotify dell'episodio; se il link episodio manca, si usa l'embed dello show come fallback.
+- **Admin** `/admin/podcast` (`src/app/admin/(dashboard)/podcast/`, voce "Podcast" aggiunta in `AdminSidebar.tsx`): blocco "Show" (link Spotify + intro) e CRUD episodi (numero, titolo, descrizione, copertina su Vercel Blob `media/podcast/`, data/ora uscita, link Spotify). L'aggiunta di un episodio precompila numero +1 e data +7 giorni. Ogni episodio mostra lo stato "In anteprima" / "Uscito — manca il link Spotify" / "Online".
+- **Helper** `src/lib/podcast.ts`: `PODCAST_PATH`, tipo `PodcastEpisode`, `spotifyEmbedUrl` (estrae `episode|show/{id}` da un URL open.spotify.com), `formatReleaseDate` (fuso Europe/Rome).
+- **Database**: tabelle `podcast_episodes` e `podcast_settings` (key/value, chiavi `spotify_show_url` e `intro`), RLS con lettura pubblica, GRANT a `service_role` e `anon` come da nuova regola Supabase del 30/10. Script in `supabase/_eseguiti/schema_podcast.sql`, **eseguito dall'utente su Supabase il 05/11**.
+
+## Stato attuale esatto
+
+- `npm run build` completo **passato** (verificato, route `/admin/podcast` e `/addomesticareglischermi` presenti nell'output).
+- Tabelle **verificate**: script di controllo lanciato dall'utente con `!` (a me il classifier dei permessi bloccava lo script che legge `.env.local`) → con chiave anon e con service_role, 0 episodi e le due righe settings presenti, nessun errore.
+- Commit `676f407` pushato su `origin/main`; `git status` pulito e allineato. **Non verificato** che il deploy Vercel sia andato a buon fine, né che la pagina in produzione renda correttamente.
+- **Mai visto nel browser**: né la pagina pubblica né l'admin sono stati aperti (né in locale né in produzione). Layout, aspetto dell'anteprima opacizzata e funzionamento dell'embed Spotify non sono controllati visivamente.
+- La conversione data in admin usa il fuso del browser (`new Date(datetime-local).toISOString()`): corretto se chi inserisce è in Italia, ipotesi non verificata per altri fusi.
+- La pagina **non è linkata** da nessuna navigazione (Navbar, NavGrid, HomeNavGrid): raggiungibile solo digitando l'URL. Non richiesto dall'utente.
+
+## Decisioni prese e perché
+
+- **Dati episodi nel nostro DB, non da Spotify**: unico modo per mostrare episodi futuri prima dell'uscita.
+- **Link Spotify per episodio manuale**: avevo proposto inizialmente un abbinamento automatico via feed RSS, poi scartato perché (per quanto noto, **non verificato sullo show reale**) il feed di Spotify for Creators non contiene l'ID `open.spotify.com/episode/...` necessario per l'embed. Fallback allo show embed così la pagina non resta mai senza player. Se in futuro si vuole automatizzare, la strada è la Spotify Web API (client credentials), non il feed.
+- Attivazione per data a ogni richiesta (`force-dynamic`) invece di ISR: la pagina usa comunque `cookies()` tramite il client Supabase server, quindi sarebbe stata dinamica in ogni caso.
+
+## Prossimi passi
+
+- Controllare che il deploy Vercel di `676f407` sia andato e aprire `/addomesticareglischermi` e `/admin/podcast` in produzione.
+- Ottenere dall'utente il link Spotify dello show e inserirlo (admin → Show), più il testo di presentazione.
+- Inserire il primo episodio e quelli futuri con le date, verificare visivamente l'anteprima opacizzata e l'embed.
+- Eventuale: aggiungere un link alla pagina in navigazione/NavGrid se l'utente lo chiede.
+
+---
+
 # Handoff — sessione 2026-10-21 (breve, nessuna modifica al codice)
 
 ## Cosa è successo in questa sessione
