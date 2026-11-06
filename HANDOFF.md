@@ -1,3 +1,44 @@
+# Handoff — sessione 2026-11-06 (terza parte: trailer online, player scuri, mobile)
+
+## Cosa è successo
+
+Il 06/11 l'utente ha pubblicato il trailer su Spotify, con tipo "Trailer" e titolo "TRAILER". La pubblicazione risulta alle 15:16 UTC.
+
+Il collegamento automatico ha funzionato sullo show reale. L'embed dello show restituiva l'episodio `5DLe922jYeHOZht2DvculN` con `isTrailer: true`, e alle 15:33 UTC la pagina di produzione mostrava la sezione Trailer con quell'embed: c'è il ritardo dovuto alla cache di 15 minuti, poi `trailer_url` viene salvato da solo. L'ho verificato con curl ripetuti sulla pagina live.
+
+Subito dopo l'utente si è accorto che nel trailer manca un pezzo di audio. Lo sostituisce con "Carica nuovo file" su Spotify for Creators, sullo stesso episodio, quindi il link resta uguale e sul sito non serve fare niente. Non ho verificato che la sostituzione sia avvenuta né che il player mostri l'audio nuovo.
+
+Ho consigliato di dare al trailer un titolo più descrittivo di "TRAILER", perché sul sito risulta un doppione con l'intestazione "Trailer". La scelta spetta all'utente e non so se l'abbia cambiato.
+
+Commit di questa parte, entrambi pushati, con deploy automatico Vercel partito e nuova versione verificata online via curl:
+- `0ad8266`
+  - Tutti i player Spotify usano `?theme=0`, cioè il tema scuro, aggiunto in `spotifyEmbedUrl` in `src/lib/podcast.ts`. Senza parametro, Spotify colorava il player del trailer di rosso #9E002A, letto da `visualIdentity.backgroundBase` nei dati dell'embed e ricavato dalla copertina.
+  - L'utente ha scelto lo scuro ("abbiamo già tanto colore nella pagina").
+  - `PlayerPreview` ora ricalca il player scuro: sfondo #1F1F1F e testi secondari #B3B3B3, colori misurati con getComputedStyle sull'embed `theme=0`.
+  - Le schede restano #1E1B1C. Ho provato #363334, ma l'utente l'ha scartato perché i testi si leggevano male.
+  - Per staccare il player dalla scheda c'è `ring-1 ring-white/20`, sia sul player vero delle puntate sia sull'anteprima. Il trailer non ce l'ha, perché sta sul verde.
+  - Sezione Trailer con `py-24 md:py-32` (prima `py-16 md:py-20`).
+- `1efd956`
+  - Su mobile i loghi stanno sotto la bambina: c'è una seconda `<Image>` `md:hidden` dopo la bambina, mentre quella nella colonna sinistra è `hidden md:block`.
+  - I paragrafi della presentazione dopo il primo, da "Noi siamo…" in poi, sono `text-base` anche su mobile (prima `text-sm`).
+  - Il sottotitolo "Un nuovo episodio ogni settimana" non ha più il punto finale.
+
+## Stato attuale
+
+- `npm run build` passava prima di ciascun commit.
+- Verifiche visive:
+  - player scuro del trailer e schede con bordo controllati in locale con Chrome, su desktop;
+  - versione mobile a 390px controllata con screenshot Puppeteer: produzione prima delle modifiche, locale dopo le modifiche di `1efd956`. Nessuno scroll orizzontale.
+- Non verificato dopo il deploy: l'aspetto visivo in produzione di `1efd956`. Ho controllato solo via curl che l'HTML nuovo fosse online.
+- Chrome non ridimensiona la finestra (`resize_window` non ha effetto, `innerWidth` resta 1734). Per le viste mobile si usa Puppeteer, già in `node_modules`: script in scratchpad `mobile.cjs` con viewport 390x844. Negli screenshot a pagina intera l'iframe del trailer risulta vuoto; scrollandoci sopra e attendendo qualche secondo si vede.
+
+## Prossimi passi
+
+1. Lunedì 9/11, dopo l'uscita della puntata 1, verificare l'abbinamento automatico di `spotify_url` (per titolo o per giorno). È la prima puntata vera, quindi l'abbinamento non è mai stato provato sullo show reale.
+2. Eventuale: controllare che il trailer con l'audio corretto sia quello servito dal player.
+
+---
+
 # Handoff — sessione 2026-11-05 / 06 (seconda parte: grafica podcast, trailer, link automatici)
 
 ## Cosa è successo
