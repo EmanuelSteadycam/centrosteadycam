@@ -99,7 +99,7 @@ export default async function PodcastPage() {
       {/* Trailer — subito dopo l'hero; compare solo quando c'è il link (inserito a mano o trovato su Spotify) */}
       {trailerEmbed && (
         <section className="border-t border-white/20">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20 grid grid-cols-1 md:grid-cols-[240px_1fr] gap-6 md:gap-12 items-center">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32 grid grid-cols-1 md:grid-cols-[240px_1fr] gap-6 md:gap-12 items-center">
             <h2 className={`${dirt.className} uppercase text-4xl md:text-5xl leading-[0.95] tracking-[0.08em]`}>Trailer</h2>
             <iframe
               src={trailerEmbed}
@@ -175,7 +175,7 @@ export default async function PodcastPage() {
                           height="152"
                           loading="lazy"
                           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                          className="rounded-xl border-0 mb-4"
+                          className="rounded-xl border-0 mb-4 ring-1 ring-white/20"
                         />
                       ) : (
                         <PlayerPreview title={ep.title} cover={ep.cover_url || PODCAST_COVER} />
@@ -197,22 +197,22 @@ export default async function PodcastPage() {
   );
 }
 
-// Ricostruzione solo grafica del player embed di Spotify (152px), con lo sfondo verde della copertina
+// Ricostruzione solo grafica del player embed di Spotify (152px, tema scuro theme=0: sfondo #1F1F1F, testi secondari #B3B3B3)
 function PlayerPreview({ title, cover }: { title: string; cover: string }) {
   return (
     <div
       aria-hidden
-      className="relative h-[152px] rounded-xl mb-4 p-3 flex gap-3 overflow-hidden"
-      style={{ background: GREEN }}
+      className="relative h-[152px] rounded-xl ring-1 ring-white/20 mb-4 p-3 flex gap-3 overflow-hidden"
+      style={{ background: "#1F1F1F" }}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={cover} alt="" className="h-full aspect-square object-cover rounded-lg shrink-0" />
       <div className="flex-1 min-w-0 flex flex-col pt-1">
         <p className="font-title font-bold text-white text-[15px] leading-tight truncate pr-8">{title}</p>
-        <p className="font-title text-white/80 text-xs mt-1 truncate">Addomesticare gli schermi</p>
+        <p className="font-title text-[#B3B3B3] text-xs mt-1 truncate">Addomesticare gli schermi</p>
         <div className="mt-auto flex items-center gap-3 pb-1">
           <div className="flex-1 h-1 rounded-full bg-white/30" />
-          <span className="font-title text-white/80 text-xs">--:--</span>
+          <span className="font-title text-[#B3B3B3] text-xs">--:--</span>
           <span className="w-8 h-8 rounded-full bg-white flex items-center justify-center shrink-0">
             <svg width="12" height="12" viewBox="0 0 12 12" fill={INK}><path d="M3 1.5v9l7.5-4.5z" /></svg>
           </span>

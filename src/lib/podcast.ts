@@ -13,10 +13,11 @@ export type PodcastEpisode = {
 };
 
 // open.spotify.com/episode/{id} o /show/{id} → URL embed del player
+// theme=0: player scuro uguale per tutti, invece del colore che Spotify ricava dalla copertina
 export function spotifyEmbedUrl(url: string | null | undefined): string | null {
   if (!url) return null;
   const m = url.match(/open\.spotify\.com\/(?:intl-[a-z]+\/)?(episode|show)\/([A-Za-z0-9]+)/);
-  return m ? `https://open.spotify.com/embed/${m[1]}/${m[2]}` : null;
+  return m ? `https://open.spotify.com/embed/${m[1]}/${m[2]}?theme=0` : null;
 }
 
 export function formatReleaseDate(iso: string): string {
