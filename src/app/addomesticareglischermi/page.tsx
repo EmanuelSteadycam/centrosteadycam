@@ -61,7 +61,7 @@ export default async function PodcastPage() {
               gli schermi
             </h1>
             <p className="font-title text-base md:text-lg font-light text-white/90 mb-8">
-              Un nuovo episodio ogni settimana.
+              Un nuovo episodio ogni settimana
             </p>
             {showUrl && (
               <a
@@ -82,7 +82,7 @@ export default async function PodcastPage() {
             alt="Un podcast realizzato da ASL CN2, nell'ambito di Wellgranda – Reti di Welfare, con il supporto di Fondazione CRC"
             width={1400}
             height={257}
-            className="mt-12 md:mt-10 mb-2 w-full max-w-[460px] h-auto"
+            className="hidden md:block mt-10 mb-2 w-full max-w-[460px] h-auto"
           />
         </div>
         <Image
@@ -93,6 +93,14 @@ export default async function PodcastPage() {
           priority
           sizes="(min-width: 768px) 55vw, 100vw"
           className="w-full h-auto block"
+        />
+        {/* Su mobile i loghi vanno sotto la bambina */}
+        <Image
+          src="/podcast/loghi/loghi.png"
+          alt="Un podcast realizzato da ASL CN2, nell'ambito di Wellgranda – Reti di Welfare, con il supporto di Fondazione CRC"
+          width={1400}
+          height={257}
+          className="md:hidden mt-2 mb-10 w-full max-w-[460px] h-auto"
         />
       </section>
 
@@ -126,7 +134,7 @@ export default async function PodcastPage() {
                 <p
                   key={i}
                   className={`font-title leading-relaxed ${
-                    i === 0 ? "text-lg md:text-xl font-normal text-white" : "text-sm md:text-base font-light text-white/85"
+                    i === 0 ? "text-lg md:text-xl font-normal text-white" : "text-base font-light text-white/85"
                   }`}
                 >
                   <RichText text={par} />
