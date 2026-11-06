@@ -1,3 +1,52 @@
+# Handoff — sessione 2026-11-05 / 06 (seconda parte: grafica podcast, trailer, link automatici)
+
+## Cosa è successo
+
+Continuazione della sessione del 05/11 qui sotto. Una volta creata la pagina, l'utente ha fornito il link dello show (`open.spotify.com/show/6QPUzbDybThMaoE5kWolcE`, inserito da lui in admin), la presentazione del podcast e tutte le 8 puntate (lunedì dal 9/11 al 28/12/2026, inserite da lui in admin). La pagina è stata poi ridisegnata a più riprese, su indicazioni molto precise dell'utente, nello stile della copertina.
+
+La presentazione pubblica del podcast si terrà **lunedì 9/11 a Cuneo**, lo stesso giorno in cui esce la puntata 1. L'utente pubblicherà su Spotify, forse già il 06/11, un **trailer solo audio**.
+
+Commit di questa parte:
+- `6c47575`: prima grafica nello stile della copertina (verde, accenti fucsia, schede nere, bambina scontornata nell'hero, copertina di default per tutte le puntate). Il push **non ha fatto partire il deploy automatico** di Vercel: il primo tentativo di push era fallito con `fatal error in commit_refs_rules`, il secondo era passato. Il deploy l'ha poi lanciato l'utente con `! vercel --prod --yes`, perché il classifier blocca i deploy in produzione lanciati da Claude.
+- `c1aa3bd`: tutto il resto.
+  - **Font**: Boxpot Amateur, quello del titolo in copertina, fornito dall'utente e incluso come font locale. Su dafont la licenza risulta "100% Free". Si usa solo su titolo della pagina, "Il podcast", "Trailer" ed "Episodi". Le spaziature vengono dal file grafico dell'utente: interlinea 260,48 su corpo 274,63, quindi circa 0,95, e tracking 80, cioè 0,08em. I titoli delle puntate sono in Montserrat bold maiuscolo, su richiesta.
+  - **Pagine e contenuti**:
+    - presentazione impaginata, con il primo paragrafo più grande;
+    - loghi istituzionali come file unico `public/podcast/loghi/loghi.png`, sotto il pulsante Spotify;
+    - logo Spotify nel pulsante, che ha angoli arrotondati.
+  - **Schede puntate**:
+    - puntata uscita: il player Spotify vero sta tra titolo e descrizione e la miniatura non c'è più, perché sarebbe un doppione;
+    - puntata futura: al posto del player c'è `PlayerPreview`, una ricostruzione solo grafica del player Spotify su verde copertina. Titolo, player e descrizione sono opacizzati, ma la riga "EPISODIO N · ESCE IL …" resta piena (fucsia e bianco);
+    - schede con `rounded-2xl`.
+  - **Link automatici** (`src/lib/podcast-sync.ts`): a ogni visita della pagina si legge l'ultimo episodio dall'embed pubblico dello show (`__NEXT_DATA__`, cache 15 minuti).
+    - Se è un trailer (`isTrailer`) e `trailer_url` è vuoto, lo salva in `podcast_settings`.
+    - Altrimenti lo abbina, per titolo o per giorno di uscita, a una puntata già uscita e senza link, e salva `spotify_url`.
+  - **Trailer**: sezione subito dopo l'hero, visibile solo se c'è il link. Nuovo campo trailer nell'admin, nel riquadro Show.
+
+## Stato attuale
+
+- `npm run build` passa (verificato prima del commit `c1aa3bd`).
+- Grafica verificata con screenshot **in locale** (dev server, dati reali dal DB) per hero, loghi, presentazione e schede future. Player vero e sezione trailer verificati solo in **simulazione**: iniettati via JS con l'embed di un podcast pubblico qualsiasi, perché lo show non ha ancora episodi pubblicati.
+- Il formato dei dati dell'embed Spotify (id, title, releaseDate, isTrailer) è stato verificato su un podcast pubblico. **Non è verificato sullo show reale**, né quindi l'abbinamento automatico di trailer e puntate.
+- Deploy di `c1aa3bd`: commit pushato su `origin/main`. Al momento di scrivere questa nota la produzione **non mostrava ancora** la nuova versione. Non è verificato se Vercel abbia avviato il deploy automatico; se non parte, serve `! vercel --prod --yes` lanciato dall'utente.
+- Testi (presentazione, puntate) e link stanno nel DB e si modificano dall'admin. Claude non può scriverli: lo script che legge `.env.local` viene bloccato dal classifier.
+- L'utente doveva togliere a mano "del Centro Steadycam" dopo "Emanuel Pellegrini" nella presentazione, dall'admin. Non verificato che l'abbia fatto.
+
+## Decisioni e perché
+
+- Niente pubblicazione temporanea delle puntate su Spotify per ricavare i link in anticipo: finirebbero nel feed RSS e nelle app.
+- Nessun player custom alimentato dal feed RSS: scartato per semplicità. Il doppione con il player Spotify si evita togliendo la miniatura dalla scheda.
+- Il colore del player vero lo sceglie Spotify dalla copertina. Il verde della ricostruzione (#6B9F5E) è stimato a occhio e potrebbe differire: da confrontare il 9/11.
+
+## Prossimi passi
+
+1. Verificare che il deploy di `c1aa3bd` sia online. Se no, chiedere all'utente di lanciare `! vercel --prod --yes`.
+2. Dopo la pubblicazione del trailer: controllare che la sezione Trailer compaia da sola (fino a circa 15 minuti di cache). Se non compare, il link si incolla in admin.
+3. Lunedì 9/11, dopo l'uscita della puntata 1: verificare l'abbinamento automatico del link e confrontare il colore del player vero con la ricostruzione.
+4. Eventuale: la pagina non è linkata da nessun menu né dalla NavGrid. Non è stato richiesto.
+
+---
+
 # Handoff — sessione 2026-11-05 (pagina podcast "Addomesticare gli schermi")
 
 ## Cosa è successo in questa sessione
