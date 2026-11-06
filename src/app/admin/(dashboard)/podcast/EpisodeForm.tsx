@@ -139,7 +139,7 @@ export default function EpisodeForm(props: Props) {
             value={description}
             onChange={(e) => change(setDescription)(e.target.value)}
             rows={2}
-            placeholder="Descrizione..."
+            placeholder="Descrizione... (grassetto: **parola**)"
             className="w-full text-sm text-gray-700 border border-gray-200 rounded px-2 py-1.5 resize-y"
           />
           <input

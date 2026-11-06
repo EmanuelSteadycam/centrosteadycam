@@ -129,7 +129,7 @@ export default async function PodcastPage() {
                     i === 0 ? "text-lg md:text-xl font-normal text-white" : "text-sm md:text-base font-light text-white/85"
                   }`}
                 >
-                  {par}
+                  <RichText text={par} />
                 </p>
               ))}
             </div>
@@ -182,7 +182,7 @@ export default async function PodcastPage() {
                       )}
                       {ep.description && (
                         <p className="font-title text-sm font-light leading-relaxed text-white/80 whitespace-pre-line">
-                          {ep.description}
+                          <RichText text={ep.description} />
                         </p>
                       )}
                     </div>
@@ -228,5 +228,20 @@ function SpotifyLogo({ size, className }: { size: number; className?: string }) 
     <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
       <path d="M12 0a12 12 0 100 24 12 12 0 000-24zm5.5 17.3a.75.75 0 01-1 .25c-2.85-1.74-6.44-2.13-10.67-1.17a.75.75 0 11-.33-1.46c4.63-1.06 8.6-.6 11.75 1.33.36.22.47.69.25 1.05zm1.47-3.27a.94.94 0 01-1.29.31c-3.26-2-8.23-2.59-12.08-1.42a.94.94 0 11-.55-1.8c4.4-1.33 9.87-.69 13.6 1.6.44.27.58.85.31 1.3zm.13-3.4C15.18 8.3 8.73 8.08 5 9.22a1.13 1.13 0 11-.66-2.16c4.28-1.3 11.4-1.05 15.9 1.62a1.13 1.13 0 01-1.15 1.95z" />
     </svg>
+  );
+}
+
+// Testi scritti in admin: **parola** diventa semibold (Montserrat 600)
+function RichText({ text }: { text: string }) {
+  return (
+    <>
+      {text.split(/(\*\*[^*]+\*\*)/g).map((part, i) =>
+        part.startsWith("**") && part.endsWith("**") && part.length > 4 ? (
+          <strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>
+        ) : (
+          part
+        )
+      )}
+    </>
   );
 }

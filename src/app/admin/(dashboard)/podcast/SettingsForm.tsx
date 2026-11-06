@@ -41,7 +41,7 @@ export default function SettingsForm({ showUrl, intro, trailerUrl }: { showUrl: 
           value={text}
           onChange={(e) => { setText(e.target.value); setDirty(true); }}
           rows={3}
-          placeholder="Presentazione del podcast (testo sotto il titolo nella pagina)..."
+          placeholder="Presentazione del podcast. Per il grassetto: **parola**"
           className="w-full text-sm text-gray-700 border border-gray-200 rounded px-2 py-1.5 resize-y"
         />
       </div>
