@@ -40,7 +40,7 @@ export default async function AdminPodcastPage() {
         </div>
       )}
 
-      <SettingsForm showUrl={setting("spotify_show_url")} intro={setting("intro")} />
+      <SettingsForm showUrl={setting("spotify_show_url")} intro={setting("intro")} trailerUrl={setting("trailer_url")} />
 
       <div className="bg-white rounded-lg shadow-sm mb-6">
         <h2 className="text-sm font-semibold text-gray-700 px-5 pt-4">Aggiungi episodio</h2>
@@ -52,7 +52,8 @@ export default async function AdminPodcastPage() {
           <h2 className="text-sm font-semibold text-gray-700">Episodi</h2>
           <p className="text-xs text-gray-400 mt-0.5">
             Prima della data di uscita l&apos;episodio appare in anteprima opacizzata e non ascoltabile; dalla data in poi si attiva da solo.
-            Quando esce su Spotify incolla il link dell&apos;episodio: finché manca, la pagina mostra il player dello show.
+            Quando esce su Spotify il link dell&apos;episodio viene trovato e salvato da solo (alla prima visita della pagina, confrontando titolo o giorno di uscita);
+            se non succede si può incollare a mano. Finché manca, la pagina mostra il player dello show.
           </p>
         </div>
         <div className="divide-y divide-gray-50">
