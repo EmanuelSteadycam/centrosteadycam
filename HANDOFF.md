@@ -1,3 +1,75 @@
+# Handoff — 2026-11-08 notte (fascia podcast in home)
+
+L'utente ha notato che dalla home non c'era nessun collegamento alla pagina del podcast. Mi ha chiesto una fascia con la bambina scontornata. La griglia `HomeNavGrid` è piena, con 12 riquadri incastrati, quindi la fascia è una sezione nuova: `src/components/PodcastStrip.tsx`, inserita in `src/app/page.tsx` tra la mission strip ("Costruiamo progetti…") e la griglia.
+
+Forma finale, decisa dall'utente in diverse iterazioni:
+- sfondo bianco;
+- testo a sinistra:
+  - cerchio fucsia #FF3EA5 con un microfono bianco, la stessa icona di `AdminSidebar`. L'utente ha provato a metterlo dopo "SCHERMI" e poi l'ha voluto rimettere sopra la scritta;
+  - "Il nuovo podcast del Centro Steadycam";
+  - titolo Boxpot "Addomesticare gli schermi" in verde scuro #4E7F43. Il font viene da `src/app/addomesticareglischermi/fonts/boxpot.ttf` tramite `next/font/local`;
+- nessuna frase descrittiva e nessun pulsante: li ho tolti su richiesta;
+- bambina a destra, larga 640px, a 50px dal bordo destro su desktop e a filo su mobile. Entra **da destra verso sinistra** con framer-motion `whileInView`, una sola volta, e poggia sulla griglia sottostante;
+- su desktop il blocco di testo è allineato vicino alla bambina e centrato in verticale;
+- tutta la fascia è un unico link a `/addomesticareglischermi`. All'hover il titolo si inclina leggermente.
+
+Su mobile il testo sta sopra e la bambina sotto.
+
+Verifiche:
+- screenshot Puppeteer in locale, desktop 1440 e mobile 390, dopo ogni modifica tranne l'ultima, cioè il ritorno dell'icona sopra la scritta. Quel codice è identico a una versione già verificata;
+- l'animazione non l'ho vista in movimento: ho visto solo lo stato finale;
+- `npm run build` passava;
+- commit `61dd961` pushato e deploy automatico Vercel;
+- via curl, la home live contiene la fascia.
+
+Non ho controllato l'aspetto visivo in produzione.
+
+Errore mio in questa parte: l'utente aveva chiesto "fammi vedere da server", intendendo il server locale, e io ho creato invece un **deploy preview Vercel** con `vercel --yes`. Il link era privato e protetto da SSO, e la produzione non è stata toccata. Il preview `centrosteadycam-jqkg35apa-…vercel.app` esiste ancora; si può cancellare dalla dashboard Vercel, ma non è richiesto.
+
+---
+
+# Handoff — 2026-11-08 sera (distribuzione del podcast sulle piattaforme)
+
+Nessuna modifica al codice in questa parte. L'utente ha caricato su Spotify for Creators il trailer e le puntate del 9/11 e del 16/11, programmate. Ha confermato di aver messo nell'admin del sito gli stessi orari e titoli di Spotify. Questo serve all'abbinamento automatico dei link, che però sullo show reale è verificato solo per il trailer.
+
+Gli ho spiegato come funziona la distribuzione: Spotify for Creators genera un feed RSS, e ogni piattaforma lo riceve una volta sola e poi lo legge da sé.
+
+Lavoro fatto, in ordine:
+
+- **Feed RSS attivato** dall'utente in Spotify for Creators (Impostazioni → Distribuzione): `https://anchor.fm/s/11964a478/podcast/rss`. L'ho verificato via curl anche con lo user agent di Apple (`iTMS`): risposta 200 senza redirect, XML valido, copertina 3000×3000, audio del trailer scaricabile.
+- **Categoria** cambiata dall'utente da "Technology" a **Kids & Family → Parenting**, su mio suggerimento. Verificato nel feed.
+- **Email del feed**: all'inizio il tag `<itunes:email>` era vuoto. Per non esporre pubblicamente la Gmail personale, l'utente ha inserito **info@centrosteadycam.it**, che passa da ImprovMX e arriva alla Gmail steadycam01. Prima l'utente ha verificato l'inoltro con un'email di prova, ed è arrivata. L'indirizzo è comparso nel feed alle 21:47 UTC.
+- **Apple Podcasts**: l'utente ha creato lo show su Podcasts Connect con il suo Apple ID, Azienda "Centro Steadycam". Il primo tentativo ha dato "non è stato possibile caricarlo", il secondo è riuscito. ID **6832362072**, frequenza settimanale, poi Pubblica: ora è in revisione. Il link futuro `podcasts.apple.com/it/podcast/id6832362072` non è verificato finché lo show non viene approvato. Ho spiegato all'utente che lo show resta recuperabile da chi controlla il feed (token Apple in Spotify for Creators), anche se l'account Apple è personale e il produttore è ASL CN2.
+- **Amazon Music**: inviato dall'utente su `podcasters.amazon.com`. Va scritto senza www, perché `www.podcasters...` non risolve.
+- **Pocket Casts**: l'ho inviato io da Chrome, con autorizzazione esplicita dell'utente, su `pocketcasts.com/submit` (feed, Pubblico, Invia). Risposta: "Il feed è stato aggiunto correttamente", indicizzazione fino a 12 ore. Non serve account.
+- **Castbox**: la pagina di invio richiede login, che non posso fare io. Non fatto.
+- **Goodpods**: non ho trovato un modulo pubblico di invio, e `goodpods.com/podcasters` restituisce 404. Non fatto. Ho consigliato di aspettare: Goodpods, Castbox e Overcast di solito prendono lo show in automatico da Apple dopo l'approvazione. Questo non è verificato.
+
+## Prossimi passi
+
+1. Lunedì 9/11, dopo l'uscita della puntata 1: verificare che il sito abbini da solo `spotify_url`.
+2. Nei prossimi giorni: approvazione Apple (arriva un'email all'utente), comparsa su Amazon Music e Pocket Casts, eventuale comparsa automatica su Goodpods, Castbox e Overcast.
+
+---
+
+# Handoff — 2026-11-08 (nuovi loghi podcast)
+
+L'utente ha fornito un nuovo file loghi (`LOGHI PER PAGINA WEB2.png`, 2345x413, trasparente) che aggiunge **Minimadigitalia** accanto ad ASL CN2 sotto "realizzato da:". Il file sostituisce il precedente come `public/podcast/loghi/loghi-v2.png`: l'ho rinominato apposta, così né i browser né l'ottimizzatore immagini servono la vecchia versione da cache. Il vecchio `loghi.png` è stato rimosso. Ho aggiornato in `src/app/addomesticareglischermi/page.tsx` dimensioni (2345x413) e testo alternativo di entrambe le `<Image>`, quella desktop e quella mobile.
+
+Con quattro loghi nella stessa larghezza le scritte risultavano molto piccole, quindi su richiesta dell'utente la versione desktop è passata da `max-w-[460px]` a `max-w-[540px]`. Su uno schermo da 1440px la larghezza effettiva è circa 522px, limitata dalla colonna. La versione mobile è invariata: a tutta larghezza, sotto la bambina.
+
+Verifiche:
+- screenshot Puppeteer in locale, desktop 1440 e mobile 390: i loghi si leggono e il layout è integro;
+- `npm run build` passava;
+- commit `53ba080` pushato e deploy Vercel automatico;
+- via curl, la pagina live referenzia `loghi-v2.png` e il file risponde 200 image/png.
+
+Non ho controllato l'aspetto visivo in produzione.
+
+Prossimo passo invariato: lunedì 9/11, dopo l'uscita della puntata 1, verificare l'abbinamento automatico di `spotify_url`.
+
+---
+
 # Handoff — sessione 2026-11-06 (terza parte: trailer online, player scuri, mobile)
 
 ## Cosa è successo
