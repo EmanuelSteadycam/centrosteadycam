@@ -24,7 +24,7 @@ Verifiche:
 
 Non ho controllato l'aspetto visivo in produzione.
 
-Errore mio in questa parte: l'utente aveva chiesto "fammi vedere da server", intendendo il server locale, e io ho creato invece un **deploy preview Vercel** con `vercel --yes`. Il link era privato e protetto da SSO, e la produzione non è stata toccata. Il preview `centrosteadycam-jqkg35apa-…vercel.app` esiste ancora; si può cancellare dalla dashboard Vercel, ma non è richiesto.
+Errore mio in questa parte: l'utente aveva chiesto "fammi vedere da server", intendendo il server locale, e io ho creato invece un **deploy preview Vercel** con `vercel --yes`. Il link era privato e protetto da SSO, e la produzione non è stata toccata. Il preview `centrosteadycam-jqkg35apa-…vercel.app` è stato poi **rimosso** su richiesta dell'utente (`vercel remove`, ora 404; produzione 200).
 
 ---
 
@@ -40,6 +40,7 @@ Lavoro fatto, in ordine:
 - **Categoria** cambiata dall'utente da "Technology" a **Kids & Family → Parenting**, su mio suggerimento. Verificato nel feed.
 - **Email del feed**: all'inizio il tag `<itunes:email>` era vuoto. Per non esporre pubblicamente la Gmail personale, l'utente ha inserito **info@centrosteadycam.it**, che passa da ImprovMX e arriva alla Gmail steadycam01. Prima l'utente ha verificato l'inoltro con un'email di prova, ed è arrivata. L'indirizzo è comparso nel feed alle 21:47 UTC.
 - **Apple Podcasts**: l'utente ha creato lo show su Podcasts Connect con il suo Apple ID, Azienda "Centro Steadycam". Il primo tentativo ha dato "non è stato possibile caricarlo", il secondo è riuscito. ID **6832362072**, frequenza settimanale, poi Pubblica: ora è in revisione. Il link futuro `podcasts.apple.com/it/podcast/id6832362072` non è verificato finché lo show non viene approvato. Ho spiegato all'utente che lo show resta recuperabile da chi controlla il feed (token Apple in Spotify for Creators), anche se l'account Apple è personale e il produttore è ASL CN2.
+- **Aggiornamento, stessa sera**: Apple Podcasts risulta **Disponibile** (lo dice l'utente). L'ho verificato con l'iTunes Lookup API: `itunes.apple.com/lookup?id=6832362072` restituisce lo show "ADDOMESTICARE GLI SCHERMI" di Centro Steadycam, con 1 puntata, il trailer. Il link pubblico è `https://podcasts.apple.com/it/podcast/addomesticare-gli-schermi/id6832362072` e risponde HTTP 200. Il token Apple in Spotify for Creators non è servito: Apple non ha chiesto la verifica.
 - **Amazon Music**: inviato dall'utente su `podcasters.amazon.com`. Va scritto senza www, perché `www.podcasters...` non risolve.
 - **Pocket Casts**: l'ho inviato io da Chrome, con autorizzazione esplicita dell'utente, su `pocketcasts.com/submit` (feed, Pubblico, Invia). Risposta: "Il feed è stato aggiunto correttamente", indicizzazione fino a 12 ore. Non serve account.
 - **Castbox**: la pagina di invio richiede login, che non posso fare io. Non fatto.
