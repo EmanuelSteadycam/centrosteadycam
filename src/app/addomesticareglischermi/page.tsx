@@ -78,11 +78,11 @@ export default async function PodcastPage() {
           </div>
           {/* Loghi istituzionali (file unico fornito dalla grafica), sulla riga su cui poggia la bambina */}
           <Image
-            src="/podcast/loghi/loghi.png"
-            alt="Un podcast realizzato da ASL CN2, nell'ambito di Wellgranda – Reti di Welfare, con il supporto di Fondazione CRC"
-            width={1400}
-            height={257}
-            className="hidden md:block mt-10 mb-2 w-full max-w-[460px] h-auto"
+            src="/podcast/loghi/loghi-v2.png"
+            alt="Un podcast realizzato da ASL CN2 e Minimadigitalia, nell'ambito di Wellgranda – Reti di Welfare, con il supporto di Fondazione CRC"
+            width={2345}
+            height={413}
+            className="hidden md:block mt-10 mb-2 w-full max-w-[540px] h-auto"
           />
         </div>
         <Image
@@ -96,10 +96,10 @@ export default async function PodcastPage() {
         />
         {/* Su mobile i loghi vanno sotto la bambina */}
         <Image
-          src="/podcast/loghi/loghi.png"
-          alt="Un podcast realizzato da ASL CN2, nell'ambito di Wellgranda – Reti di Welfare, con il supporto di Fondazione CRC"
-          width={1400}
-          height={257}
+          src="/podcast/loghi/loghi-v2.png"
+          alt="Un podcast realizzato da ASL CN2 e Minimadigitalia, nell'ambito di Wellgranda – Reti di Welfare, con il supporto di Fondazione CRC"
+          width={2345}
+          height={413}
           className="md:hidden mt-2 mb-10 w-full max-w-[460px] h-auto"
         />
       </section>
