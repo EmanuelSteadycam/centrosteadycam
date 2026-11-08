@@ -1,5 +1,6 @@
 import HeroScrollColor, { GlitchTitle } from "@/components/HeroScrollColor";
 import HomeNavGrid, { type LatestPost } from "@/components/HomeNavGrid";
+import PodcastStrip from "@/components/PodcastStrip";
 import { getBlogPosts, getBlogPost } from "@/lib/blog";
 
 export default async function HomePage() {
@@ -62,6 +63,9 @@ export default async function HomePage() {
           </p>
         </div>
       </section>
+
+      {/* ── Podcast ── */}
+      <PodcastStrip />
 
       {/* ── Nav grid ── */}
       <HomeNavGrid latestPost={latestPost} smcrPost={smcrPost} vincereFacilePost={vincereFacilePost} />
