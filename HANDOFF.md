@@ -34,6 +34,23 @@ Deploy: dopo `4e5e6de` ho verificato via curl che la pagina live contenesse il l
 
 ---
 
+## Aggiornamento, stessa giornata: puntata 1 e YouTube
+
+La puntata 1, "70MILA LECCA LECCA", è uscita alle 11:00 UTC. Alle 11:19 UTC la pagina live aveva già il player Spotify vero (episodio `6drD7BEzj2TgevMNV3JTkb`; il titolo l'ho verificato nell'embed). Quindi **l'abbinamento automatico del link funziona anche sulle puntate, non solo sul trailer**.
+
+Lo stesso giorno ho controllato le altre piattaforme:
+- feed RSS: la puntata c'è;
+- Amazon Music: la puntata c'è, verificato in Chrome. Il banner cookie l'ho chiuso con "Continua senza dare il consenso";
+- Apple Podcasts e Pocket Casts: c'era ancora solo il trailer, sia in Chrome sia con l'iTunes Lookup. Il motivo probabile è il ritardo con cui rileggono il feed, ma non è verificato.
+
+**YouTube non è ancora stato fatto.** Il canale è "Centro Steadycam", `youtube.com/@centrosteadycam9112`, quello già linkato nel sito. Ho dato all'utente i passi in YouTube Studio: Crea → Nuovo podcast → feed RSS `https://anchor.fm/s/11964a478/podcast/rss`. Il login lo deve fare l'utente. Non è verificato che l'opzione RSS sia disponibile in Italia per quel canale.
+
+Prossimi passi aggiuntivi:
+1. Ricontrollare che la puntata 1 compaia su Apple Podcasts e Pocket Casts.
+2. Quando l'utente avrà pubblicato su YouTube e mandato il link della playlist: verificarlo, scaricare `youtube.svg` da Simple Icons e aggiungerlo a `OTHER_PLATFORMS`.
+
+---
+
 # Handoff — 2026-11-08 notte (fascia podcast in home)
 
 L'utente ha notato che dalla home non c'era nessun collegamento alla pagina del podcast. Mi ha chiesto una fascia con la bambina scontornata. La griglia `HomeNavGrid` è piena, con 12 riquadri incastrati, quindi la fascia è una sezione nuova: `src/components/PodcastStrip.tsx`, inserita in `src/app/page.tsx` tra la mission strip ("Costruiamo progetti…") e la griglia.
