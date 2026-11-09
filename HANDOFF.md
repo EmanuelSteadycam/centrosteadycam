@@ -7,7 +7,7 @@ L'utente ha chiesto se sulla pagina `/addomesticareglischermi` ci fossero i link
 
 Le icone sono gli SVG di Simple Icons 13.21.0 presi da jsDelivr, salvati in `public/podcast/piattaforme/`. Ci sono anche `spotify.svg`, che per ora non è usato, `applepodcasts.svg`, `pocketcasts.svg` e `amazonmusic.svg`.
 
-Il risultato è nella hero di `src/app/addomesticareglischermi/page.tsx`. Il pulsante Spotify e le icone stanno in un unico contenitore flex-wrap: su desktop sono sulla stessa riga, su mobile a 390px le icone vanno a capo sotto il pulsante. L'elenco è nella costante `OTHER_PLATFORMS`, dove `url: null` nasconde l'icona. Le icone sono bianche, ottenute con `invert`, a 26px, dentro un bordino `rounded-lg border-white/60 p-2`; all'hover il bordo diventa bianco pieno e il riquadro ruota di -6°. Anche il logo Spotify dentro il pulsante è passato da 20 a 26px, perché l'utente lo trovava più piccolo degli altri.
+Il risultato è nella hero di `src/app/addomesticareglischermi/page.tsx`. Il pulsante Spotify e le icone stanno in un unico contenitore flex-wrap: su desktop sono sulla stessa riga, su mobile a 390px le icone vanno a capo sotto il pulsante. L'elenco è nella costante `OTHER_PLATFORMS`, dove `url: null` nasconde l'icona. Le icone sono bianche, ottenute con `invert`. Nella versione finale (commit successivo a `4e5e6de`) i loghi sono da 28px dentro riquadri fissi da 48x48 con bordo `rounded-lg border-white/60`, centrati in verticale rispetto al pulsante, che è alto 54px. Prima l'utente ha provato i riquadri a 54px, cioè alla stessa altezza del pulsante, poi li ha voluti più piccoli; i loghi sono passati da 26 a 32 e poi a 28px. All'hover il bordo diventa bianco pieno e il riquadro ruota di -6°. Anche il logo Spotify dentro il pulsante è passato da 20 a 26px, perché l'utente lo trovava più piccolo degli altri.
 
 Iterazioni scartate dall'utente:
 - la scritta "ANCHE SU" con le icone sotto il pulsante;
@@ -15,16 +15,16 @@ Iterazioni scartate dall'utente:
 - le icone senza bordo.
 
 Verifiche:
-- screenshot Puppeteer in locale dopo ogni passaggio, desktop 1440 e mobile 390. Il mobile non è stato ricontrollato dopo l'ultima modifica, quella del bordino;
+- screenshot Puppeteer in locale dopo ogni passaggio, desktop 1440 e mobile 390. Il mobile è stato ricontrollato anche sulla versione finale: i riquadri vanno a capo sotto il pulsante e sono allineati a sinistra;
+- misure prese nel browser con getBoundingClientRect: pulsante alto 54px, riquadri 48x48;
 - ESLint e tsc puliti alla prima versione;
 - `npm run build` riuscito prima del commit;
 - commit `4e5e6de` pushato su main.
 
-Non ho verificato il deploy Vercel né l'aspetto in produzione.
+Deploy: dopo `4e5e6de` ho verificato via curl che la pagina live contenesse il link Amazon. L'ultima versione, quella dei riquadri 48px, l'ho verificata live con lo stesso metodo (vedi sotto).
 
 ## Problemi aperti
 - Il logo Amazon Music è un wordmark e resta meno leggibile degli altri due. L'utente non ha chiesto di cambiarlo.
-- I riquadri delle icone sono alti circa 44px, il pulsante rosa circa 54px. L'ho proposto di allinearli, l'utente non ha risposto.
 - La meta description della pagina dice ancora "su Spotify". Non l'ho toccata.
 
 ## Prossimi passi
