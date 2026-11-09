@@ -63,18 +63,36 @@ export default async function PodcastPage() {
             <p className="font-title text-base md:text-lg font-light text-white/90 mb-8">
               Un nuovo episodio ogni settimana
             </p>
-            {showUrl && (
-              <a
-                href={showUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-title font-semibold inline-flex items-center gap-2.5 rounded-lg uppercase tracking-widest text-sm px-7 py-3.5 transition-transform hover:-rotate-2"
-                style={{ background: PINK, color: "#fff" }}
-              >
-                <SpotifyLogo size={20} />
-                Ascolta su Spotify
-              </a>
-            )}
+            {/* Pulsante Spotify e, sulla stessa riga, le icone delle altre piattaforme */}
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+              {showUrl && (
+                <a
+                  href={showUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-title font-semibold inline-flex items-center gap-2.5 rounded-lg uppercase tracking-widest text-sm px-7 py-3.5 transition-transform hover:-rotate-2"
+                  style={{ background: PINK, color: "#fff" }}
+                >
+                  <SpotifyLogo size={26} />
+                  Ascolta su Spotify
+                </a>
+              )}
+              <div className="flex items-center gap-2">
+                {OTHER_PLATFORMS.filter((p) => p.url).map((p) => (
+                  <a
+                    key={p.name}
+                    href={p.url!}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`Ascolta su ${p.name}`}
+                    title={p.name}
+                    className="flex items-center justify-center rounded-lg border border-white/60 p-2 transition-transform hover:-rotate-6 hover:border-white"
+                  >
+                    <Image src={p.icon} alt="" width={26} height={26} unoptimized className="h-[26px] w-[26px] invert" />
+                  </a>
+                ))}
+              </div>
+            </div>
           </div>
           {/* Loghi istituzionali (file unico fornito dalla grafica), sulla riga su cui poggia la bambina */}
           <Image
@@ -204,6 +222,13 @@ export default async function PodcastPage() {
     </div>
   );
 }
+
+// Altre piattaforme dove esce il podcast (url null = non ancora disponibile, icona nascosta)
+const OTHER_PLATFORMS: { name: string; url: string | null; icon: string }[] = [
+  { name: "Apple Podcasts", url: "https://podcasts.apple.com/it/podcast/addomesticare-gli-schermi/id6832362072", icon: "/podcast/piattaforme/applepodcasts.svg" },
+  { name: "Pocket Casts", url: "https://pocketcasts.com/podcast/addomesticare-gli-schermi/93fd5860-bdf0-013f-55d8-0affcb2f3ff3", icon: "/podcast/piattaforme/pocketcasts.svg" },
+  { name: "Amazon Music", url: "https://music.amazon.it/podcasts/d5e2e0a9-46a6-4bc6-967c-bd9555dc00ad/addomesticare-gli-schermi", icon: "/podcast/piattaforme/amazonmusic.svg" },
+];
 
 // Ricostruzione solo grafica del player embed di Spotify (152px, tema scuro theme=0: sfondo #1F1F1F, testi secondari #B3B3B3)
 function PlayerPreview({ title, cover }: { title: string; cover: string }) {
