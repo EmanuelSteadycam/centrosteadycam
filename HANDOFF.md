@@ -21,14 +21,14 @@ Verifiche:
 - `npm run build` riuscito prima del commit;
 - commit `4e5e6de` pushato su main.
 
-Deploy: dopo `4e5e6de` ho verificato via curl che la pagina live contenesse il link Amazon. L'ultima versione, quella dei riquadri 48px, l'ho verificata live con lo stesso metodo (vedi sotto).
+Deploy: dopo `4e5e6de` ho verificato via curl che la pagina live contenesse il link Amazon. Anche l'ultima versione, `14ab609` con i riquadri 48px, è verificata live via curl: circa 90 secondi dopo il push la pagina conteneva le classi `h-[48px] w-[48px]`. In produzione non ho preso screenshot.
 
 ## Problemi aperti
 - Il logo Amazon Music è un wordmark e resta meno leggibile degli altri due. L'utente non ha chiesto di cambiarlo.
 - La meta description della pagina dice ancora "su Spotify". Non l'ho toccata.
 
 ## Prossimi passi
-1. Verificare che il deploy di `4e5e6de` sia live e controllare la pagina in produzione, anche su mobile.
+1. Se serve, guardare l'aspetto della pagina in produzione: il deploy è verificato solo via curl.
 2. Oggi è uscita la puntata 1: verificare che `spotify_url` sia stato abbinato in automatico (vedi handoff precedenti).
 3. Se Castbox, Goodpods o Overcast compaiono, aggiungerli a `OTHER_PLATFORMS` insieme all'icona.
 
