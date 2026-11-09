@@ -1,3 +1,39 @@
+# Handoff — 2026-11-09 (link alle altre piattaforme sulla pagina podcast)
+
+L'utente ha chiesto se sulla pagina `/addomesticareglischermi` ci fossero i link alle altre piattaforme. Non c'erano: si vedevano solo il pulsante "Ascolta su Spotify" e i player Spotify. Ho raccolto i link:
+- **Apple Podcasts**: `https://podcasts.apple.com/it/podcast/addomesticare-gli-schermi/id6832362072`. Riverificato oggi con l'iTunes Lookup API e una risposta HTTP 200.
+- **Pocket Casts**: `https://pocketcasts.com/podcast/addomesticare-gli-schermi/93fd5860-bdf0-013f-55d8-0affcb2f3ff3`. L'ho trovato tramite il redirect di `pca.st/itunes/6832362072`. La pagina risponde 200 con og:title "ADDOMESTICARE GLI SCHERMI", ma solo con uno user agent da browser: con quello di curl dà 403.
+- **Amazon Music**: non l'ho trovato io, né con una ricerca web né sul sito Amazon, che si carica in JS. Il link me l'ha dato l'utente: `https://music.amazon.it/podcasts/d5e2e0a9-46a6-4bc6-967c-bd9555dc00ad/addomesticare-gli-schermi`. Risponde 200.
+
+Le icone sono gli SVG di Simple Icons 13.21.0 presi da jsDelivr, salvati in `public/podcast/piattaforme/`. Ci sono anche `spotify.svg`, che per ora non è usato, `applepodcasts.svg`, `pocketcasts.svg` e `amazonmusic.svg`.
+
+Il risultato è nella hero di `src/app/addomesticareglischermi/page.tsx`. Il pulsante Spotify e le icone stanno in un unico contenitore flex-wrap: su desktop sono sulla stessa riga, su mobile a 390px le icone vanno a capo sotto il pulsante. L'elenco è nella costante `OTHER_PLATFORMS`, dove `url: null` nasconde l'icona. Le icone sono bianche, ottenute con `invert`, a 26px, dentro un bordino `rounded-lg border-white/60 p-2`; all'hover il bordo diventa bianco pieno e il riquadro ruota di -6°. Anche il logo Spotify dentro il pulsante è passato da 20 a 26px, perché l'utente lo trovava più piccolo degli altri.
+
+Iterazioni scartate dall'utente:
+- la scritta "ANCHE SU" con le icone sotto il pulsante;
+- i cerchi semitrasparenti attorno alle icone;
+- le icone senza bordo.
+
+Verifiche:
+- screenshot Puppeteer in locale dopo ogni passaggio, desktop 1440 e mobile 390. Il mobile non è stato ricontrollato dopo l'ultima modifica, quella del bordino;
+- ESLint e tsc puliti alla prima versione;
+- `npm run build` riuscito prima del commit;
+- commit `4e5e6de` pushato su main.
+
+Non ho verificato il deploy Vercel né l'aspetto in produzione.
+
+## Problemi aperti
+- Il logo Amazon Music è un wordmark e resta meno leggibile degli altri due. L'utente non ha chiesto di cambiarlo.
+- I riquadri delle icone sono alti circa 44px, il pulsante rosa circa 54px. L'ho proposto di allinearli, l'utente non ha risposto.
+- La meta description della pagina dice ancora "su Spotify". Non l'ho toccata.
+
+## Prossimi passi
+1. Verificare che il deploy di `4e5e6de` sia live e controllare la pagina in produzione, anche su mobile.
+2. Oggi è uscita la puntata 1: verificare che `spotify_url` sia stato abbinato in automatico (vedi handoff precedenti).
+3. Se Castbox, Goodpods o Overcast compaiono, aggiungerli a `OTHER_PLATFORMS` insieme all'icona.
+
+---
+
 # Handoff — 2026-11-08 notte (fascia podcast in home)
 
 L'utente ha notato che dalla home non c'era nessun collegamento alla pagina del podcast. Mi ha chiesto una fascia con la bambina scontornata. La griglia `HomeNavGrid` è piena, con 12 riquadri incastrati, quindi la fascia è una sezione nuova: `src/components/PodcastStrip.tsx`, inserita in `src/app/page.tsx` tra la mission strip ("Costruiamo progetti…") e la griglia.
