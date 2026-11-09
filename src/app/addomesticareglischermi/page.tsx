@@ -86,9 +86,9 @@ export default async function PodcastPage() {
                     rel="noopener noreferrer"
                     aria-label={`Ascolta su ${p.name}`}
                     title={p.name}
-                    className="flex items-center justify-center rounded-lg border border-white/60 p-2 transition-transform hover:-rotate-6 hover:border-white"
+                    className="flex items-center justify-center rounded-lg border border-white/60 h-[48px] w-[48px] transition-transform hover:-rotate-6 hover:border-white"
                   >
-                    <Image src={p.icon} alt="" width={26} height={26} unoptimized className="h-[26px] w-[26px] invert" />
+                    <Image src={p.icon} alt="" width={28} height={28} unoptimized className="h-7 w-7 invert" />
                   </a>
                 ))}
               </div>
