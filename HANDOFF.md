@@ -1,3 +1,42 @@
+# Handoff — 2026-11-11 (commenti sulla pagina podcast)
+
+L'utente voleva che sulla pagina `/addomesticareglischermi` si potessero lasciare commenti. Gli ho proposto un sistema fatto dentro il sito, con Supabase, l'admin e le notifiche Brevo già esistenti. Disqus e Giscus li ho scartati: Disqus per pubblicità e tracciamento, poco adatti a un centro clinico; Giscus perché richiede un account GitHub. L'utente ha scelto **commenti per singola puntata**, **moderazione prima della pubblicazione** ed **email facoltativa**.
+
+Cosa è stato fatto (commit `40320b5`, pushato su main):
+- **Tabella `podcast_comments`**, SQL in `supabase/_eseguiti/schema_podcast_comments.sql`. Il CREATE TABLE l'ha eseguito l'utente nel SQL Editor; io ho solo verificato dopo che la tabella esisteva. Ha GRANT solo per `service_role` e nessun accesso `anon`, perché contiene email e `ip_hash`. Per questo la pagina pubblica legge i commenti approvati con il client admin, selezionando solo i campi pubblici (tipo `PublicComment` in `src/lib/podcast.ts`).
+- **Pagina** (`src/app/addomesticareglischermi/EpisodeComments.tsx`). Sotto ogni puntata già uscita c'è una tendina "Lascia un commento", che diventa "Commenti (N)" quando ci sono commenti approvati. Contiene l'elenco dei commenti approvati, l'eventuale risposta "Centro Steadycam" in fucsia e il form: nome, email facoltativa mai pubblicata, testo fino a 1000 caratteri, rimando a /privacy. Sulle puntate future il blocco non c'è.
+- **API** `src/app/api/podcast/commenti/route.ts`:
+  - accetta commenti solo su puntate già uscite;
+  - honeypot nel campo `website` e tempo minimo di compilazione di 3 secondi: un bot riceve un finto `ok` e non viene salvato nulla;
+  - massimo 3 invii ogni 10 minuti per IP, con l'IP salvato come sha256 con salt (`COMMENTS_IP_SALT` se c'è, altrimenti la service role key);
+  - il commento viene salvato `pending` e parte la notifica `sendPodcastCommentNotification` in `src/lib/brevo.ts`.
+- **Admin**: la sezione Commenti (`CommentsAdmin.tsx`) sta in cima a `/admin/podcast`, all'ancora `#commenti`. Ha le schede Da approvare, Pubblicati e Rifiutati e i pulsanti Approva, Rifiuta/Nascondi, Rispondi ed Elimina; Elimina va cliccato due volte. Le operazioni sono server action in `actions.ts`.
+- **Privacy** (commit `1fbcd3d`): nuova sezione "Commenti al podcast" in `src/app/privacy/page.tsx`. Il testo l'ho scritto io e non è stato rivisto da un legale o dal DPO dell'ASL.
+
+Verifiche:
+- `tsc` ed ESLint puliti.
+- In locale (porta 3000) ho fatto un giro completo con un commento di prova. Finché era pending non compariva sulla pagina. L'ho approvato con una risposta scrivendo direttamente sul DB, non con i pulsanti dell'admin, e sono comparsi "Commenti (1)" e la risposta. Il terzo invio in 10 minuti è stato bloccato con 429.
+- Le mail di notifica sono arrivate: l'ha confermato l'utente.
+- I commenti di prova li ho cancellati.
+- `npm run build` è riuscito prima di entrambi i push.
+- Deploy automatico verificato con curl sulla pagina live: "Commenti (2)" su /addomesticareglischermi e "Commenti al podcast" su /privacy, circa 90-105 secondi dopo il push.
+
+**Commenti di esempio online.** Su richiesta dell'utente ho inserito due commenti dal form: "Giulia" e "Marco", apprezzamento medio sulla puntata 1, entrambi **inventati**. L'utente li ha approvati, e i pulsanti dell'admin quindi funzionano, almeno Approva. Sono visibili in produzione. Avevo segnalato che appaiono come commenti di ascoltatori veri, e la scelta di tenerli è stata dell'utente.
+
+Nota tecnica: sulla porta 3001 gira il dev server di un altro progetto (ADAM, `vercel dev`), non di questo sito. Il dev server di centrosteadycam l'ho avviato sulla 3000 e poi l'ho fermato per la build: ora è spento.
+
+## Problemi aperti
+- La pagina /privacy descrive solo le prenotazioni Display e non la newsletter. Come contatto indica `info@progettosteadycam.it`, mentre altrove nel sito si usa `info@centrosteadycam.it`. Ho solo segnalato le due cose, non le ho toccate.
+- Dei pulsanti admin è stato provato solo Approva, dall'utente. Rifiuta, Rispondi ed Elimina non li ha cliccati nessuno.
+- La sezione commenti in produzione non l'ho guardata con uno screenshot: è verificata solo via curl.
+
+## Prossimi passi
+1. Se l'utente lo vuole, decidere se togliere i commenti inventati di Giulia e Marco quando arriveranno commenti veri.
+2. Sistemare la pagina privacy (newsletter, email di contatto) e farla controllare dal DPO dell'ASL CN2.
+3. Restano aperti i punti dei handoff precedenti: YouTube, puntata 1 su Apple Podcasts e Pocket Casts.
+
+---
+
 # Handoff — 2026-11-09 (link alle altre piattaforme sulla pagina podcast)
 
 L'utente ha chiesto se sulla pagina `/addomesticareglischermi` ci fossero i link alle altre piattaforme. Non c'erano: si vedevano solo il pulsante "Ascolta su Spotify" e i player Spotify. Ho raccolto i link:
