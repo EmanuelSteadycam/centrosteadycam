@@ -28,3 +28,16 @@ export function formatReleaseDate(iso: string): string {
     timeZone: "Europe/Rome",
   });
 }
+
+export const COMMENT_MAX_LENGTH = 1000;
+export const COMMENT_NAME_MAX_LENGTH = 60;
+
+// Commento approvato come arriva alla pagina pubblica (mai email né hash IP)
+export type PublicComment = {
+  id: string;
+  episode_id: string;
+  nome: string;
+  testo: string;
+  reply: string | null;
+  created_at: string;
+};

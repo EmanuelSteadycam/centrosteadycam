@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import localFont from "next/font/local";
-import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { createSupabaseServerClient, createSupabaseAdminClient } from "@/lib/supabase-server";
 import { syncSpotifyLinks } from "@/lib/podcast-sync";
-import { spotifyEmbedUrl, formatReleaseDate, PODCAST_COVER, type PodcastEpisode } from "@/lib/podcast";
+import { spotifyEmbedUrl, formatReleaseDate, PODCAST_COVER, type PodcastEpisode, type PublicComment } from "@/lib/podcast";
+import EpisodeComments from "./EpisodeComments";
 
 // Boxpot Amateur (Nick Polifroni, dafont "100% Free"): lo stesso font del titolo in copertina.
 // Spaziature dal file grafico: interlinea 260,48/274,63 ≈ 0.95, tracking 80 = 0.08em
@@ -26,13 +27,21 @@ export const dynamic = "force-dynamic";
 
 export default async function PodcastPage() {
   const supabase = createSupabaseServerClient();
-  const [{ data: episodes }, { data: settings }] = await Promise.all([
+  const [{ data: episodes }, { data: settings }, { data: approvedComments }] = await Promise.all([
     supabase
       .from("podcast_episodes")
       .select("id, number, title, description, cover_url, release_at, spotify_url")
       .order("number", { ascending: true }),
     supabase.from("podcast_settings").select("key, value"),
+    // Commenti: tabella senza accesso anon (contiene email), si legge col service role e solo i campi pubblici
+    createSupabaseAdminClient()
+      .from("podcast_comments")
+      .select("id, episode_id, nome, testo, reply, created_at")
+      .eq("status", "approved")
+      .order("created_at", { ascending: true }),
   ]);
+  const commentsFor = (episodeId: string) =>
+    ((approvedComments ?? []) as PublicComment[]).filter((c) => c.episode_id === episodeId);
 
   const setting = (key: string): string => settings?.find((s) => s.key === key)?.value ?? "";
   const showUrl = setting("spotify_show_url");
@@ -212,6 +221,7 @@ export default async function PodcastPage() {
                         </p>
                       )}
                     </div>
+                    {released && <EpisodeComments episodeId={ep.id} comments={commentsFor(ep.id)} />}
                   </div>
                 </article>
               );

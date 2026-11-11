@@ -63,3 +63,32 @@ export async function updatePodcastSettings(settings: Record<string, string>): P
   revalidate();
   return { error: null };
 }
+
+// ── Commenti ──────────────────────────────────────────────────────────────────
+export async function setCommentStatus(id: string, status: "approved" | "rejected" | "pending"): Promise<{ error: string | null }> {
+  const supabase = createSupabaseAdminClient();
+  const { error } = await supabase.from("podcast_comments").update({ status }).eq("id", id);
+  if (error) return { error: error.message };
+  revalidate();
+  return { error: null };
+}
+
+export async function saveCommentReply(id: string, reply: string): Promise<{ error: string | null }> {
+  const supabase = createSupabaseAdminClient();
+  const text = reply.trim();
+  const { error } = await supabase
+    .from("podcast_comments")
+    .update({ reply: text || null, reply_at: text ? new Date().toISOString() : null })
+    .eq("id", id);
+  if (error) return { error: error.message };
+  revalidate();
+  return { error: null };
+}
+
+export async function deleteComment(id: string): Promise<{ error: string | null }> {
+  const supabase = createSupabaseAdminClient();
+  const { error } = await supabase.from("podcast_comments").delete().eq("id", id);
+  if (error) return { error: error.message };
+  revalidate();
+  return { error: null };
+}

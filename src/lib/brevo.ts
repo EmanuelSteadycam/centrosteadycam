@@ -649,3 +649,29 @@ export async function sendReminderEmail(booking: {
     htmlBody: buildReminderHtml({ ...booking, date: formatDate(booking.date) }),
   });
 }
+
+// ── notifica admin nuovo commento al podcast ──────────────────────────────────
+function escapeHtml(s: string): string {
+  return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+}
+
+export async function sendPodcastCommentNotification(comment: {
+  nome: string; email: string | null; testo: string; episodeNumber: number; episodeTitle: string;
+}) {
+  const adminEmail = process.env.BREVO_ADMIN_EMAIL ?? "steadycam01@gmail.com";
+  const now = new Date().toLocaleString("it-IT", { timeZone: "Europe/Rome" });
+  const site = process.env.SITE_URL ?? "https://centrosteadycam.it";
+  await sendMail({
+    to: adminEmail,
+    subject: `Podcast — nuovo commento all'episodio ${comment.episodeNumber}: ${comment.nome}`,
+    htmlBody: `<p style="font-family:sans-serif;font-size:15px;">
+      Nuovo commento da approvare:<br><br>
+      <strong>Episodio:</strong> ${comment.episodeNumber} — ${escapeHtml(comment.episodeTitle)}<br>
+      <strong>Nome:</strong> ${escapeHtml(comment.nome)}<br>
+      <strong>Email:</strong> ${comment.email ? escapeHtml(comment.email) : "—"}<br>
+      <strong>Data:</strong> ${now}<br><br>
+      <span style="white-space:pre-line;">${escapeHtml(comment.testo)}</span><br><br>
+      <a href="${site}/admin/podcast#commenti">Modera in admin</a>
+    </p>`,
+  });
+}
