@@ -1,3 +1,28 @@
+# Handoff — 2026-11-13 (YouTube, pulsanti Segui, invito SteadyNews sulla pagina podcast)
+
+L'utente ha chiesto di aggiungere YouTube accanto alle altre piattaforme nella pagina `/addomesticareglischermi`. Prima mi ha dato il link a un singolo video (`youtu.be/Y3Gxbq3srt0`). Gli ho fatto notare che conveniva linkare una playlist: lui ha mandato lo screenshot di YouTube Studio, dove esisteva già la playlist "ADDOMESTICARE GLI SCHERMI" di tipo **Podcast**, pubblica, con 2 video. Il link della playlist è `https://www.youtube.com/playlist?list=PLK0B-5N4zozI`. L'ID è più corto del solito, ma l'oEmbed di YouTube risponde 200 con titolo "ADDOMESTICARE GLI SCHERMI" e autore "Centro Steadycam", quindi è valido. Ho creato `public/podcast/piattaforme/youtube.svg` (Simple Icons, nero, invertito in pagina come gli altri) e aggiunto la voce YouTube in fondo a `OTHER_PLATFORMS`. Le nuove puntate vanno aggiunte alla playlist da YouTube Studio al caricamento: il sito non va più toccato.
+
+Poi l'utente ha chiesto come avvisare chi ascolta la prima puntata dell'uscita delle altre. Ho spiegato che lo fanno le piattaforme, ma solo per chi preme Segui. Dettaglio non verificato: se le notifiche Spotify arrivino davvero dipende dalle impostazioni dell'utente. Ho aggiunto una frase d'invito sotto il pulsante Spotify nell'hero, poi **su richiesta dell'utente l'ho tolta**. Al suo posto, sempre su sua richiesta, c'è un pulsante **Segui** (con logo Spotify) nella riga in alto di ogni scheda puntata. Porta alla pagina dello show su Spotify (`showUrl`): da un sito esterno non si può far seguire uno show con un clic. Compare solo sulle puntate già uscite, perché le schede future hanno `pointer-events-none`.
+
+Infine ho proposto un invito alla SteadyNews e l'utente ha detto di provarlo. È una sezione in fondo alla pagina, sfondo `GREEN`, nel nuovo componente client `src/app/addomesticareglischermi/SteadyNewsInvito.tsx`. Contiene il titolo "Ti è piaciuto il podcast?" con il font boxpot, la frase scelta dall'utente "Se vuoi restare aggiornato sulle attività del Centro Steadycam" e il pulsante rosa "Iscriviti alla SteadyNews". Il pulsante apre il `NewsletterModal` esistente, quello del blog, che chiama `/api/newsletter/subscribe`. Su richiesta dell'utente ho tolto l'etichetta "SteadyNews" sopra il titolo. Avevo sconsigliato di promettere "ricevi le nuove puntate" nel testo, perché non è detto che la newsletter le annunci.
+
+## Stato attuale
+- Commit `f2f269b`, pushato su main. `npm run build` è riuscito prima del push.
+- Produzione verificata con curl su `https://www.centrosteadycam.it/addomesticareglischermi`: presenti il link alla playlist, un pulsante "Segui" (c'è una sola puntata uscita) e il titolo "Ti è piaciuto il podcast?".
+- In locale l'utente ha visto la pagina dopo l'aggiunta dell'icona YouTube ("ok visto"). Pulsanti Segui e sezione SteadyNews li ha visti in locale nelle iterazioni successive, ma io non ho fatto screenshot. **Non ho provato l'iscrizione** dal nuovo pulsante: il modal è lo stesso del blog, quindi dovrebbe funzionare, ma non è verificato da questa pagina.
+- Il dev server di centrosteadycam è stato avviato in background sulla porta 3000 in questa sessione. Non verificato se sia ancora attivo: durante la sessione ho lanciato anche `npm run build` sulla stessa cartella `.next`.
+
+## Problemi aperti
+- Il pulsante Segui porta solo a Spotify; chi usa altre app trova le icone nell'hero.
+- Restano aperti i punti dei handoff precedenti: pagina privacy (newsletter, email di contatto), pulsanti admin dei commenti non provati, commenti inventati di Giulia e Marco.
+
+## Prossimi passi
+1. Ricordare all'utente di aggiungere ogni nuova puntata alla playlist podcast di YouTube.
+2. Fare un'iscrizione di prova dalla sezione SteadyNews della pagina podcast, se l'utente vuole conferma.
+3. Valutare con l'utente una frase "premi Segui" a fine puntata nell'audio, il canale più efficace per gli avvisi.
+
+---
+
 # Handoff — 2026-11-11 (commenti sulla pagina podcast)
 
 L'utente voleva che sulla pagina `/addomesticareglischermi` si potessero lasciare commenti. Gli ho proposto un sistema fatto dentro il sito, con Supabase, l'admin e le notifiche Brevo già esistenti. Disqus e Giscus li ho scartati: Disqus per pubblicità e tracciamento, poco adatti a un centro clinico; Giscus perché richiede un account GitHub. L'utente ha scelto **commenti per singola puntata**, **moderazione prima della pubblicazione** ed **email facoltativa**.
