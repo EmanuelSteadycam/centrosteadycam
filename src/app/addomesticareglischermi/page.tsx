@@ -5,6 +5,7 @@ import { createSupabaseServerClient, createSupabaseAdminClient } from "@/lib/sup
 import { syncSpotifyLinks } from "@/lib/podcast-sync";
 import { spotifyEmbedUrl, formatReleaseDate, PODCAST_COVER, type PodcastEpisode, type PublicComment } from "@/lib/podcast";
 import EpisodeComments from "./EpisodeComments";
+import SteadyNewsInvito from "./SteadyNewsInvito";
 
 // Boxpot Amateur (Nick Polifroni, dafont "100% Free"): lo stesso font del titolo in copertina.
 // Spaziature dal file grafico: interlinea 260,48/274,63 ≈ 0.95, tracking 80 = 0.08em
@@ -192,13 +193,27 @@ export default async function PodcastPage() {
                   style={{ background: INK }}
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="font-title text-xs font-semibold uppercase tracking-widest mb-2">
-                      <span style={{ color: PINK }}>Episodio {ep.number}</span>
-                      <span className="text-white">
-                        {" · "}
-                        {released ? formatReleaseDate(ep.release_at) : `Esce il ${formatReleaseDate(ep.release_at)}`}
-                      </span>
-                    </p>
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <p className="font-title text-xs font-semibold uppercase tracking-widest">
+                        <span style={{ color: PINK }}>Episodio {ep.number}</span>
+                        <span className="text-white">
+                          {" · "}
+                          {released ? formatReleaseDate(ep.release_at) : `Esce il ${formatReleaseDate(ep.release_at)}`}
+                        </span>
+                      </p>
+                      {/* Segui: porta alla pagina del podcast su Spotify, dove si preme "Segui" (Spotify non permette il follow diretto da un sito) */}
+                      {released && showUrl && (
+                        <a
+                          href={showUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-title shrink-0 inline-flex items-center gap-1.5 rounded-full border border-white/60 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest transition-colors hover:border-white hover:bg-white/10"
+                        >
+                          <SpotifyLogo size={14} />
+                          Segui
+                        </a>
+                      )}
+                    </div>
                     {/* Puntata futura: resta ben leggibile solo la riga "Episodio N · Esce il …", il resto è opacizzato */}
                     <div className={released ? "" : "opacity-40"}>
                       <h3 className="font-title font-bold uppercase text-xl md:text-2xl leading-snug mb-3">{ep.title}</h3>
@@ -229,6 +244,11 @@ export default async function PodcastPage() {
           </div>
         </div>
       </section>
+
+      {/* Invito alla SteadyNews, dopo gli episodi */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8" style={{ background: GREEN }}>
+        <SteadyNewsInvito titleClassName={dirt.className} pink={PINK} />
+      </section>
     </div>
   );
 }
@@ -238,6 +258,7 @@ const OTHER_PLATFORMS: { name: string; url: string | null; icon: string }[] = [
   { name: "Apple Podcasts", url: "https://podcasts.apple.com/it/podcast/addomesticare-gli-schermi/id6832362072", icon: "/podcast/piattaforme/applepodcasts.svg" },
   { name: "Pocket Casts", url: "https://pocketcasts.com/podcast/addomesticare-gli-schermi/93fd5860-bdf0-013f-55d8-0affcb2f3ff3", icon: "/podcast/piattaforme/pocketcasts.svg" },
   { name: "Amazon Music", url: "https://music.amazon.it/podcasts/d5e2e0a9-46a6-4bc6-967c-bd9555dc00ad/addomesticare-gli-schermi", icon: "/podcast/piattaforme/amazonmusic.svg" },
+  { name: "YouTube", url: "https://www.youtube.com/playlist?list=PLK0B-5N4zozI", icon: "/podcast/piattaforme/youtube.svg" },
 ];
 
 // Ricostruzione solo grafica del player embed di Spotify (152px, tema scuro theme=0: sfondo #1F1F1F, testi secondari #B3B3B3)
