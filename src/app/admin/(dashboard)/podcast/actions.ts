@@ -64,30 +64,36 @@ export async function updatePodcastSettings(settings: Record<string, string>): P
   return { error: null };
 }
 
-// ── Commenti ──────────────────────────────────────────────────────────────────
-export async function setCommentStatus(id: string, status: "approved" | "rejected" | "pending"): Promise<{ error: string | null }> {
+// ── Le vostre storie ──────────────────────────────────────────────────────────
+export async function setStoryStatus(id: string, status: "approved" | "rejected" | "pending"): Promise<{ error: string | null }> {
   const supabase = createSupabaseAdminClient();
-  const { error } = await supabase.from("podcast_comments").update({ status }).eq("id", id);
+  const { error } = await supabase.from("podcast_stories").update({ status }).eq("id", id);
   if (error) return { error: error.message };
   revalidate();
   return { error: null };
 }
 
-export async function saveCommentReply(id: string, reply: string): Promise<{ error: string | null }> {
+// Risposta del Centro Steadycam: pubblicata subito
+export async function addStaffStoryReply(storyId: string, testo: string): Promise<{ error: string | null }> {
+  const text = testo.trim();
+  if (!text) return { error: "La risposta è vuota" };
   const supabase = createSupabaseAdminClient();
-  const text = reply.trim();
-  const { error } = await supabase
-    .from("podcast_comments")
-    .update({ reply: text || null, reply_at: text ? new Date().toISOString() : null })
-    .eq("id", id);
+  const { error } = await supabase.from("podcast_stories").insert({
+    parent_id: storyId,
+    nome: "Centro Steadycam",
+    testo: text,
+    status: "approved",
+    is_staff: true,
+  });
   if (error) return { error: error.message };
   revalidate();
   return { error: null };
 }
 
-export async function deleteComment(id: string): Promise<{ error: string | null }> {
+// Elimina una storia (con tutte le sue risposte, on delete cascade) o una singola risposta
+export async function deleteStoryPost(id: string): Promise<{ error: string | null }> {
   const supabase = createSupabaseAdminClient();
-  const { error } = await supabase.from("podcast_comments").delete().eq("id", id);
+  const { error } = await supabase.from("podcast_stories").delete().eq("id", id);
   if (error) return { error: error.message };
   revalidate();
   return { error: null };

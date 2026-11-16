@@ -2,21 +2,21 @@ import { createSupabaseAdminClient } from "@/lib/supabase-server";
 import { PODCAST_PATH, type PodcastEpisode } from "@/lib/podcast";
 import EpisodeForm from "./EpisodeForm";
 import SettingsForm from "./SettingsForm";
-import CommentsAdmin, { type AdminComment } from "./CommentsAdmin";
+import StoriesAdmin, { type AdminStoryPost } from "./StoriesAdmin";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminPodcastPage() {
   const supabase = createSupabaseAdminClient();
-  const [{ data: episodes, error }, { data: settings }, { data: comments, error: commentsError }] = await Promise.all([
+  const [{ data: episodes, error }, { data: settings }, { data: stories, error: storiesError }] = await Promise.all([
     supabase
       .from("podcast_episodes")
       .select("id, number, title, description, cover_url, release_at, spotify_url")
       .order("number", { ascending: true }),
     supabase.from("podcast_settings").select("key, value"),
     supabase
-      .from("podcast_comments")
-      .select("id, episode_id, nome, email, testo, status, reply, created_at")
+      .from("podcast_stories")
+      .select("id, parent_id, nome, email, titolo, testo, status, is_staff, created_at")
       .order("created_at", { ascending: false }),
   ]);
 
@@ -29,10 +29,11 @@ export default async function AdminPodcastPage() {
     ? new Date(new Date(last.release_at).getTime() + 7 * 24 * 60 * 60 * 1000).toISOString()
     : new Date().toISOString();
   const now = Date.now();
-  const adminComments: AdminComment[] = (comments ?? []).map((c) => {
-    const ep = list.find((e) => e.id === c.episode_id);
-    return { ...c, episodeLabel: ep ? `Episodio ${ep.number} — ${ep.title}` : "Episodio eliminato" } as AdminComment;
-  });
+  const storyRows = stories ?? [];
+  const adminStories: AdminStoryPost[] = storyRows.map((p) => ({
+    ...p,
+    parentTitle: p.parent_id ? storyRows.find((s) => s.id === p.parent_id)?.titolo ?? null : null,
+  })) as AdminStoryPost[];
 
   return (
     <div>
@@ -49,12 +50,12 @@ export default async function AdminPodcastPage() {
         </div>
       )}
 
-      {commentsError ? (
+      {storiesError ? (
         <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-lg mb-6">
-          Commenti non disponibili: {commentsError.message}. La tabella &ldquo;podcast_comments&rdquo; esiste su Supabase? (supabase/schema_podcast_comments.sql)
+          Storie non disponibili: {storiesError.message}. La tabella &ldquo;podcast_stories&rdquo; esiste su Supabase? (supabase/_eseguiti/schema_podcast_stories.sql)
         </div>
       ) : (
-        <CommentsAdmin comments={adminComments} />
+        <StoriesAdmin posts={adminStories} />
       )}
 
       <SettingsForm showUrl={setting("spotify_show_url")} intro={setting("intro")} trailerUrl={setting("trailer_url")} />

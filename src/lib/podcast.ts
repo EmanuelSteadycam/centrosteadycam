@@ -29,15 +29,19 @@ export function formatReleaseDate(iso: string): string {
   });
 }
 
-export const COMMENT_MAX_LENGTH = 1000;
-export const COMMENT_NAME_MAX_LENGTH = 60;
+// ── Le vostre storie ─────────────────────────────────────────────────────────
+export const STORY_NAME_MAX_LENGTH = 60;
+export const STORY_MAX_LENGTH = 5000;
+export const STORY_TITLE_MAX_LENGTH = 120;
+export const STORY_REPLY_MAX_LENGTH = 1500;
 
-// Commento approvato come arriva alla pagina pubblica (mai email né hash IP)
-export type PublicComment = {
+// Storia o risposta approvata come arriva alla pagina pubblica (mai email né hash IP)
+export type PublicStoryPost = {
   id: string;
-  episode_id: string;
+  parent_id: string | null;
   nome: string;
+  titolo: string | null;
   testo: string;
-  reply: string | null;
+  is_staff: boolean;
   created_at: string;
 };

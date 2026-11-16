@@ -33,14 +33,17 @@ export default function PrivacyPage() {
         <p>I dati sono utilizzati esclusivamente per la gestione delle prenotazioni delle visite al Centro Display.</p>
         <h2>Conservazione</h2>
         <p>I dati sono conservati per il tempo strettamente necessario al completamento della prenotazione.</p>
-        <h2>Commenti al podcast</h2>
+        <h2>Le vostre storie (podcast)</h2>
         <p>
-          Chi lascia un commento a una puntata del podcast &ldquo;Addomesticare gli schermi&rdquo; fornisce
-          un nome, il testo del commento e, facoltativamente, un indirizzo email. Nome e testo vengono
-          pubblicati sotto la puntata solo dopo l&apos;approvazione della redazione; l&apos;indirizzo email
-          non viene mai pubblicato e serve soltanto per un&apos;eventuale risposta privata. Per prevenire
-          lo spam l&apos;indirizzo IP viene registrato esclusivamente in forma cifrata e non reversibile.
-          I commenti restano pubblicati finché l&apos;autore non ne chiede la rimozione.
+          Chi racconta una storia o risponde a una storia nella sezione &ldquo;Le vostre storie&rdquo; della
+          pagina del podcast &ldquo;Addomesticare gli schermi&rdquo; fornisce un nome o uno pseudonimo, il
+          testo (e, per le storie, un titolo) e, facoltativamente, un indirizzo email. Nome, titolo e testo
+          vengono pubblicati solo dopo la lettura e l&apos;approvazione della redazione, che può non
+          pubblicare i contenuti contenenti dati che permettano di identificare l&apos;autore o altre
+          persone, in particolare minori. L&apos;indirizzo email non viene mai pubblicato e serve soltanto
+          per un&apos;eventuale risposta privata. Per prevenire lo spam l&apos;indirizzo IP viene registrato
+          esclusivamente in forma cifrata e non reversibile. Storie e risposte restano pubblicate finché
+          l&apos;autore non ne chiede la rimozione.
         </p>
         <h2>Diritti dell&apos;interessato</h2>
         <p>

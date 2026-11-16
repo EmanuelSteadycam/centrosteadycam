@@ -3,9 +3,9 @@ import Image from "next/image";
 import localFont from "next/font/local";
 import { createSupabaseServerClient, createSupabaseAdminClient } from "@/lib/supabase-server";
 import { syncSpotifyLinks } from "@/lib/podcast-sync";
-import { spotifyEmbedUrl, formatReleaseDate, PODCAST_COVER, type PodcastEpisode, type PublicComment } from "@/lib/podcast";
-import EpisodeComments from "./EpisodeComments";
+import { spotifyEmbedUrl, formatReleaseDate, PODCAST_COVER, type PodcastEpisode, type PublicStoryPost } from "@/lib/podcast";
 import SteadyNewsInvito from "./SteadyNewsInvito";
+import StoriesSection from "./StoriesSection";
 
 // Boxpot Amateur (Nick Polifroni, dafont "100% Free"): lo stesso font del titolo in copertina.
 // Spaziature dal file grafico: interlinea 260,48/274,63 ≈ 0.95, tracking 80 = 0.08em
@@ -28,21 +28,18 @@ export const dynamic = "force-dynamic";
 
 export default async function PodcastPage() {
   const supabase = createSupabaseServerClient();
-  const [{ data: episodes }, { data: settings }, { data: approvedComments }] = await Promise.all([
+  const [{ data: episodes }, { data: settings }, { data: storyPosts }] = await Promise.all([
     supabase
       .from("podcast_episodes")
       .select("id, number, title, description, cover_url, release_at, spotify_url")
       .order("number", { ascending: true }),
     supabase.from("podcast_settings").select("key, value"),
-    // Commenti: tabella senza accesso anon (contiene email), si legge col service role e solo i campi pubblici
+    // Le vostre storie: tabella senza accesso anon (contiene email), si legge col service role e solo i campi pubblici
     createSupabaseAdminClient()
-      .from("podcast_comments")
-      .select("id, episode_id, nome, testo, reply, created_at")
-      .eq("status", "approved")
-      .order("created_at", { ascending: true }),
+      .from("podcast_stories")
+      .select("id, parent_id, nome, titolo, testo, is_staff, created_at")
+      .eq("status", "approved"),
   ]);
-  const commentsFor = (episodeId: string) =>
-    ((approvedComments ?? []) as PublicComment[]).filter((c) => c.episode_id === episodeId);
 
   const setting = (key: string): string => settings?.find((s) => s.key === key)?.value ?? "";
   const showUrl = setting("spotify_show_url");
@@ -236,13 +233,30 @@ export default async function PodcastPage() {
                         </p>
                       )}
                     </div>
-                    {released && <EpisodeComments episodeId={ep.id} comments={commentsFor(ep.id)} />}
+                    {/* Rimando alla sezione "Le vostre storie" */}
+                    {released && (
+                      <div className="mt-4 pt-4 border-t border-white/10">
+                        <a
+                          href="#storie"
+                          className="font-title text-xs font-semibold uppercase tracking-widest inline-flex items-center gap-2 hover:opacity-80"
+                          style={{ color: PINK }}
+                        >
+                          Racconta la tua storia
+                          <span aria-hidden>↓</span>
+                        </a>
+                      </div>
+                    )}
                   </div>
                 </article>
               );
             })}
           </div>
         </div>
+      </section>
+
+      {/* Le vostre storie: racconti degli ascoltatori, moderati, con risposte */}
+      <section id="storie" className="py-20 px-4 sm:px-6 lg:px-8 scroll-mt-14 border-b border-white/20" style={{ background: GREEN }}>
+        <StoriesSection posts={(storyPosts ?? []) as PublicStoryPost[]} titleClassName={dirt.className} />
       </section>
 
       {/* Invito alla SteadyNews, dopo gli episodi */}

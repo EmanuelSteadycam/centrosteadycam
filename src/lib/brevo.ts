@@ -650,28 +650,29 @@ export async function sendReminderEmail(booking: {
   });
 }
 
-// ── notifica admin nuovo commento al podcast ──────────────────────────────────
+// ── notifiche admin podcast (Le vostre storie) ────────────────────────────────
 function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 }
 
-export async function sendPodcastCommentNotification(comment: {
-  nome: string; email: string | null; testo: string; episodeNumber: number; episodeTitle: string;
+export async function sendPodcastStoryNotification(post: {
+  nome: string; email: string | null; titolo: string | null; testo: string; replyTo: string | null;
 }) {
   const adminEmail = process.env.BREVO_ADMIN_EMAIL ?? "steadycam01@gmail.com";
   const now = new Date().toLocaleString("it-IT", { timeZone: "Europe/Rome" });
   const site = process.env.SITE_URL ?? "https://centrosteadycam.it";
+  const what = post.replyTo ? `nuova risposta alla storia "${post.replyTo}"` : `nuova storia: ${post.titolo ?? ""}`;
   await sendMail({
     to: adminEmail,
-    subject: `Podcast — nuovo commento all'episodio ${comment.episodeNumber}: ${comment.nome}`,
+    subject: `Le vostre storie — ${what} (${post.nome})`,
     htmlBody: `<p style="font-family:sans-serif;font-size:15px;">
-      Nuovo commento da approvare:<br><br>
-      <strong>Episodio:</strong> ${comment.episodeNumber} — ${escapeHtml(comment.episodeTitle)}<br>
-      <strong>Nome:</strong> ${escapeHtml(comment.nome)}<br>
-      <strong>Email:</strong> ${comment.email ? escapeHtml(comment.email) : "—"}<br>
+      ${post.replyTo ? "Nuova risposta da approvare" : "Nuova storia da approvare"}:<br><br>
+      ${post.replyTo ? `<strong>In risposta a:</strong> ${escapeHtml(post.replyTo)}<br>` : `<strong>Titolo:</strong> ${escapeHtml(post.titolo ?? "")}<br>`}
+      <strong>Nome:</strong> ${escapeHtml(post.nome)}<br>
+      <strong>Email:</strong> ${post.email ? escapeHtml(post.email) : "—"}<br>
       <strong>Data:</strong> ${now}<br><br>
-      <span style="white-space:pre-line;">${escapeHtml(comment.testo)}</span><br><br>
-      <a href="${site}/admin/podcast#commenti">Modera in admin</a>
+      <span style="white-space:pre-line;">${escapeHtml(post.testo)}</span><br><br>
+      <a href="${site}/admin/podcast#storie">Modera in admin</a>
     </p>`,
   });
 }
