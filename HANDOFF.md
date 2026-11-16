@@ -1,3 +1,44 @@
+# Handoff — 2026-11-16 ("Le vostre storie" al posto dei commenti per puntata)
+
+L'utente ha chiesto una sezione **"Le vostre storie"** sotto la sezione podcast: un posto, tra blog e forum, dove gli ascoltatori raccontano per iscritto le loro storie sui temi del podcast. Le storie si pubblicano solo dopo l'approvazione dell'admin e si può rispondere. L'ho costruita sul modello dei commenti per puntata del 11/11. Ho deciso io, senza chiedere, che anche le **risposte degli ascoltatori** siano moderate prima della pubblicazione; le risposte "Centro Steadycam" scritte dall'admin escono invece subito. Ho deciso io anche il testo d'invito della sezione.
+
+Com'è fatta:
+- **Tabella `podcast_stories`**, SQL in `supabase/_eseguiti/schema_podcast_stories.sql`. È una tabella sola: `parent_id` null indica una storia, valorizzato una risposta (`on delete cascade`). `is_staff` segna le risposte del Centro. La tabella ha GRANT solo a `service_role`, perché contiene email e `ip_hash`. L'ha creata l'utente nel SQL Editor, e l'ho verificato con un insert di prova dall'API locale, che ha risposto 200.
+- **Pagina**: `src/app/addomesticareglischermi/StoriesSection.tsx`, inserita in `page.tsx` dopo gli Episodi e prima dell'invito SteadyNews, con `id="storie"`, sfondo GREEN e `border-b` bianco/20. C'è il pulsante "Racconta la tua storia", che apre un form con nome o pseudonimo, email facoltativa, titolo fino a 120 caratteri e storia fino a 5000. Il form avvisa di non inserire dati identificativi, soprattutto dei minori. Le storie sono schede INK dalla più recente; oltre 600 caratteri compare "Leggi tutto". Sotto ogni storia ci sono le risposte (fino a 1500 caratteri) e il pulsante "Rispondi".
+- **API** `src/app/api/podcast/storie/route.ts`: si risponde solo a storie approvate. L'anti-spam è lo stesso dei commenti: honeypot `website`, almeno 3 secondi di compilazione, massimo 3 invii ogni 10 minuti per IP. Il salt dell'hash IP usa ancora la variabile `COMMENTS_IP_SALT` (nome storico), altrimenti la service role key. A ogni invio parte la notifica `sendPodcastStoryNotification` in `src/lib/brevo.ts`.
+- **Admin**: `StoriesAdmin.tsx` in `/admin/podcast#storie`. Ha le schede Da approvare / Pubblicati / Rifiutati e i pulsanti Approva, Rifiuta/Nascondi, "Rispondi come Centro Steadycam" ed Elimina. Elimina va confermato con un secondo clic; su una storia cancella anche le risposte.
+
+Poi l'utente ha chiesto di **togliere i commenti per puntata**, perché potevano essere fuorvianti. Al loro posto, nelle schede delle puntate uscite, c'è il link "Racconta la tua storia ↓" verso `#storie`. In seguito ha chiesto di eliminare tutto il codice dei commenti: componente `EpisodeComments`, API `/api/podcast/commenti`, `CommentsAdmin`, server action, notifica Brevo, costanti e tipi. Ha chiesto anche di aggiornare la privacy: in `src/app/privacy/page.tsx` la sezione "Commenti al podcast" è diventata "Le vostre storie (podcast)". Il testo l'ho scritto io e nessun legale o DPO l'ha rivisto.
+
+## Stato attuale
+- **Commit `d08aa06`, pushato su main.** `npm run build` completo è riuscito prima del commit, e tsc/ESLint sono puliti.
+- **Verificato in locale**, prima della rimozione dei commenti:
+  - l'utente ha fatto tutto il giro in `/admin` e sulla pagina (invio, approvazione, risposta, risposta del Centro, eliminazione) e ha scritto "funziona. cancellato";
+  - la storia di prova "Storia di prova (da eliminare)" l'ha cancellata lui;
+  - la mail di notifica non l'ho controllata io; il suo "funziona" non dice in modo esplicito se l'ha ricevuta.
+- **Verificato in locale dopo la sostituzione**:
+  - c'è lo screenshot Puppeteer della scheda della puntata 1 con il link in fondo;
+  - cliccando il link, la sezione `#storie` si ferma a 56px dall'alto, sotto l'header;
+  - c'è anche lo screenshot della sezione su desktop vuota e su mobile 390 con il form aperto.
+- **Verificato in produzione con curl**, circa 90 secondi dopo il push:
+  - `/addomesticareglischermi` contiene "Racconta la tua storia" e `href="#storie"`, e non contiene più "Commenti (";
+  - `/privacy` contiene "Le vostre storie (podcast)";
+  - `POST /api/podcast/commenti` risponde 404.
+  - Non ho fatto screenshot in produzione né invii di prova in produzione.
+- **I commenti vecchi NON sono ancora cancellati.** Nel DB restano Giulia, Marco e l'intera tabella `podcast_comments`, che il codice non usa più. Per cancellarli serve `supabase/drop_podcast_comments.sql` (`drop table if exists public.podcast_comments;`), che deve eseguire l'utente nel SQL Editor. Io non posso: leggere `.env.local` è bloccato dal classifier. Dopo l'esecuzione va spostato in `supabase/_eseguiti/`.
+- Il dev server sulla porta 3000 è stato avviato in background in questa sessione, ma dopo ho lanciato `npm run build` sulla stessa cartella `.next`: potrebbe servire riavviarlo (non verificato).
+
+## Problemi aperti
+- La privacy va ancora fatta controllare al DPO dell'ASL CN2. Restano aperti anche i punti vecchi: manca la parte sulla newsletter e c'è l'email di contatto `info@progettosteadycam.it`.
+- `schema_podcast_comments.sql` è ancora in `supabase/_eseguiti/`, come documentazione storica.
+
+## Prossimi passi
+1. L'utente esegue `supabase/drop_podcast_comments.sql` nel SQL Editor; poi va spostato in `_eseguiti/` e committato.
+2. Eventuale invio di prova in produzione, per confermare la mail di notifica dal sito live.
+3. Revisione del testo privacy da parte del DPO.
+
+---
+
 # Handoff — 2026-11-13 (YouTube, pulsanti Segui, invito SteadyNews sulla pagina podcast)
 
 L'utente ha chiesto di aggiungere YouTube accanto alle altre piattaforme nella pagina `/addomesticareglischermi`. Prima mi ha dato il link a un singolo video (`youtu.be/Y3Gxbq3srt0`). Gli ho fatto notare che conveniva linkare una playlist: lui ha mandato lo screenshot di YouTube Studio, dove esisteva già la playlist "ADDOMESTICARE GLI SCHERMI" di tipo **Podcast**, pubblica, con 2 video. Il link della playlist è `https://www.youtube.com/playlist?list=PLK0B-5N4zozI`. L'ID è più corto del solito, ma l'oEmbed di YouTube risponde 200 con titolo "ADDOMESTICARE GLI SCHERMI" e autore "Centro Steadycam", quindi è valido. Ho creato `public/podcast/piattaforme/youtube.svg` (Simple Icons, nero, invertito in pagina come gli altri) e aggiunto la voce YouTube in fondo a `OTHER_PLATFORMS`. Nello screenshot di YouTube Studio la playlist ha il badge **RSS**: è alimentata dal feed del podcast, quindi le nuove puntate dovrebbero arrivare da sole quando escono su Spotify for Creators (non ancora osservato con una puntata nuova). Il sito non va più toccato.
